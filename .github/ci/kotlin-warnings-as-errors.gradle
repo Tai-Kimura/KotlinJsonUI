@@ -1,0 +1,20 @@
+// CI only (`./gradlew -I .github/ci/kotlin-warnings-as-errors.gradle …`):
+// every Kotlin compile turns its warnings into errors.
+//
+// Why not count warning lines in the log: the form of a Kotlin warning in
+// Gradle's output depends on the invocation, not on the compiler. Measured
+// 2026-09-25 (Gradle 9.4.1 / 9.6.0, Kotlin 2.4.10): without `--warning-mode`
+// a warning prints as `w: file:///…`; with `--warning-mode all` the same
+// warning prints as `Problem found: Kotlin compiler warning … Location: …`
+// and no `w:` line at all. The gate grepped `^w: ` in a compile run with
+// `--warning-mode all`, so it passed a build with a warning in it. Here the
+// compiler decides what a warning is, and the build fails on one whatever
+// the log calls it. The build scripts are untouched: published artifacts and
+// local builds keep their warnings as warnings.
+allprojects {
+    tasks.configureEach { t ->
+        if (t.name.startsWith("compile") && t.name.endsWith("Kotlin") && t.hasProperty("compilerOptions")) {
+            t.compilerOptions.allWarningsAsErrors.set(true)
+        }
+    }
+}

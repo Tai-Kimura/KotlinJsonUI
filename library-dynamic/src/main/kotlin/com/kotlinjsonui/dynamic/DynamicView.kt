@@ -1,0 +1,727 @@
+package com.kotlinjsonui.dynamic
+
+import android.content.Context
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.kotlinjsonui.components.ProvideCollectionScrollMemory
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import android.util.Log
+import androidx.annotation.VisibleForTesting
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import com.kotlinjsonui.components.VisibilityWrapper
+import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.DynamicModeManager
+import com.kotlinjsonui.dynamic.components.*
+import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
+import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
+import com.kotlinjsonui.core.LocalInteractionStopped
+import com.kotlinjsonui.core.LocalJsonUITint
+import com.kotlinjsonui.dynamic.helpers.TintHandDown
+import com.kotlinjsonui.dynamic.helpers.InteractionMarking
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.hotloader.HotLoader
+import androidx.compose.runtime.collectAsState
+
+/**
+ * Main entry point for rendering dynamic UI from JSON.
+ * This component determines the appropriate component type from JSON
+ * and renders it with data binding support.
+ *
+ * Features:
+ * - JSON validation and error handling
+ * - Component type detection with fallback
+ * - Data binding context management
+ * - Error recovery with debug information
+ * - Responsive layout support via WindowSizeClass
+ *
+ * @param json The JSON object describing the UI component
+ * @param data Map of data for binding. @{key} in JSON will be replaced with data[key].
+ *             Functions in the data map can be referenced by name for event handlers.
+ * @param onError Optional error handler callback
+ */
+@Composable
+fun DynamicView(
+    json: JsonObject,
+    data: Map<String, Any> = emptyMap(),
+    onError: ((Exception) -> Unit)? = null
+) {
+    // `$jui` normalization marker (root-level build metadata written by
+    // `jui build` when layout normalization is enabled). It is never a
+    // renderable attribute: detect it, publish the canonicalized state to
+    // the subtree via LocalLayoutCanonicalized so components can skip
+    // alias-spelling fallbacks, and otherwise ignore the key silently.
+    // The screen's Collection scrollTo memory (CollectionScrollMemory): the
+    // outermost DynamicView provides it, an included one shares it.
+    ProvideCollectionScrollMemory {
+        if (json.has(Normalization.MARKER_KEY)) {
+            val canonicalized = Normalization.isCanonicalized(json)
+            CompositionLocalProvider(LocalLayoutCanonicalized provides canonicalized) {
+                DynamicViewContent(json, data, onError)
+            }
+        } else {
+            DynamicViewContent(json, data, onError)
+        }
+    }
+}
+
+@Composable
+private fun DynamicViewContent(
+    json: JsonObject,
+    data: Map<String, Any> = emptyMap(),
+    onError: ((Exception) -> Unit)? = null
+) {
+    val context = LocalContext.current
+
+    // Initialize ResourceCache, ColorParser, DynamicLayoutLoader, and IncludeExpander with context
+    ResourceCache.init(context)
+    ColorParser.init(context)
+    DynamicLayoutLoader.init(context)
+    IncludeExpander.init(context)
+    EnumSpellingWarnings.install(context)
+
+    // Apply styles if a style attribute is present
+    val styledJson = if (json.has("style")) {
+        DynamicStyleLoader.applyStyle(context, json)
+    } else {
+        json
+    }
+
+    // Note: Includes are now expanded by DynamicLayoutLoader/IncludeExpander
+    // If we still see an include here, it means it was loaded without expansion
+    if (styledJson.has("include")) {
+        // Expand inline and render
+        val expandedJson = IncludeExpander.processIncludes(styledJson)
+        DynamicView(expandedJson, data, onError)
+        return
+    }
+
+    // Each child's position in the layout (LayoutPath) — the name of a node
+    // the layout gives none (a Radio item's value). Taken here, on the
+    // include-expanded, style-merged node, before the responsive resolution
+    // copies it: the tree the codegen stamps.
+    LayoutPath.enter(styledJson)
+
+    // Resolve responsive overrides based on current WindowSizeClass and orientation.
+    // This merges matching responsive attributes into the node and removes the
+    // "responsive" key, so downstream components see a flat attribute set.
+    //
+    // Inside a node whose userInteractionEnabled is false (or a binding
+    // resolving false) the node is marked (TapAccessibility.STOPPED_KEY, the
+    // key kjui's codegen writes): its click, its Role.Button and the image
+    // rule read it as no tap.
+    val stoppedAround = LocalInteractionStopped.current
+    val responsiveJson = InteractionMarking.nodeAsDrawn(resolveResponsiveNode(styledJson), stoppedAround)
+
+    // Check if this is a data element (should be skipped)
+    if (responsiveJson.has("data") && !responsiveJson.has("type")) {
+        // Data-only elements should not be rendered
+        return
+    }
+
+    // Apply data section defaults from child elements
+    // data sections define defaultValues that should be used when the property
+    // is not already present in the data map (e.g., visibility defaults to "gone")
+    // A control a stop holds writes nothing (InteractionMarking.dataAsDrawn).
+    val effectiveData = InteractionMarking.dataAsDrawn(
+        responsiveJson, applyDataSectionDefaults(responsiveJson, data), stoppedAround
+    )
+
+    // Validate JSON has required type field
+    val type = try {
+        responsiveJson.get("type")?.asString
+    } catch (e: Exception) {
+        onError?.invoke(e)
+        null
+    }
+
+    if (type.isNullOrEmpty()) {
+        val error = IllegalArgumentException("JSON must have a 'type' field")
+        onError?.invoke(error)
+        if (ErrorDisplay.showsErrors(context)) {
+            ErrorComponent("Missing 'type' field in JSON")
+        }
+        return
+    }
+
+    // Check for visibility / hidden attributes (with data binding support)
+    val visibility = responsiveJson.get("visibility")?.asString?.let {
+        processDataBinding(it, effectiveData, context)
+    }
+    val hidden = resolveHidden(responsiveJson, effectiveData)
+
+    // Render the appropriate component based on type.
+    //
+    // A type the app registered as its own component (customComponentHandler,
+    // the generated DynamicComponentRegistry) is taken before the built-in
+    // cases, as kjui's codegen takes the app's converter before its own. It
+    // was asked only for a type no built-in case took, so an app's own
+    // component named like a built-in or one of its spellings — an app's
+    // ProgressBar — was drawn in Debug as the built-in Progress while the
+    // release build drew the app's (measured: the handler was not called).
+    val renderComponent: @Composable () -> Unit = {
+        // onAppear / onDisappear: called when the view enters / leaves the
+        // tree it is drawn in, on every type and on an app's own component —
+        // here, inside the visibility wrapper below, so a `gone` view (not
+        // in the tree) does not call them and an `invisible` one does. Each
+        // component applied them itself: 13 of the 27 types dispatched below
+        // did not (Button, CheckBox, Embed, Label, Radio, Segment, SelectBox,
+        // Slider, Switch, TabView, TextField, TextView, Toggle), nor did an
+        // app's component, and a View drawn as a ConstraintLayout registered
+        // them twice.
+        ModifierBuilder.ApplyLifecycleEffects(responsiveJson, effectiveData)
+        // This node's entry: buildModifier marks it (AppComponentStages).
+        AppComponentStages.begin()
+        val handledByApp = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
+        // Said once per type when the handler drew a type the app did not
+        // name in Configuration.customComponentTypes: what classifies the
+        // node (its viewId, its tap role) then reads it as the built-in.
+        if (handledByApp) TypeSynonyms.noteDrawnByApp(type, context)
+        // A synonym spelling (HStack, ProgressBar, WebView, …) is drawn as its
+        // type, from the vendored type-synonym table — after the app was asked,
+        // with the node as written, so an app's own component under a
+        // synonym's name stays the app's. The cases below are declared types
+        // only; they held synonym spellings of their own, which drifted from
+        // the table and from SwiftJsonUI's.
+        val synonymous = if (handledByApp) responsiveJson else TypeSynonyms.canonicalize(responsiveJson, context)
+        // `bind` folded into the attribute it stands for (BindFold): no
+        // component reads `bind` for its value.
+        val drawn = if (handledByApp) synonymous else BindFold.fold(synonymous, synonymous.get("type").asString)
+        val drawnType = drawn.get("type").asString
+        if (!handledByApp) when (drawnType) {
+            "Label" -> DynamicTextComponent.create(drawn, effectiveData)
+            // EditText (Android) and Input (web) are declared sections that
+            // point at TextField (`_alias_of`)
+            "TextField", "EditText", "Input" -> DynamicTextFieldComponent.create(drawn, effectiveData)
+            "Button" -> DynamicButtonComponent.create(drawn, effectiveData)
+            "Image" -> DynamicImageComponent.create(drawn, effectiveData)
+            "NetworkImage" -> DynamicNetworkImageComponent.create(drawn, effectiveData)
+            // CircleImage / CircleImageView are Image synonyms drawn as
+            // CircleImage (`render_as`)
+            "CircleImage" -> DynamicCircleImageComponent.create(drawn, effectiveData)
+            // Toggle is a declared section pointing at Switch (`_alias_of`), drawn
+            // as it — the kjui codegen does the same. Its own renderer drew a
+            // labelled Toggle with a fixed 8 dp gap, no far-edge switch and no
+            // `label` (jsonui-cli ticket kjui-dynamic-toggle-is-not-drawn-as-its-
+            // canonical-switch).
+            "Switch", "Toggle" -> DynamicSwitchComponent.create(drawn, effectiveData)
+            // Check is a declared section pointing at CheckBox (`_alias_of`)
+            "CheckBox", "Check" -> DynamicCheckBoxComponent.create(drawn, effectiveData)
+            "Radio" -> DynamicRadioComponent.create(drawn, effectiveData)
+            "Slider" -> DynamicSliderComponent.create(drawn, effectiveData)
+            "Progress" -> DynamicProgressComponent.create(drawn, effectiveData)
+            "Indicator" -> DynamicIndicatorComponent.create(drawn, effectiveData)
+            "SelectBox" -> DynamicSelectBoxComponent.create(drawn, effectiveData)
+            "Segment" -> DynamicSegmentComponent.create(drawn, effectiveData)
+            "ScrollView" -> DynamicScrollViewComponent.create(drawn, effectiveData)
+            "View" -> DynamicContainerComponent.create(drawn, effectiveData)
+            "SafeAreaView" -> DynamicSafeAreaViewComponent.create(drawn, effectiveData)
+            "Collection" -> DynamicCollectionComponent.create(drawn, effectiveData)
+            "Web" -> DynamicWebComponent.create(drawn, effectiveData)
+            "TabView" -> DynamicTabViewComponent.create(drawn, effectiveData)
+            "Embed" -> DynamicEmbedComponent.create(drawn, effectiveData)
+            "GradientView" -> DynamicGradientViewComponent.create(drawn, effectiveData)
+            "CircleView" -> DynamicCircleViewComponent.create(drawn, effectiveData)
+            "Blur" -> DynamicBlurViewComponent.create(drawn, effectiveData)
+            "IconLabel" -> DynamicIconLabelComponent.create(drawn, effectiveData)
+            "TextView" -> DynamicTextViewComponent.create(drawn, effectiveData)
+            else -> {
+                // The app's handler was asked first, above.
+                run {
+                    // A type this runtime cannot draw: named as written, with
+                    // the declared spelling when it differs only in case
+                    // (UnknownComponentType — the sentence jsonui-cli's
+                    // validator and codegen say). Types are matched as
+                    // written: a lowercase `switch` was drawn as a Switch here
+                    // and by SwiftJsonUI, and as nothing by the codegen.
+                    val message = unknownTypeMessage(type)
+                    val error = IllegalArgumentException(message)
+                    onError?.invoke(error)
+
+                    // Named always; drawn as ErrorDisplay says: the error
+                    // view in a debuggable app that asks for it, else the
+                    // app's fallback, else nothing.
+                    Log.w("DynamicView", message)
+                    when (ErrorDisplay.forUnknownType(context)) {
+                        ErrorDisplay.Draw.ERROR_VIEW -> ErrorComponent(message)
+                        ErrorDisplay.Draw.FALLBACK -> Configuration.fallbackComponent?.invoke(responsiveJson, effectiveData)
+                        ErrorDisplay.Draw.NOTHING -> Unit
+                    }
+                }
+            }
+        }
+        // The app's component drawn without buildModifier is said once per type.
+        AppComponentStages.end(type, responsiveJson, handledByApp, context)
+    }
+
+    // Apply visibility/hidden wrapper if either attribute resolved.
+    // hidden = true is the boolean shorthand for visibility:"invisible":
+    // the component KEEPS its measured layout space, draws nothing
+    // (alpha 0), and exposes no accessibility/semantics nodes
+    // (clearAndSetSemantics) — it must NOT collapse. hidden stays
+    // reactive: resolveHidden re-reads the data map on every
+    // composition, so binding changes re-resolve on recomposition.
+    // A node with a tap handler is the nearest tappable for every image
+    // composed inside it (ImageAccessibility.role).
+    // A node whose userInteractionEnabled is false, or a binding resolving
+    // false, stops everything composed inside it (TapAccessibility).
+    val stopping: @Composable () -> Unit =
+        if (InteractionMarking.stopsWhatItComposes(responsiveJson, effectiveData, stoppedAround)) {
+            { CompositionLocalProvider(LocalInteractionStopped provides true) { renderComponent() } }
+        } else {
+            renderComponent
+        }
+    // A node that holds other nodes hands its tintColor down to the controls
+    // inside it (TintHandDown): they read their own tintColor first, then
+    // LocalJsonUITint — as `.tint` on a container reaches its controls on iOS.
+    val tintHandedDown = TintHandDown.color(responsiveJson, effectiveData, context)
+    val tinting: @Composable () -> Unit = if (tintHandedDown != null) {
+        { CompositionLocalProvider(LocalJsonUITint provides tintHandedDown) { stopping() } }
+    } else {
+        stopping
+    }
+    val render: @Composable () -> Unit = if (ImageAccessibility.isTappable(responsiveJson)) {
+        { CompositionLocalProvider(LocalImageTappable provides responsiveJson) { tinting() } }
+    } else {
+        tinting
+    }
+
+    if (hidden == true || !visibility.isNullOrEmpty()) {
+        VisibilityWrapper(
+            visibility = visibility,
+            hidden = hidden
+        ) {
+            render()
+        }
+    } else {
+        render()
+    }
+}
+
+/**
+ * The sentence DynamicView names a type it cannot draw with: offered among
+ * what it draws and the type synonyms (and, in TypeSynonyms.caseOnlyMatch,
+ * the app's types and the alias sections) — the one search every path asks.
+ */
+internal fun unknownTypeMessage(type: String): String =
+    UnknownComponentType.message(type, BUILT_IN_TYPES + TypeSynonyms.entries.keys)
+
+/**
+ * The types DynamicView draws itself, as the SSoT spells them — the cases of
+ * its dispatch (DynamicViewDispatchTest holds the two together). A type is
+ * matched as written; an app's own component is asked first.
+ */
+internal val BUILT_IN_TYPES: Set<String> = setOf(
+    "Label", "TextField", "EditText", "Input", "Button", "Image", "NetworkImage", "CircleImage",
+    "Switch", "CheckBox", "Check", "Radio", "Slider", "Progress", "Indicator", "SelectBox",
+    "Segment", "Toggle", "ScrollView", "View", "SafeAreaView", "Collection", "Web", "TabView",
+    "Embed", "GradientView", "CircleView", "Blur", "IconLabel", "TextView",
+)
+
+/**
+ * Resolve the 'hidden' attribute with data binding support.
+ * Supports: boolean, string "true"/"false", and canonical boolean binding
+ * resolution (@{prop} / @{a.b} / @{prop ?? true} / @{!prop}).
+ */
+@VisibleForTesting
+internal fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
+    val element = json.get("hidden") ?: return null
+    if (element.isJsonPrimitive) {
+        val p = element.asJsonPrimitive
+        if (p.isBoolean) return p.asBoolean
+        if (p.isString) {
+            val s = p.asString
+            if (s.startsWith("@{") && s.endsWith("}")) {
+                // Canonical boolean value context: dot paths, `?? default`,
+                // negation (@{!prop}), canonical bool coercion.
+                return DataBindingContext.resolveBoolean(s, data)
+            }
+            return s.equals("true", ignoreCase = true)
+        }
+    }
+    return null
+}
+
+/**
+ * Apply default values from the layout's data section.
+ * Two declaration shapes are supported (both produced by jui tooling):
+ * - a root-level "data" array on the node itself (canonical layout shape,
+ *   what `jui` codegen and the conformance fixture generator emit), and
+ * - a data-only child element (has "data" but no "type") inside
+ *   child/children (legacy dynamic-mode shape).
+ * Extracted defaultValues are fallbacks for properties missing from the
+ * data map — e.g. visibility defaults like "gone" apply when the ViewModel
+ * doesn't explicitly provide the property.
+ */
+@VisibleForTesting
+internal fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): Map<String, Any> {
+    val sections = mutableListOf<com.google.gson.JsonArray>()
+
+    // Root-level data section (canonical shape). Added FIRST so it wins on
+    // duplicate names (first-wins below) — same precedence as SwiftJsonUI's
+    // DynamicView.mergeDataDefaults ("the root-level array wins").
+    json.get("data")?.takeIf { it.isJsonArray }?.let { sections.add(it.asJsonArray) }
+
+    // Data-only child element (legacy shape)
+    val children = json.get("child") ?: json.get("children")
+    if (children != null && children.isJsonArray) {
+        children.asJsonArray.firstOrNull { element ->
+            element.isJsonObject && element.asJsonObject.has("data") && !element.asJsonObject.has("type")
+        }?.asJsonObject?.get("data")?.takeIf { it.isJsonArray }?.let { sections.add(it.asJsonArray) }
+    }
+
+    if (sections.isEmpty()) return data
+
+    val defaults = mutableMapOf<String, Any>()
+    sections.flatten().forEach { element ->
+        if (element.isJsonObject) {
+            val obj = element.asJsonObject
+            val name = obj.get("name")?.asString ?: return@forEach
+            // Only apply default if not already in data
+            if (data.containsKey(name)) return@forEach
+            // First section wins (root-level over legacy child) — SJUI parity.
+            if (defaults.containsKey(name)) return@forEach
+            val declared = obj.get("defaultValue") ?: return@forEach
+            val className = DataDefaultValue.className(obj.get("class"))
+            // The value for this platform (DataDefaultValue — the code
+            // generators' reading, measured against the shared vectors).
+            val defaultValue = DataDefaultValue.select(declared)
+            if (defaultValue == null) {
+                // Written per platform with no `kotlin` entry: the class's
+                // vocabulary value, as the generated Data model has it.
+                Log.w(
+                    "DynamicView",
+                    DataDefaultValue.missingPlatformWarning(name, declared.asJsonObject.keySet().toList(), className)
+                )
+                DataDefaultValue.vocabulary(className)?.let { defaults[name] = it }
+                return@forEach
+            }
+            when {
+                defaultValue.isJsonPrimitive -> {
+                    val p = defaultValue.asJsonPrimitive
+                    when {
+                        p.isBoolean -> defaults[name] = p.asBoolean
+                        p.isNumber -> defaults[name] = p.asNumber
+                        p.isString -> {
+                            val s = p.asString
+                            if (DataDefaultValue.isText(className)) {
+                                // A String's or String?'s spelling ('' / "…" /
+                                // '…' / bare).
+                                defaults[name] = DataDefaultValue.text(s)
+                            } else if (!s.contains("(") && !s.contains(")")) {
+                                // Skip complex default values (e.g.,
+                                // "CollectionDataSource()") — a String's
+                                // `(` is text.
+                                defaults[name] = s
+                            }
+                        }
+                    }
+                }
+                // Nested defaults (object / array) convert recursively to the
+                // plain Map/List data-map shape so the canonical resolver's
+                // dot-path / bracket-index traversal reaches into them
+                // (e.g. @{profile.name} against a defaulted object).
+                // A list declared CollectionDataSource is a data source, as
+                // the generated Data class has it (one section of the cells,
+                // viewName "" — the layout's sections / cellClasses name the
+                // cell). As a plain List, a Collection with `sections` drew no
+                // row: boundSource takes a list only without them (jsonui-cli
+                // ticket kjui-dynamic-collection-default-list-draws-no-rows-
+                // with-sections; kjui codegen drew the rows).
+                className == "CollectionDataSource" && defaultValue.isJsonArray -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val cells = (convertDefaultElement(defaultValue) as? List<Any?>).orEmpty()
+                        .mapNotNull { (it as? Map<*, *>)?.entries?.filter { e -> e.key is String && e.value != null }
+                            ?.associate { e -> e.key as String to e.value!! } }
+                    defaults[name] = com.kotlinjsonui.data.CollectionDataSource(
+                        sections = listOf(
+                            com.kotlinjsonui.data.CollectionDataSection(
+                                cells = com.kotlinjsonui.data.CollectionDataSection.CellData(viewName = "", data = cells)
+                            )
+                        )
+                    )
+                }
+                defaultValue.isJsonObject || defaultValue.isJsonArray -> {
+                    convertDefaultElement(defaultValue)?.let { defaults[name] = it }
+                }
+            }
+        }
+    }
+
+    if (defaults.isEmpty()) return data
+
+    // Merge: existing data overrides defaults
+    return defaults.apply { putAll(data) }
+}
+
+/**
+ * Deep-convert a data-section defaultValue element to the plain-Kotlin
+ * shape ViewModels provide: JsonObject → Map<String, Any>, JsonArray →
+ * List<Any?> (positional nulls preserved so bracket indices stay stable),
+ * primitives keep gson number identity (`asNumber` — the same care as
+ * [DynamicEmbedComponent.resolveParams] and DataBindingContext's
+ * unwrapScalar, so an authored 5 does not become "5.0"). JsonNull yields
+ * null; null-valued object entries are dropped (both resolve as
+ * unresolved, so `??` fallbacks still apply).
+ *
+ * Note the top-level constructor-string skip ("CollectionDataSource()")
+ * does NOT apply to nested strings — inside an object/array default,
+ * parenthesized strings are ordinary data.
+ */
+private fun convertDefaultElement(element: com.google.gson.JsonElement): Any? = when {
+    element.isJsonNull -> null
+    element.isJsonPrimitive -> {
+        val p = element.asJsonPrimitive
+        when {
+            p.isBoolean -> p.asBoolean
+            p.isNumber -> p.asNumber
+            else -> p.asString
+        }
+    }
+    element.isJsonObject -> {
+        val out = LinkedHashMap<String, Any>()
+        for ((key, value) in element.asJsonObject.entrySet()) {
+            convertDefaultElement(value)?.let { out[key] = it }
+        }
+        out
+    }
+    element.isJsonArray -> element.asJsonArray.map { convertDefaultElement(it) }
+    else -> null
+}
+
+/**
+ * Error component shown in debug mode
+ */
+@Composable
+private fun ErrorComponent(message: String) {
+    Box(
+        modifier = Modifier
+            .background(Color.Red.copy(alpha = 0.1f))
+            .padding(8.dp)
+    ) {
+        Text(
+            text = "⚠️ $message",
+            color = Color.Red
+        )
+    }
+}
+
+/**
+ * Renders a list of components from a JSON array.
+ * Useful for rendering the contents of container components.
+ *
+ * @param components List of JSON objects describing UI components
+ * @param data Map of data for binding
+ * @param onError Optional error handler for individual component errors
+ */
+@Composable
+fun DynamicViews(
+    components: List<JsonObject>,
+    data: Map<String, Any> = emptyMap(),
+    onError: ((Exception) -> Unit)? = null
+) {
+    // Each entry named as a root's child (LayoutPath.listEntry: `0_<i>`);
+    // they were all `0`.
+    components.forEachIndexed { index, component ->
+        val entry = remember(component, index) { LayoutPath.listEntry(component, index) }
+        DynamicView(entry, data, onError)
+    }
+}
+
+/**
+ * DynamicView with hot reload support using layout name
+ * This version loads JSON from assets/cache and supports WebSocket-based hot reload
+ *
+ * @param layoutName Name of the layout file (without .json extension)
+ * @param data Map of data for binding
+ * @param onError Optional error handler
+ */
+@Composable
+fun DynamicView(
+    layoutName: String,
+    data: Map<String, Any> = emptyMap(),
+    onError: ((Exception) -> Unit)? = null
+) {
+    val context = LocalContext.current
+
+    // Initialize ResourceCache and ColorParser with context
+    ResourceCache.init(context)
+    ColorParser.init(context)
+
+    // Initialize DynamicLayoutLoader with context
+    DynamicLayoutLoader.init(context)
+
+    var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
+    var styleUpdateCounter by remember { mutableStateOf(0) }
+    // Bumped when a hot-reload event may change which variant file wins
+    // (a variant appears/updates/disappears for the watched base screen).
+    var variantResolutionTick by remember { mutableStateOf(0) }
+
+    // Check if dynamic mode is enabled
+    val isDynamicModeEnabled by DynamicModeManager.isDynamicModeEnabled.collectAsState()
+
+    // Responsive variant-file resolution (home@regular.json): pick the
+    // layout for the current size-class tier. Recomputed on window size
+    // changes (Split View / foldable posture) — the whole tree swaps while
+    // the caller-owned data map (VM state) survives.
+    val sizeClassTier = currentSizeClassTier()
+    val effectiveLayoutName = remember(layoutName, sizeClassTier, isDynamicModeEnabled, variantResolutionTick) {
+        if (layoutName.contains('@')) {
+            layoutName
+        } else {
+            val candidate = "$layoutName@$sizeClassTier"
+            val hotCached = isDynamicModeEnabled &&
+                HotLoader.getInstance(context).getCachedLayout(candidate) != null
+            when {
+                hotCached -> candidate
+                DynamicLayoutLoader.layoutExists(candidate) -> candidate
+                else -> layoutName
+            }
+        }
+    }
+
+    DisposableEffect(effectiveLayoutName, isDynamicModeEnabled, variantResolutionTick) {
+        if (!isDynamicModeEnabled) {
+            // Just load from assets once
+            loadLayoutFromAssets(context, effectiveLayoutName, onError)?.let {
+                jsonObject = it
+            }
+            onDispose { }
+        } else {
+            // Use HotLoader for WebSocket-based hot reload
+            val hotLoader = HotLoader.getInstance(context)
+
+            // First try to load from cache
+            hotLoader.getCachedLayout(effectiveLayoutName)?.let { cached ->
+                try {
+                    jsonObject = JsonParser.parseString(cached).asJsonObject
+                } catch (e: Exception) {
+                    onError?.invoke(e)
+                }
+            } ?: run {
+                // Fall back to loading from assets
+                loadLayoutFromAssets(context, effectiveLayoutName, onError)?.let {
+                    jsonObject = it
+                }
+            }
+
+            // Set up listener for updates. The listener params shadow this
+            // composable's `layoutName`, so capture it first. Variant files
+            // of the watched base re-trigger resolution (the update may
+            // introduce or retire the variant that currently wins).
+            val watchedLayoutName = effectiveLayoutName
+            val watchedBase = LayoutVariantResolver.baseOf(layoutName)
+            val listener = object : HotLoader.HotLoaderListener {
+                override fun onConnected() {
+                    Log.d("DynamicView", "HotLoader connected")
+                }
+
+                override fun onDisconnected() {
+                    Log.d("DynamicView", "HotLoader disconnected")
+                }
+
+                override fun onLayoutUpdated(layoutName: String, content: String) {
+                    val incoming = layoutName.removeSuffix(".json")
+                    if (incoming == watchedLayoutName) {
+                        try {
+                            jsonObject = JsonParser.parseString(content).asJsonObject
+                            Log.d("DynamicView", "Layout updated: $layoutName")
+                        } catch (e: Exception) {
+                            onError?.invoke(e)
+                        }
+                    } else if (LayoutVariantResolver.baseOf(incoming) == watchedBase) {
+                        variantResolutionTick++
+                    }
+                }
+
+                override fun onStyleUpdated(styleName: String, content: String) {
+                    // Force recomposition when any style is updated
+                    // This will cause all views to re-read their styles
+                    styleUpdateCounter++
+                    Log.d("DynamicView", "Style updated: $styleName, triggering recomposition")
+                }
+
+                override fun onLayoutAdded(layoutName: String) {
+                    if (LayoutVariantResolver.baseOf(layoutName.removeSuffix(".json")) == watchedBase) {
+                        variantResolutionTick++
+                    }
+                }
+
+                override fun onLayoutRemoved(layoutName: String) {
+                    if (LayoutVariantResolver.baseOf(layoutName.removeSuffix(".json")) == watchedBase) {
+                        variantResolutionTick++
+                    }
+                }
+
+                override fun onError(error: Throwable) {
+                    onError?.invoke(Exception(error))
+                }
+            }
+
+            hotLoader.addListener(listener)
+            hotLoader.start()
+
+            onDispose {
+                hotLoader.removeListener(listener)
+            }
+        }
+    }
+
+    // Render the view - include styleUpdateCounter as a key to force recomposition
+    jsonObject?.let { json ->
+        key(styleUpdateCounter) {
+            // Strings resolve while the components below build this layout's
+            // subtree; announce whose strings.json sections own bare keys
+            // first (the codegen face's own-section-first order). Variant
+            // suffixes (@regular) never name a section — announce the base.
+            ResourceCache.beginLayout(LayoutVariantResolver.baseOf(effectiveLayoutName))
+            // A screen render is a layout root: give its subtree a runtime
+            // write channel so two-way bindings (paging currentPage, ...)
+            // propagate to sibling readers the way the codegen face's view
+            // state does.
+            DynamicRuntimeScope(data) { effectiveData ->
+                DynamicView(json, effectiveData, onError)
+            }
+        }
+    }
+}
+
+/**
+ * Load layout from assets folder
+ */
+private fun loadLayoutFromAssets(
+    context: Context,
+    layoutName: String,
+    onError: ((Exception) -> Unit)?
+): JsonObject? {
+    return try {
+        val fileName = if (layoutName.endsWith(".json")) layoutName else "$layoutName.json"
+        val jsonString = context.assets.open("Layouts/$fileName").bufferedReader().use { it.readText() }
+        JsonParser.parseString(jsonString).asJsonObject
+    } catch (e: Exception) {
+        // Try without Layouts directory
+        try {
+            val fileName = if (layoutName.endsWith(".json")) layoutName else "$layoutName.json"
+            val jsonString = context.assets.open(fileName).bufferedReader().use { it.readText() }
+            JsonParser.parseString(jsonString).asJsonObject
+        } catch (e2: Exception) {
+            onError?.invoke(e2)
+            null
+        }
+    }
+}

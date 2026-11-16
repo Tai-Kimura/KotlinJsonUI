@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SheetStringsLanguageTest: a word declared again here wins over the library's, as an app's does. -->
+    <string name="kjui_sheet_day">Day (the app\'s word)</string>
+</resources>

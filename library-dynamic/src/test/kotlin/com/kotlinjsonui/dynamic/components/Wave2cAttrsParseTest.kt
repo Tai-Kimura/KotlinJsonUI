@@ -1,0 +1,124 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.google.gson.JsonParser
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.generated.EmbedAttributes
+import com.kotlinjsonui.dynamic.generated.WebAttributes
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * Parse-level coverage for the Web / WebView / Embed conversion (wave 2c).
+ * WebView is an alias type that parses with the Web module; Include is
+ * structural (no typed parse) and is intentionally not covered here.
+ */
+class Wave2cAttrsParseTest {
+
+    private fun obj(json: String) = JsonParser.parseString(json).asJsonObject
+
+    // ── Web (also backs the WebView alias type) ──
+
+    @Test
+    fun `web url keeps static value and binding raw representation`() {
+        val static = WebAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Web","url":"https://example.com"}"""))
+        )
+        assertEquals("https://example.com", TypedAttrs.rawString(static.url))
+
+        val bound = WebAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"WebView","url":"@{pageUrl}"}"""))
+        )
+        assertEquals("@{pageUrl}", TypedAttrs.rawString(bound.url))
+        assertEquals("pageUrl", TypedAttrs.binding(bound.url))
+    }
+
+    @Test
+    fun `web html and iframe rows parse as plain strings`() {
+        val a = WebAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj(
+                    """{"type":"Web","html":"<p>hi</p>","sandbox":"allow-scripts","allow":"fullscreen"}"""
+                )
+            )
+        )
+        assertEquals("<p>hi</p>", a.html)
+        assertEquals("fullscreen", a.allow)
+    }
+
+    @Test
+    fun `web sandbox is the boolean kill-switch, not a permission list`() {
+        // 49-E: `sandbox: false` emits no sandbox attribute at all; the
+        // permission list is built from the other Web rows, never from a value
+        // written here (rjui web_converter.rb:68 reads it the same way).
+        // A token string is therefore not a value this row accepts.
+        val off = WebAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Web","sandbox":false}"""))
+        )
+        assertEquals(false, off.sandbox)
+
+        val tokens = WebAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Web","sandbox":"allow-scripts"}"""))
+        )
+        assertNull(tokens.sandbox)
+    }
+
+    @Test
+    fun `web runtime extras are declared beside url`() {
+        // javaScriptEnabled / userAgent / allowZoom were legacy runtime
+        // extras until the SSoT declared them (after jsonui-cli 2.3.15); the
+        // component still reads them raw, and lists them as applied.
+        assertTrue("javaScriptEnabled" in WebAttributes.declaredAttributes)
+        assertTrue("userAgent" in WebAttributes.declaredAttributes)
+        assertTrue("allowZoom" in WebAttributes.declaredAttributes)
+        assertTrue("url" in WebAttributes.declaredAttributes)
+    }
+
+    // ── Embed ──
+
+    @Test
+    fun `embed screen parses and optional rows default to null`() {
+        val a = EmbedAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Embed","screen":"user_card"}"""))
+        )
+        assertEquals("user_card", a.screen)
+        assertNull(a.params)
+        assertNull(a.events)
+        assertNull(a.navigationMode)
+    }
+
+    @Test
+    fun `embed navigationMode known delegate and unknown isolated pass through`() {
+        val delegate = EmbedAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj("""{"type":"Embed","screen":"s","navigationMode":"delegate"}""")
+            )
+        )
+        assertEquals("delegate", TypedAttrs.enumString(delegate.navigationMode) { it.json })
+
+        // "isolated" is undeclared in v1 — the open enum passes it through
+        // so the component's raw-string comparison keeps working.
+        val isolated = EmbedAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj("""{"type":"Embed","screen":"s","navigationMode":"isolated"}""")
+            )
+        )
+        assertEquals("isolated", TypedAttrs.enumString(isolated.navigationMode) { it.json })
+    }
+
+    @Test
+    fun `embed params and events objects parse as maps`() {
+        val a = EmbedAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj(
+                    """{"type":"Embed","screen":"s","params":{"userId":"@{id}","label":"hi"},"events":{"onSaved":"handleSaved"}}"""
+                )
+            )
+        )
+        val params = TypedAttrs.static(a.params)
+        assertEquals("@{id}", params?.get("userId"))
+        assertEquals("hi", params?.get("label"))
+        assertEquals("handleSaved", a.events?.get("onSaved"))
+    }
+}

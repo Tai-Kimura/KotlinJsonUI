@@ -1,0 +1,27 @@
+{
+  "type": "View",
+  "orientation": "vertical",
+  "padding": 16,
+  "child": [
+    {
+      "type": "Label",
+      "text": "Simple Test",
+      "fontSize": 24,
+      "fontColor": "black"
+    },
+    {
+      "type": "Label",
+      "text": "Testing basic components",
+      "fontSize": 16,
+      "fontColor": "medium_gray_4",
+      "topMargin": 8
+    },
+    {
+      "type": "Button",
+      "text": "Test Button",
+      "background": "medium_blue_3",
+      "fontColor": "white",
+      "topMargin": 16
+    }
+  ]
+}

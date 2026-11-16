@@ -1,0 +1,276 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.kotlinjsonui.core.DeclaredSpelling
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.kotlinjsonui.image.KjuiNetworkImage
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.NetworkImageAttributes
+import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.ImageContentScale
+import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
+
+/**
+ * Dynamic NetworkImage Component Converter
+ * Converts JSON to NetworkImage composable at runtime using Coil AsyncImage.
+ *
+ * Supported JSON attributes (matching Ruby networkimage_component.rb):
+ * - source/url/src: String URL or @{variable} for image URL
+ * - hint/placeholder: String resource name for placeholder image (.png/.jpg extension stripped)
+ * - errorImage: String resource name for error image (.png/.jpg extension stripped)
+ * - contentDescription: String description for accessibility (default: "Image")
+ * - contentMode: "aspectFit" | "aspectFill" | "fill" | "scaleToFill" | "center" (case-insensitive)
+ * - size: Number for square width and height (overrides width/height)
+ * - width/height: Number dimensions
+ * - cornerRadius: Float corner radius (applied via applyBackground clip)
+ * - borderWidth: Float border width
+ * - borderColor: String hex color for border
+ * - borderStyle: "solid" | "dashed" | "dotted"
+ * - alpha/opacity: Float opacity (0.0 to 1.0), supports @{binding}
+ * - padding/paddings: Number or Array for padding
+ * - margins: Array or individual margin properties
+ * - background: String hex color for background
+ * - onClick/onclick: String event handler name
+ * - id: String for testTag
+ * - onAppear/onDisappear: Lifecycle event handlers
+ *
+ * Attribute access goes through the generated [NetworkImageAttributes]
+ * extraction via the [TypedAttrs] bridge; the node itself is only passed
+ * wholesale to the shared ModifierBuilder helpers.
+ */
+class DynamicNetworkImageComponent {
+    companion object {
+        /** NetworkImage-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "url", "src", "contentMode", "hint", "placeholder", "errorImage",
+            "loadingImage", "defaultImage", "alt",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "size"
+        )
+
+        @Composable
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
+            val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                NetworkImageAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "NetworkImage", json,
+                declared = NetworkImageAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
+
+            // ── URL resolution: source > url > src, with @{binding} support ──
+            // ('source' is an undeclared legacy runtime extra on NetworkImage)
+            val rawUrl = TypedAttrs.undeclared(json, "source")?.asString
+                ?: TypedAttrs.rawString(a.url)
+                ?: TypedAttrs.rawString(a.src)
+                ?: ""
+            val imageUrl = processDataBinding(rawUrl, data)
+
+            // ── Content description ──
+            // What TalkBack reads (ImageAccessibility, the codegen's rule):
+            // the alt, nothing for a decorative image, and "Image" for an
+            // image that operates a control and has no alt.
+            val contentDescription = ImageAccessibility.contentDescription(
+                ImageAccessibility.role(json, LocalImageTappable.current),
+                { ResourceResolver.resolveTextValue(ImageAccessibility.alt(json).orEmpty(), data, context) },
+                legacy = "Image"
+            )
+
+            // ── Content scale (static-only legacy read; ImageContentScale is
+            // the table Image and CircleImage draw with too — no contentMode
+            // draws the declared default, fit) ──
+            val mode = TypedAttrs.staticEnumString(a.contentMode) { it.json }
+            val contentScale = ImageContentScale.scale(mode, NetworkImageAttributes.ContentMode.declaredSpellings)
+            val contentAlignment = ImageContentScale.alignment(mode, NetworkImageAttributes.ContentMode.declaredSpellings)
+
+            // ── Placeholder: hint > placeholder > loadingImage (the same
+            // in-flight-image chain as the static converter,
+            // networkimage_component.rb — the declared `loadingImage` was
+            // previously never read here: parity family
+            // kjui-dynamic-loadingimage), strip .png/.jpg extension ──
+            val placeholderName = a.hint ?: a.placeholder ?: a.loadingImage
+            val placeholderResId = placeholderName?.let { name ->
+                val cleanName = name
+                    .removeSuffix(".png")
+                    .removeSuffix(".jpg")
+                    .removeSuffix(".jpeg")
+                    .removeSuffix(".webp")
+                ResourceResolver.drawableIdNamed(cleanName, context)
+            }?.takeIf { it != 0 }
+
+            // ── Error image: errorImage, strip extension ──
+            val errorImageName = a.errorImage
+            val errorResId = errorImageName?.let { name ->
+                val cleanName = name
+                    .removeSuffix(".png")
+                    .removeSuffix(".jpg")
+                    .removeSuffix(".jpeg")
+                    .removeSuffix(".webp")
+                ResourceResolver.drawableIdNamed(cleanName, context)
+            }?.takeIf { it != 0 }
+
+            // ── Default image: what the view shows when there is no src at
+            // all (canonical networkImage.noSrc = defaultImage, shared/core/
+            // attribute_semantics.json). Previously parsed but never read —
+            // a control declaring only defaultImage rendered blank. ──
+            val defaultResId = a.defaultImage?.let { name ->
+                val cleanName = name
+                    .removeSuffix(".png")
+                    .removeSuffix(".jpg")
+                    .removeSuffix(".jpeg")
+                    .removeSuffix(".webp")
+                ResourceResolver.drawableIdNamed(cleanName, context)
+            }?.takeIf { it != 0 }
+
+            // ── Build modifier ──
+            // Standard order: testTag → margins → size → alpha → shadow → background(clip+border+bg) → clickable → padding
+            // Special handling: "size" attribute overrides width/height with square .size(N.dp)
+            // ('size' is an undeclared legacy runtime extra)
+            val sizeValue = TypedAttrs.undeclared(json, "size")?.asFloat
+            val modifier = if (sizeValue != null) {
+                // Build modifier but skip applySize — we apply square size manually
+                var m: Modifier = Modifier
+                m = ModifierBuilder.applyMargins(m, json, data)
+                // Square size instead of applySize
+                m = m.size(sizeValue.dp)
+                // testTag after offset, before alpha: the tagged box is the drawn box
+                // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                m = ModifierBuilder.applyTestTag(m, json)
+                m = ModifierBuilder.applyAlpha(m, json, data)
+                m = ModifierBuilder.applyShadow(m, json, data)
+                m = ModifierBuilder.applyBackground(m, json, data, context)
+                m = ModifierBuilder.applyClickable(m, json, data)
+                m = ModifierBuilder.applyPadding(m, json, data)
+                m
+            } else {
+                ModifierBuilder.buildModifier(json, data, context = context)
+            }
+
+            // ── Lifecycle effects ──
+            if (ModifierBuilder.hasLifecycleEvents(json)) {
+            }
+
+            // ── AsyncImage ──
+            // Each Coil slot takes ONLY the images the ruling puts in its own
+            // state (`shared/core/attribute_semantics.json#networkImage`): no
+            // src → defaultImage; loading → hint/placeholder/loadingImage; on
+            // error → errorImage, falling back to defaultImage.
+            //
+            // The tails these two chains used to carry — `?: placeholderResId`
+            // on both, and `?: errorResId` on the fallback — made a state image
+            // appear in a state it was never declared for. Every NetworkImage
+            // conformance fixture is no-src, so the whole family rendered
+            // through `fallback`, and errorImage/loadingImage/placeholder went
+            // visibly active while `hint` — the only one declaring
+            // defaultImage — stayed inert. Same rule as `semantics.border`: an
+            // image not declared for this state is not summoned into it, and a
+            // no-src view with no defaultImage correctly shows nothing (49 #19,
+            // C's verdict ratified 2026-08-05; the codegen half is
+            // networkimage_component.rb, and the two must agree or the same
+            // layout draws differently on the two paths).
+            //
+            // An empty or blank url becomes null so Coil takes the fallback path
+            // instead of treating it as a failing request (jsonui-cli ticket
+            // kjui-networkimage-empty-src-draws-error-image).
+            val effectiveErrorResId = errorSlot(errorResId, defaultResId)
+            val effectiveFallbackResId = fallbackSlot(defaultResId)
+
+            // renderingMode — `template` means "take the tint, ignore the
+            // asset's own colours"; `original` suppresses a tint that would
+            // otherwise apply; no mode → a declared tint still applies. The
+            // same mapping DynamicImageComponent and the codegen face
+            // (ImageComponent.rendering_color_filter, handed to AsyncImage's
+            // colorFilter by networkimage_component.rb) already use — this
+            // path ignored both spellings
+            // (NetworkImage_renderingMode__template parity d=13, run
+            // 31202080745).
+            val renderingMode = DeclaredSpelling.lowered(TypedAttrs.enumString(a.renderingMode) { it.json }, NetworkImageAttributes.RenderingMode.declaredSpellings)
+            val tint = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor), data, context
+            )
+            val colorFilter = when (renderingMode) {
+                "template" -> ColorFilter.tint(tint ?: LocalContentColor.current)
+                "original" -> null
+                else -> tint?.let { ColorFilter.tint(it) }
+            }
+
+            // loadingRenderer (a binding may hand "" to turn it off), loadingDelay,
+            // transitionDuration and onLoadStateChange, read as the codegen's
+            // KjuiNetworkImage takes them (ticket jui-networkimage-load-listener).
+            val loadingRenderer = TypedAttrs.string(a.loadingRenderer, data)
+            val loadingDelay = a.loadingDelay?.toInt() ?: 200
+            val transition = a.transitionDuration?.toInt() ?: -1
+            val stateHandler = TypedAttrs.raw(a.onLoadStateChange) as? String
+            val onLoadStateChange: ((String) -> Unit)? = stateHandler
+                ?.takeIf { ModifierBuilder.isBinding(it) }
+                ?.let { handler ->
+                    val viewId = LayoutPath.viewId(json)
+                    val call: (String) -> Unit = { state -> ModifierBuilder.resolveEventHandler(handler, data, viewId, state) }
+                    call
+                }
+
+            KjuiNetworkImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUrl.takeIf { it.isNotBlank() })
+                    .crossfade(true)
+                    .build(),
+                contentDescription = contentDescription,
+                contentScale = contentScale,
+                alignment = contentAlignment,
+                placeholder = placeholderResId ?: 0,
+                error = effectiveErrorResId ?: 0,
+                fallback = effectiveFallbackResId ?: 0,
+                colorFilter = colorFilter,
+                modifier = modifier,
+                loadingRenderer = loadingRenderer,
+                loadingDelayMillis = loadingDelay,
+                transitionMillis = transition,
+                onLoadStateChange = onLoadStateChange,
+            )
+        }
+
+        /**
+         * The ERROR state's image: the one declared for it, then the no-src
+         * image as the canon's only permitted fallback. Nothing else — see the
+         * call site for why the old `?: placeholder` tail was a defect.
+         */
+        internal fun errorSlot(errorResId: Int?, defaultResId: Int?): Int? =
+            errorResId ?: defaultResId
+
+        /**
+         * The NO-SRC state's image: `defaultImage` alone. A no-src view that
+         * declares no defaultImage correctly shows nothing.
+         */
+        internal fun fallbackSlot(defaultResId: Int?): Int? = defaultResId
+
+        /**
+         * The LOADING state's image: `hint` > `placeholder` > `loadingImage`,
+         * the same order and the same three spellings the codegen reads
+         * (networkimage_component.rb:41).
+         */
+        internal fun loadingSlot(hint: Int?, placeholder: Int?, loadingImage: Int?): Int? =
+            hint ?: placeholder ?: loadingImage
+
+    }
+}

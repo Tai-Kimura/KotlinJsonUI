@@ -1,0 +1,1869 @@
+package com.jsonui.testrunner.runner
+
+import androidx.test.platform.app.InstrumentationRegistry
+import com.jsonui.testrunner.models.RunDefaultsSource
+import androidx.test.uiautomator.UiDevice
+import com.jsonui.testrunner.actions.ActionExecutor
+import com.jsonui.testrunner.actions.OrientationCommand
+import com.jsonui.testrunner.assertions.AssertionExecutor
+import com.jsonui.testrunner.models.FlowTest
+import com.jsonui.testrunner.models.FlowTestStep
+import com.jsonui.testrunner.models.LaunchConfig
+import com.jsonui.testrunner.models.RunNotices
+import com.jsonui.testrunner.models.CaseIsolation
+import com.jsonui.testrunner.models.RunOrientationFloor
+import com.jsonui.testrunner.models.ResponsiveCondition
+import com.jsonui.testrunner.models.ResponsiveThresholds
+import com.jsonui.testrunner.models.ScreenTest
+import com.jsonui.testrunner.models.StepCondition
+import com.jsonui.testrunner.models.TestCase
+import com.jsonui.testrunner.models.TestResult
+import com.jsonui.testrunner.models.TestStep
+import com.jsonui.testrunner.models.TestSuiteResult
+import com.jsonui.testrunner.models.WindowDimensions
+import com.jsonui.testrunner.models.deriveOrientation
+import com.jsonui.testrunner.models.matchesResponsive
+import com.jsonui.testrunner.models.resolveSizeTier
+
+/**
+ * Configuration for the test runner
+ */
+data class TestRunnerConfig(
+    val defaultTimeout: Long = 5000L,
+    /**
+     * Verify the screen marker automatically whenever a flow's inline step
+     * moves to a different `screen`, without the test spelling an assertion.
+     * ON by default — this is the canonical behaviour.
+     *
+     * An app whose generated code predates screen markers will fail every
+     * screen change with `marker-absent`. That is the intended signal: the app
+     * needs `jui build` and a current library pin. Set this to false to opt
+     * out while migrating.
+     */
+    val verifyScreenTransitions: Boolean = true,
+    /**
+     * Timeout for those implicit verifications. Deliberately larger than
+     * defaultTimeout: real cross-screen waits already use 15-20s after a cold
+     * start.
+     */
+    val screenTransitionTimeout: Long = 10000L,
+    /**
+     * How long the driver waits, after a launch that carried an initialState
+     * payload, for the screen to confirm it on its state bridge (spec §10.5).
+     * Same name and default as the web driver's setting.
+     */
+    val screenReadyTimeout: Long = 15000L,
+    val screenshotOnFailure: Boolean = true,
+    val platform: String = "android",
+    val verbose: Boolean = false,
+    /**
+     * Extra attempts for a FAILED case (or flow body) before recording the
+     * failure — 0 (default) keeps single-run behaviour. The final result
+     * carries `attempts` (total runs) and a pass after a retry is marked
+     * `flaky` in the results JSON. Retries re-run the steps as-is (no
+     * re-launch between attempts), so cases that mutate app state
+     * non-idempotently may not benefit.
+     */
+    val caseRetries: Int = 0,
+    /**
+     * Root directory for test artifacts (both `screenshot` action steps and
+     * failure screenshots, plus recordings). Defaults to
+     * `<external files dir>/jsonui-artifacts` when null — an adb-pullable
+     * location (`jsonui-test artifacts pull` collects it without run-as).
+     * Artifacts are structured `<root>/<testName>/<caseName>/<file>`.
+     */
+    val screenshotDir: java.io.File? = null,
+    /**
+     * Record the screen per test case (per flow for flow tests) via the
+     * platform `screenrecord`, saved as `<root>/<test>/<case>/recording.mp4`.
+     */
+    val record: Boolean = false,
+    /** Keep recordings of passing cases too (default: only failures survive). */
+    val keepRecordingOnSuccess: Boolean = false,
+    /** Baseline directory for the `screenshot` assertion (default: external files dir) */
+    val baselineDir: java.io.File? = null,
+    /** When true, screenshot baselines are always overwritten and the assertion passes */
+    val updateBaselines: Boolean = false,
+    /** When set, results are written to this file as standardized results JSON */
+    val resultsPath: java.io.File? = null,
+    /** Mock server base URL (e.g. http://10.0.2.2:8790). Required to use `mocks` / `setMocks`. */
+    val mockServerUrl: String? = null,
+    /** Admin token printed by `jsonui-test mock serve`. Required with mockServerUrl. */
+    val mockToken: String? = null,
+    /**
+     * Named-bucket width thresholds (dp) for `responsive` gating. Defaults
+     * mirror the Android renderer's break rules (kjui: medium ≥ 600dp,
+     * regular ≥ 840dp). Override only for projects that also override the
+     * renderer's breakpoints; bucket names themselves are not configurable.
+     */
+    val responsive: ResponsiveThresholds = ResponsiveThresholds(),
+    /**
+     * Run-scoped defaults read from the installed bundle's
+     * `jsonui-test-run.json` (see [RunDefaultsLoader]). Null says the sidecar
+     * could not be read and is NOT the same as an empty table: a caller that
+     * folds the two together loses the only signal separating "no default
+     * declared" from "installed by an older CLI" — and on this driver there
+     * is no other, because no Android driver version is readable from a
+     * project tree for `x-requires-driver` to gate on.
+     */
+    val runDefaults: RunDefaults? = null
+)
+
+/** Safety cap for `repeat` with a `while` condition and no `times` */
+private const val REPEAT_WHILE_CAP = 100
+
+/** Cross-platform permission names → Android runtime permissions */
+private val ANDROID_PERMISSION_MAP = mapOf(
+    "camera" to "android.permission.CAMERA",
+    "microphone" to "android.permission.RECORD_AUDIO",
+    "location" to "android.permission.ACCESS_FINE_LOCATION",
+    "notifications" to "android.permission.POST_NOTIFICATIONS",
+    "photos" to "android.permission.READ_MEDIA_IMAGES",
+    "storage" to "android.permission.READ_MEDIA_IMAGES",
+    "contacts" to "android.permission.READ_CONTACTS",
+    "calendar" to "android.permission.READ_CALENDAR",
+    "bluetooth" to "android.permission.BLUETOOTH_CONNECT"
+)
+
+/**
+ * The single decision point for the post-mocks/launch relaunch: mock
+ * scenarios need the app to re-fetch under them, a launch config needs a
+ * start that carries it. Returns the reason to log, or null for no relaunch.
+ * A pure function so the JVM suite can pin the truth table.
+ */
+internal fun relaunchReason(mocks: Boolean, launch: Boolean, initialState: Boolean = false): String? =
+    listOfNotNull("mocks".takeIf { mocks }, "launch".takeIf { launch }, "initialState".takeIf { initialState })
+        .takeIf { it.isNotEmpty() }
+        ?.joinToString("+")
+
+/**
+ * The arguments half of a launch configuration, as intent extras: the JSON
+ * object rides JSONUI_TEST_ARGS and the app reads it off the launched
+ * activity's intent (see LaunchConfig).
+ */
+internal fun launchExtras(launch: LaunchConfig?, initialStatePayload: String? = null): Map<String, String> {
+    val extras = LinkedHashMap<String, String>()
+    launch?.arguments?.let { extras["JSONUI_TEST_ARGS"] = kotlinx.serialization.json.JsonObject(it).toString() }
+    initialStatePayload?.let { extras[InitialStatePayload.EXTRA] = it }
+    return extras
+}
+
+/**
+ * A launch's payload and its id (spec §10.2), or null when the launch carries
+ * none. One fresh launchId per launch.
+ */
+internal data class PreparedPayload(val launchId: String, val screens: Map<String, Map<String, kotlinx.serialization.json.JsonElement>>) {
+    val text: String get() = InitialStatePayload.encode(screens, launchId)
+
+    companion object {
+        fun of(launch: InitialStatePlan.Launch?): PreparedPayload? =
+            launch?.screens?.let { PreparedPayload(java.util.UUID.randomUUID().toString(), it) }
+    }
+}
+
+/**
+ * The deny half of the permission contract, as a pure decision: deny is an
+ * ASSERT of the current state, never a revoke. Returns the (declared name,
+ * android permission) pairs that are declared deny but currently granted —
+ * the states this driver cannot reach, because measured 2026-09-02 there is
+ * no way to move granted -> denied from inside an instrumentation run:
+ * `pm revoke` kills the instrumented process (ActivityManager: "permissions
+ * revoked") and `appops set` on permission-backed ops is a silent no-op.
+ * allow and unset never violate (grant is safe to execute; unset leaves
+ * inherited state untouched).
+ */
+internal fun permissionDenyViolations(
+    permissions: Map<String, String>?,
+    isGranted: (String) -> Boolean
+): List<Pair<String, String>> =
+    permissions.orEmpty().mapNotNull { (name, value) ->
+        val androidPermission = ANDROID_PERMISSION_MAP[name] ?: return@mapNotNull null
+        if (value == "deny" && isGranted(androidPermission)) name to androidPermission else null
+    }
+
+/** Thrown by [JsonUITestRunner] when a launch config asserts a state the driver cannot reach. */
+internal class LaunchConfigException(message: String) : IllegalStateException(message)
+
+/**
+ * Main test runner for JsonUI tests
+ */
+class JsonUITestRunner(
+    private val config: TestRunnerConfig = TestRunnerConfig()
+) {
+    private val device: UiDevice = UiDevice.getInstance(
+        InstrumentationRegistry.getInstrumentation()
+    )
+
+    /** Runtime variables (readText results), shared with the action executor */
+    private val variables = mutableMapOf<String, String>()
+
+    /** Warnings collected during the current case (drained per-case) */
+    private var currentWarnings = mutableListOf<String>()
+
+    /**
+     * Identity of the test file / case currently executing — artifacts are
+     * saved under `<root>/<testName>/<caseName>/` (parity with iOS attachment
+     * naming), so `jsonui-test artifacts pull` gets the tree pre-organized.
+     */
+    private var currentTestName = ""
+    private var currentCaseName = ""
+
+    /** Per-case screen recorder (config.record); shell-uid `screenrecord`. */
+    /** Wall-clock start of the current case (set where its recording starts), for the recording sidecar. */
+    private var caseStartedAt = 0L
+
+    private val screenRecorder by lazy {
+        ScreenRecorder(InstrumentationRegistry.getInstrumentation().uiAutomation)
+    }
+
+    /**
+     * State provider for `state` assertions/conditions. Optional: without one,
+     * `state` reads the state bridge of the screen [stateScreen] names
+     * (KotlinJsonUI >= 2.44.0, spec §10.5). A provider the harness passes wins.
+     */
+    var stateProvider: ViewModelStateProvider? = null
+        set(value) {
+            field = value
+            assertionExecutor.stateProvider = value
+        }
+
+    /**
+     * The screen `state` reads when no provider is set: the screen under test,
+     * a flow step's screen (else the last one named), a referenced case's own
+     * file's screen. A harness that hosts screens itself (the conformance
+     * host) sets it before running.
+     */
+    var stateScreen: String?
+        get() = flowScreens.state
+        set(value) { flowScreens.state = value }
+
+    /** Where a flow is (FlowScreens); [stateScreen] lives in it. */
+    private val flowScreens = FlowScreens()
+
+    private val actionExecutor = ActionExecutor(device, config.defaultTimeout).apply {
+        // Route `screenshot` action steps through the same (config-aware)
+        // capture path as failure screenshots.
+        screenshotHandler = { name -> takeScreenshot(name) }
+        variableStore = variables
+        warningHandler = { message -> currentWarnings.add(message) }
+    }
+    /** Id resolution for `when` / `while` conditions (with their `within`). */
+    private val elementLookup = ElementLookup(device)
+    private val assertionExecutor = AssertionExecutor(device, config.defaultTimeout).apply {
+        baselineDir = config.baselineDir
+        updateBaselines = config.updateBaselines
+        warningHandler = { message -> currentWarnings.add(message) }
+        bridgeState = BridgeStateSource({ stateScreen })
+    }
+
+    /** Test loader for file reference resolution */
+    var testLoader: TestLoader? = null
+
+    /**
+     * Progress records (progress.schema.json) for `jui viz`: always on, not
+     * tied to [TestRunnerConfig.verbose], and never able to change a result
+     * (every emit swallows its sink's failure). A seam for the tests.
+     */
+    internal var progress = ProgressReporter()
+
+    /** Mock server admin client; null unless mockServerUrl + mockToken are configured. */
+    private val mockClient: MockClient? =
+        if (config.mockServerUrl != null && config.mockToken != null)
+            MockClient(config.mockServerUrl, config.mockToken)
+        else null
+
+    private fun requireMockClient(feature: String): MockClient =
+        mockClient ?: throw IllegalStateException(
+            "'$feature' requires a mock server: set mockServerUrl + mockToken in TestRunnerConfig " +
+                "(from 'jsonui-test mock serve')."
+        )
+
+    /**
+     * Run a loaded test
+     */
+    fun run(test: LoadedTest): TestSuiteResult {
+        return when (test) {
+            is LoadedTest.Screen -> runScreenTest(test.test, test.filePath)
+            is LoadedTest.Flow -> runFlowTest(test.test, test.filePath)
+        }
+    }
+
+    /**
+     * Run a screen test
+     */
+    fun runScreenTest(test: ScreenTest, testPath: String = ""): TestSuiteResult =
+        progress.run(testPath, rows = { suite: TestSuiteResult -> suite.results }) {
+            runScreenTestRows(test)
+        }.also { writeDefaultResults(it) }
+
+    private fun runScreenTestRows(test: ScreenTest): TestSuiteResult {
+        val results = mutableListOf<TestResult>()
+        val startTime = System.currentTimeMillis()
+
+        // Orientation first: a screen that renders at one size and is then
+        // rotated has already made its layout decisions, so a run that
+        // rotates afterwards is not the run the file asked for.
+        applyRunOrientation(test.orientation)
+
+        // Wait for UI to be ready (app may need time to render)
+        // Compose UI needs extra time for semantics tree to be built
+        log("Waiting for UI to be ready...")
+        Thread.sleep(2000)
+        device.waitForIdle(config.defaultTimeout)
+        Thread.sleep(500) // Additional wait for Compose semantics
+
+        // Debug: dump UI hierarchy at start
+        log("Dumping UI hierarchy at test start...")
+        try {
+            val file = java.io.File.createTempFile("ui_dump_start", ".xml")
+            device.dumpWindowHierarchy(file)
+            val content = file.readText()
+            log("UI Hierarchy XML (first 8000 chars):")
+            log(content.take(8000))
+            file.delete()
+        } catch (e: Exception) {
+            log("Failed to dump hierarchy: ${e.message}")
+        }
+
+        // Check platform compatibility. Emit a skipped row per case (not
+        // results: []) so file-level skips stay visible in the report —
+        // "no silent truncation".
+        test.platform?.let { platform ->
+            if (!platform.includes(config.platform)) {
+                log("Skipping test - platform mismatch")
+                val suiteResult = TestSuiteResult(
+                    suiteName = test.metadata.name,
+                    results = test.cases.map { testCase ->
+                        progress.row(TestResult(
+                            testName = test.metadata.name,
+                            caseName = testCase.name,
+                            passed = true,
+                            skipped = true,
+                            skipReason = "platform",
+                            durationMs = 0
+                        ))
+                    },
+                    totalDurationMs = 0
+                )
+                writeResultsIfNeeded(suiteResult)
+                return suiteResult
+            }
+        }
+
+        // Apply the file-level mock scenario set BEFORE the app re-fetches.
+        // Scenario switching is per-file for screen tests; there is no
+        // per-case re-open (§8.1). The relaunch that makes the scenarios
+        // take effect is shared with the launch config below.
+        test.mocks?.let { mocks ->
+            try {
+                requireMockClient("mocks").scenarioSet(mocks)
+            } catch (e: Exception) {
+                val failed = test.cases.map {
+                    progress.row(TestResult(test.metadata.name, it.name, passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0))
+                }
+                return TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
+            }
+        }
+
+        // Apply the state half of the launch config (wipe, permissions), then
+        // relaunch ONCE for whichever of mocks/launch asked for it, with the
+        // launch arguments riding the intent. One decision point on purpose:
+        // the old shape relaunched for mocks and then applied the launch
+        // config to an app that had already rendered under it.
+        try {
+            test.launch?.let { applyLaunchState(it) }
+        } catch (e: LaunchConfigException) {
+            val failed = test.cases.map {
+                progress.row(TestResult(test.metadata.name, it.name, passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0))
+            }
+            val suiteResult = TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
+            writeResultsIfNeeded(suiteResult)
+            return suiteResult
+        }
+        // initialState (spec §10.2): which launches carry which payload. Under
+        // reopen every launch is a case's (runCasesReopened); the file-level
+        // relaunch below stays the mocks / launch one it was.
+        val plan = InitialStatePlan.plan(test)
+        val screenId = ScreenIdentity.screenId(test.source.layout)
+        stateScreen = screenId
+        val filePayload = if (test.caseIsolation == CaseIsolation.REOPEN) null else PreparedPayload.of(plan.fileLaunch)
+        relaunchReason(mocks = test.mocks != null, launch = test.launch != null, initialState = filePayload != null)?.let { reason ->
+            relaunchApp(reason, launchExtras(test.launch, filePayload?.text))
+        }
+        // The receipt (§10.5): no confirmation fails every case of the file
+        // with `setup`, as a failed setup does.
+        val receiptError = filePayload?.let { payload ->
+            try {
+                StateBridge.awaitReceipt(screenId, payload.launchId, config.screenReadyTimeout)
+                null
+            } catch (e: InitialStateNotConfirmedException) {
+                log("initialState: ${e.message}")
+                e.message
+            }
+        }
+
+        // Artifact identity for this file (setup/teardown captures carry the
+        // phase name until runTestCase overwrites the case name).
+        currentTestName = test.metadata.name
+        currentCaseName = "setup"
+
+        if (test.caseIsolation == CaseIsolation.REOPEN) {
+            runCasesReopened(test, plan, screenId, results)
+        } else {
+            runCasesShared(test, plan, receiptError, results)
+        }
+
+        // Reset mock scenarios so state does not leak into the next test file.
+        if (test.mocks != null) {
+            runCatching { mockClient?.reset() }
+        }
+
+        // Survive the connectedAndroidTest post-run uninstall (see the method doc).
+        mirrorArtifactsForPull(test.metadata.name)
+
+        val totalDuration = System.currentTimeMillis() - startTime
+        val suiteResult = TestSuiteResult(
+            suiteName = test.metadata.name,
+            results = results,
+            totalDurationMs = totalDuration
+        )
+        writeResultsIfNeeded(suiteResult)
+        return suiteResult
+    }
+
+    /**
+     * `caseIsolation: "shared"` (the default): setup once, every case in the
+     * app state the previous case left (its scroll position, the screen it
+     * navigated to), teardown once. The order of the cases matters.
+     */
+    private fun runCasesShared(
+        test: ScreenTest,
+        plan: InitialStatePlan,
+        receiptError: String?,
+        results: MutableList<TestResult>
+    ) {
+        // Run setup once. If it throws, every case is recorded as failed but
+        // teardown still runs (§7 teardown guarantee). An initialState the app
+        // did not confirm is a setup failure of the same kind (spec §10.5).
+        var setupError: String? = receiptError
+        if (setupError == null) test.setup?.let { setup ->
+            log("Running setup...")
+            try {
+                val warnings = mutableListOf<String>()
+                executeSteps(setup, warnings)
+            } catch (e: Throwable) {
+                rethrowIfFatal(e)
+                setupError = describeFailure(e)
+                log("Setup failed: $setupError")
+            }
+        }
+
+        // Run test cases
+        for (testCase in test.cases) {
+            val gated = gateRow(test.metadata.name, testCase)
+            if (gated != null) {
+                results.add(progress.row(gated))
+                continue
+            }
+            if (setupError != null) {
+                results.add(progress.row(TestResult(
+                    testName = test.metadata.name,
+                    caseName = testCase.name,
+                    passed = false,
+                    error = "setup failed: $setupError",
+                    failureReason = FailureReason.SETUP.wireValue,
+                    durationMs = 0
+                )))
+                continue
+            }
+            // A case-level initialState under shared has no launch to ride:
+            // that case fails, the others run (spec §10.2).
+            val caseFailure = plan.caseFailures.firstOrNull { it.caseName == testCase.name }
+            if (caseFailure != null) {
+                results.add(progress.row(TestResult(
+                    testName = test.metadata.name,
+                    caseName = testCase.name,
+                    passed = false,
+                    error = InitialStatePlan.message(caseFailure),
+                    failureReason = FailureReason.SETUP.wireValue,
+                    durationMs = 0
+                )))
+                continue
+            }
+            var attempt = 0
+            val (result, attempts) = CaseRetry.run(
+                retries = config.caseRetries,
+                isPass = { r: TestResult -> r.passed },
+                onRetry = { n, max -> log("  Case ${testCase.name} failed — retry attempt $n/$max") }
+            ) {
+                attempt++
+                progress.attempt(test.metadata.name, testCase.name, attempt, isPass = { r: TestResult -> r.passed }) {
+                    runTestCase(test.metadata.name, testCase)
+                }
+            }
+            results.add(result.copy(attempts = attempts))
+        }
+
+        // Teardown (guaranteed). A teardown failure is recorded as an extra failed result.
+        test.teardown?.let { teardown ->
+            log("Running teardown...")
+            currentCaseName = "teardown"
+            try {
+                val warnings = mutableListOf<String>()
+                executeSteps(teardown, warnings)
+            } catch (e: Throwable) {
+                rethrowIfFatal(e)
+                log("Teardown failed: ${e.message}")
+                results.add(progress.row(TestResult(
+                    testName = test.metadata.name,
+                    caseName = "teardown",
+                    passed = false,
+                    error = describeFailure(e),
+                    // The STAGE, not what threw: a teardown failure is a
+                    // teardown failure whatever exception carried it, and it
+                    // says nothing about the behaviour under test.
+                    failureReason = FailureReason.TEARDOWN.wireValue,
+                    durationMs = 0
+                )))
+            }
+        }
+
+    }
+
+    /**
+     * `caseIsolation: "reopen"`: every case that runs starts from a freshly
+     * launched app. Before each case the file's mock scenarios and launch
+     * state are re-applied, the app is relaunched with the file's launch
+     * extras ([relaunchApp]), and the run orientation is re-applied; then
+     * setup, the case, and teardown. A gated case launches nothing; each
+     * retry attempt relaunches too.
+     *
+     * Failure semantics per case, as the shared path has them per file: a
+     * reopen or setup failure fails that case (failureReason `setup`, or the
+     * stage the error carries for mock / launch) and its teardown still
+     * runs; a teardown failure is an extra `teardown` row.
+     */
+    private fun runCasesReopened(
+        test: ScreenTest,
+        plan: InitialStatePlan,
+        screenId: String,
+        results: MutableList<TestResult>
+    ) {
+        results.addAll(ReopenedCases.run(
+            cases = test.cases,
+            retries = config.caseRetries,
+            hooks = ReopenedCases.Hooks(
+                gate = { gateRow(test.metadata.name, it) },
+                reopen = { testCase ->
+                    currentCaseName = "setup"
+                    test.mocks?.let { requireMockClient("mocks").scenarioSet(it) }
+                    test.launch?.let { applyLaunchState(it) }
+                    // The file's initialState merged with the case's (spec §10.2).
+                    val payload = PreparedPayload.of(plan.caseLaunch(testCase.name))
+                    val reason = "caseIsolation:reopen" + (relaunchReason(
+                        mocks = test.mocks != null, launch = test.launch != null, initialState = payload != null
+                    )?.let { "+$it" } ?: "")
+                    relaunchApp(reason, launchExtras(test.launch, payload?.text))
+                    applyRunOrientation(test.orientation)
+                    stateScreen = screenId
+                    payload?.let { StateBridge.awaitReceipt(screenId, it.launchId, config.screenReadyTimeout) }
+                },
+                setup = {
+                    test.setup?.let { setup ->
+                        log("Running setup...")
+                        executeSteps(setup, mutableListOf())
+                    }
+                },
+                body = { runTestCase(test.metadata.name, it) },
+                teardown = {
+                    test.teardown?.let { teardown ->
+                        log("Running teardown...")
+                        currentCaseName = "teardown"
+                        executeSteps(teardown, mutableListOf())
+                    }
+                },
+                setupFailed = { testCase, e ->
+                    log("Case ${testCase.name}: setup failed: ${e.message}")
+                    // Mock and launch failures keep their own stage; anything
+                    // else threw from the setup steps.
+                    val staged = e is LaunchConfigException ||
+                        FailureClassifier.wireValue(e) == FailureReason.MOCK.wireValue
+                    TestResult(
+                        testName = test.metadata.name,
+                        caseName = testCase.name,
+                        passed = false,
+                        error = if (staged) describeFailure(e) else "setup failed: ${describeFailure(e)}",
+                        failureReason = if (staged) FailureClassifier.wireValue(e) else FailureReason.SETUP.wireValue,
+                        durationMs = 0
+                    )
+                },
+                teardownFailed = { testCase, e ->
+                    log("Teardown failed after ${testCase.name}: ${e.message}")
+                    TestResult(
+                        testName = test.metadata.name,
+                        caseName = "teardown",
+                        passed = false,
+                        error = "after case '${testCase.name}': ${describeFailure(e)}",
+                        failureReason = FailureReason.TEARDOWN.wireValue,
+                        durationMs = 0
+                    )
+                },
+                isPass = { it.passed },
+                stampAttempts = { r, n -> r.copy(attempts = n) },
+                rethrowIfFatal = { rethrowIfFatal(it) },
+                onRetry = { n, max -> log("  Case $currentCaseName failed — retry attempt $n/$max (re-opening)") }
+            ),
+            // Every row this loop returns gets its case lines inside it.
+            progress = ReopenedCases.Progress(progress, test.metadata.name) { it }
+        ))
+    }
+
+    /**
+     * The gates a case passes before anything runs — `skip`, case-level
+     * platform, case-level responsive. Returns the skipped row, or null when
+     * the case should run.
+     */
+    private fun gateRow(testName: String, testCase: TestCase): TestResult? {
+        val skipFlag = testCase.skip == true
+        val platformMet = testCase.platform?.includes(config.platform) != false
+        // The responsive gate is only resolved when the cheaper static gates
+        // pass; skip-reason precedence (platform wins when both gates are
+        // unmet) is encoded in resolveCaseSkip.
+        val responsiveMet = if (!skipFlag && platformMet) {
+            testCase.responsive?.let { currentSizeMatches(it) }
+        } else {
+            null
+        }
+        val caseSkip = resolveCaseSkip(skipFlag, platformMet, responsiveMet)
+        if (caseSkip != null) {
+            log("Skipping case ${testCase.name}${caseSkip.reason?.let { " - $it mismatch" } ?: ""}")
+            return TestResult(
+                testName = testName,
+                caseName = testCase.name,
+                passed = true,
+                skipped = true,
+                skipReason = caseSkip.reason,
+                durationMs = 0
+            )
+        }
+        return null
+    }
+
+    /**
+     * Run a flow test
+     */
+    fun runFlowTest(test: FlowTest, testPath: String = ""): TestSuiteResult =
+        progress.run(testPath, rows = { suite: TestSuiteResult -> suite.results }) {
+            runFlowTestRows(test)
+        }.also { writeDefaultResults(it) }
+
+    private fun runFlowTestRows(test: FlowTest): TestSuiteResult {
+        val startTime = System.currentTimeMillis()
+
+        // Check platform compatibility. Emit a skipped row (not results: []) so
+        // the flow-level skip stays visible in the report — "no silent truncation".
+        test.platform?.let { platform ->
+            if (!platform.includes(config.platform)) {
+                log("Skipping flow test - platform mismatch")
+                val suiteResult = TestSuiteResult(
+                    suiteName = test.metadata.name,
+                    results = listOf(progress.row(TestResult(
+                        testName = test.metadata.name,
+                        caseName = "flow",
+                        passed = true,
+                        skipped = true,
+                        skipReason = "platform",
+                        durationMs = 0
+                    ))),
+                    totalDurationMs = 0
+                )
+                writeResultsIfNeeded(suiteResult)
+                return suiteResult
+            }
+        }
+
+        // Same ordering argument as the screen path: rotate before anything
+        // renders, not after.
+        applyRunOrientation(test.orientation)
+
+        // Apply the file-level mock scenario set BEFORE the app fetches.
+        // Parity with runScreenTest (§8.1); a failure here fails the flow
+        // rather than silently running the default scenario. The relaunch that
+        // makes the scenarios take effect is shared with the launch config below.
+        test.mocks?.let { mocks ->
+            try {
+                requireMockClient("mocks").scenarioSet(mocks)
+            } catch (e: Exception) {
+                val failed = listOf(progress.row(TestResult(test.metadata.name, "flow", passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0)))
+                val suiteResult = TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
+                writeResultsIfNeeded(suiteResult)
+                return suiteResult
+            }
+        }
+
+        // Apply the state half of the launch config (wipe, permissions), then
+        // relaunch ONCE for whichever of mocks/launch asked for it, with the
+        // launch arguments riding the intent. One decision point on purpose:
+        // the old shape relaunched for mocks and then applied the launch
+        // config to an app that had already rendered under it.
+        try {
+            test.launch?.let { applyLaunchState(it) }
+        } catch (e: LaunchConfigException) {
+            val failed = listOf(progress.row(TestResult(test.metadata.name, "flow", passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0)))
+            val suiteResult = TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
+            writeResultsIfNeeded(suiteResult)
+            return suiteResult
+        }
+        // initialState (spec §10.2): viewModels ride the flow's one launch,
+        // keyed by screen id; each screen confirms it the first time the flow
+        // reaches it (verifyScreenTransitionIfNeeded). A referenced file's or
+        // case's own initialState is not applied — warned.
+        val plan = InitialStatePlan.plan(test) { file ->
+            runCatching { testLoader?.resolveFileReference(file) }.getOrNull()
+        }
+        val payload = PreparedPayload.of(plan.fileLaunch)
+        relaunchReason(mocks = test.mocks != null, launch = test.launch != null, initialState = payload != null)?.let { reason ->
+            relaunchApp(reason, launchExtras(test.launch, payload?.text))
+        }
+        flowReceipts = FlowReceipts(payload?.let { p -> p.screens.keys.associateWith { p.launchId } }.orEmpty())
+        val initialStateWarnings = plan.warnings.map { InitialStatePlan.message(it) }
+        initialStateWarnings.forEach { log("Warning: $it") }
+
+        val results = mutableListOf<TestResult>()
+        currentWarnings = mutableListOf()
+        var flowError: String? = null
+
+        // A flow acts as a single case for artifact identity purposes.
+        currentTestName = test.metadata.name
+        currentCaseName = "flow"
+
+        // The flow body (setup + steps) is the retry unit: flows begin with
+        // their own launch/navigation steps, so a re-run starts clean.
+        // Teardown still runs exactly once, after the final attempt, and
+        // warnings from a failed non-final attempt are dropped (same rule as
+        // the `retry` step). Recording/failure screenshots happen per
+        // attempt; the last attempt's artifacts survive.
+        val maxAttempts = maxOf(0, config.caseRetries) + 1
+        var flowAttempts = 0
+        val flowWarnings = mutableListOf<String>()
+        do {
+            flowAttempts++
+            flowError = null
+            currentWarnings = mutableListOf()
+            // Every attempt — a file's first one too — starts with no screen
+            // verified and none for `state`: a retried body or the next flow
+            // file checks its first screen again, its pending receipt included.
+            flowScreens.startAttempt()
+
+            // The flow body is the one case a flow reports (its referenced
+            // screen-test cases emit nothing of their own).
+            flowError = progress.attempt(test.metadata.name, "flow", flowAttempts, isPass = { error: String? -> error == null }) {
+                startCaseRecording(test.metadata.name, "flow")
+                try {
+                    // Run setup
+                    test.setup?.let { setup ->
+                        log("Running flow setup...")
+                        executeFlowSteps(setup, currentWarnings)
+                    }
+
+                    // Run flow steps
+                    log("Running flow steps...")
+                    executeFlowSteps(test.steps, currentWarnings)
+                    finishCaseRecording(passed = true)
+                    null
+                } catch (e: Throwable) {
+                    rethrowIfFatal(e)
+                    val error = describeFailure(e)
+                    log("Flow test failed: $error")
+                    finishCaseRecording(passed = false)
+                    // Parity with screen-test cases (and iOS/web flows): capture the
+                    // failure moment — flows previously took no failure screenshot.
+                    if (config.screenshotOnFailure) {
+                        takeScreenshot("failure")
+                    }
+                    saveHierarchyDump()
+                    error
+                }
+            }
+            if (flowError == null || flowAttempts >= maxAttempts) {
+                flowWarnings.addAll(initialStateWarnings)
+                flowWarnings.addAll(currentWarnings)
+                // A screen in viewModels the flow never reached was never
+                // checked (spec §10.5) — judged, as on web, once the steps
+                // have passed and before teardown.
+                if (flowError == null) {
+                    flowWarnings.addAll(InitialStatePlan.unreachedWarnings(flowReceipts.unreached))
+                }
+            } else {
+                log("  Flow failed — retry attempt ${flowAttempts + 1}/$maxAttempts")
+            }
+        } while (flowError != null && flowAttempts < maxAttempts)
+
+        results.add(stampOrientation(TestResult(
+            testName = test.metadata.name,
+            caseName = "flow",
+            passed = flowError == null,
+            error = flowError,
+            warnings = flowWarnings.toList(),
+            durationMs = System.currentTimeMillis() - startTime,
+            attempts = flowAttempts
+        )))
+
+        // Teardown (guaranteed), runs even when the flow body failed
+        test.teardown?.let { teardown ->
+            log("Running flow teardown...")
+            try {
+                executeFlowSteps(teardown, mutableListOf())
+            } catch (e: Throwable) {
+                rethrowIfFatal(e)
+                results.add(progress.row(TestResult(
+                    testName = test.metadata.name,
+                    caseName = "teardown",
+                    passed = false,
+                    error = describeFailure(e),
+                    // The STAGE, not what threw: a teardown failure is a
+                    // teardown failure whatever exception carried it, and it
+                    // says nothing about the behaviour under test.
+                    failureReason = FailureReason.TEARDOWN.wireValue,
+                    durationMs = 0
+                )))
+            }
+        }
+
+        // Reset mock scenarios so a flow's setMocks state does not leak to the next test.
+        runCatching { mockClient?.reset() }
+
+        // Survive the connectedAndroidTest post-run uninstall (see the method doc).
+        mirrorArtifactsForPull(test.metadata.name)
+
+        val suiteResult = TestSuiteResult(
+            suiteName = test.metadata.name,
+            results = results,
+            totalDurationMs = System.currentTimeMillis() - startTime
+        )
+        writeResultsIfNeeded(suiteResult)
+        return suiteResult
+    }
+
+    /**
+     * A test harness must *report* failures, not crash on them. Assertions throw
+     * `AssertionError`, which is a `java.lang.Error` — NOT an `Exception` — so the
+     * per-case / retry / setup / teardown catches below use `Throwable` to keep
+     * per-case isolation and result recording intact (parity with iOS, which has a
+     * single `Error` hierarchy). Only genuinely-fatal JVM errors are rethrown so we
+     * never swallow OOM / StackOverflow.
+     */
+    private fun rethrowIfFatal(t: Throwable) {
+        if (t is VirtualMachineError) throw t
+    }
+
+    /** Where execution is, for a failure message that can name the step. */
+    private val stepTrail = StepTrail()
+
+    private fun describeFailure(t: Throwable): String = stepTrail.describe(t)
+
+    private fun runTestCase(testName: String, testCase: TestCase): TestResult {
+        val startTime = System.currentTimeMillis()
+        log("Running case: ${testCase.name}")
+        currentWarnings = mutableListOf()
+        currentTestName = testName
+        currentCaseName = testCase.name
+        ScrollHistory.clear()
+
+        // Apply load-time args substitution if test case has args
+        val processedCase = testLoader?.applyArgsSubstitution(testCase)
+            ?: applyArgsSubstitutionLocally(testCase)
+
+        startCaseRecording(testName, testCase.name)
+        return try {
+            executeSteps(processedCase.steps, currentWarnings)
+            finishCaseRecording(passed = true)
+            stampOrientation(TestResult(
+                testName = testName,
+                caseName = testCase.name,
+                passed = true,
+                warnings = currentWarnings.toList(),
+                durationMs = System.currentTimeMillis() - startTime
+            ))
+        } catch (e: Throwable) {
+            rethrowIfFatal(e)
+            log("Case ${testCase.name} failed: ${e.message}")
+            finishCaseRecording(passed = false)
+            if (config.screenshotOnFailure) {
+                takeScreenshot("failure")
+            }
+            saveHierarchyDump()
+            stampOrientation(TestResult(
+                testName = testName,
+                caseName = testCase.name,
+                passed = false,
+                error = describeFailure(e),
+                failureReason = FailureClassifier.wireValue(e),
+                warnings = currentWarnings.toList(),
+                durationMs = System.currentTimeMillis() - startTime
+            ))
+        }
+    }
+
+    private fun executeSteps(steps: List<TestStep>, warnings: MutableList<String>) {
+        for ((index, step) in steps.withIndex()) {
+            log("  Step ${index + 1}: ${stepDescription(step)}")
+            stepTrail.inFrame(StepTrail.frame("step", index, steps.size, step.label, stepDescription(step))) {
+                executeStepGuarded(step, warnings)
+            }
+        }
+    }
+
+    private fun executeFlowSteps(steps: List<FlowTestStep>, warnings: MutableList<String>) {
+        for ((index, step) in steps.withIndex()) {
+            val detail = when {
+                step.isFileReference -> "file=${step.file}"
+                step.isBlockStep -> "block=${step.block}"
+                step.action != null || step.assert != null ->
+                    "screen=${step.screen ?: "-"}, ${stepDescription(step.toTestStep())}"
+                else -> "screen=${step.screen ?: "-"}"
+            }
+            log("  Flow step ${index + 1}: $detail")
+            stepTrail.inFrame(StepTrail.frame("flow step", index, steps.size, step.label, detail)) {
+                executeFlowStep(step, warnings)
+            }
+        }
+    }
+
+    /**
+     * Execute a single step honoring `when` (skip), `optional` (failure→warning),
+     * runtime `@{name}` substitution, and control steps (repeat/retry).
+     */
+    private fun executeStepGuarded(rawStep: TestStep, warnings: MutableList<String>) {
+        // Resolve runtime variables (@{name}) at execution time
+        val step = if (variables.isEmpty()) rawStep else substituteArgsInStep(rawStep, variables.toMap())
+
+        // Evaluate `when` pre-condition
+        step.whenCondition?.let { condition ->
+            if (!evaluateCondition(condition, warnings)) {
+                log("    Skipped (when not satisfied): ${step.label ?: stepDescription(step)}")
+                return
+            }
+        }
+
+        try {
+            executeStep(step, warnings)
+        } catch (e: Throwable) {
+            rethrowIfFatal(e)
+            if (step.optional == true) {
+                val label = step.label ?: step.action ?: step.assert ?: "step"
+                warnings.add("optional step failed ($label): ${e.message}")
+                log("    Optional step failed, continuing: ${e.message}")
+                return
+            }
+            throw e
+        }
+    }
+
+    private fun executeStep(step: TestStep, warnings: MutableList<String>) {
+        // Control steps
+        when (step.action) {
+            "repeat" -> { executeRepeat(step, warnings); return }
+            "retry" -> { executeRetry(step, warnings); return }
+            "setMocks" -> {
+                // Switch scenarios mid-flow; the next navigation re-fetches under them.
+                requireMockClient("setMocks").scenarioSet(step.mocks ?: emptyMap())
+                return
+            }
+        }
+
+        when {
+            step.isAction -> {
+                actionExecutor.execute(step)
+                // A `setOrientation` step is the top of the precedence chain,
+                // so what the run DECLARES changes here. Taken from the step
+                // rather than re-measured: this half of the pair is the
+                // request, and measuring it would collapse it onto the
+                // observed half.
+                if (step.action == "setOrientation" && step.orientation != null) {
+                    declaredOrientation = step.orientation
+                }
+            }
+            step.isAssertion -> assertionExecutor.execute(step)
+            else -> throw IllegalArgumentException("Step must have either 'action' or 'assert'")
+        }
+    }
+
+    private fun executeRepeat(step: TestStep, warnings: MutableList<String>) {
+        val steps = step.steps ?: emptyList()
+        val times = step.times
+        val whileCondition = step.whileCondition
+
+        if (times != null && whileCondition != null) {
+            for (i in 0 until times) {
+                if (!evaluateCondition(whileCondition, warnings)) return
+                executeSteps(steps, warnings)
+            }
+            return
+        }
+        if (times != null) {
+            repeat(times) { executeSteps(steps, warnings) }
+            return
+        }
+        // while only: safety cap
+        if (whileCondition != null) {
+            for (i in 0 until REPEAT_WHILE_CAP) {
+                if (!evaluateCondition(whileCondition, warnings)) return
+                executeSteps(steps, warnings)
+            }
+            if (evaluateCondition(whileCondition, warnings)) {
+                throw AssertionError("repeat exceeded $REPEAT_WHILE_CAP iterations (possible infinite loop)")
+            }
+        }
+    }
+
+    private fun executeRetry(step: TestStep, warnings: MutableList<String>) {
+        val steps = step.steps ?: emptyList()
+        val maxRetries = (step.maxRetries ?: 1).coerceIn(0, 3)
+        var lastError: Throwable? = null
+
+        for (attempt in 0..maxRetries) {
+            try {
+                val attemptWarnings = mutableListOf<String>()
+                executeSteps(steps, attemptWarnings)
+                warnings.addAll(attemptWarnings)
+                return
+            } catch (e: Throwable) {
+                rethrowIfFatal(e)
+                lastError = e
+                log("    Retry attempt ${attempt + 1}/${maxRetries + 1} failed")
+            }
+        }
+        throw lastError ?: AssertionError("retry exhausted with no error captured")
+    }
+
+    /**
+     * Evaluate a `when` / `while` condition. Multiple keys are ANDed.
+     *
+     * Fail-safe: a condition containing keys this driver cannot evaluate
+     * (captured at decode time in [StepCondition.unknownKeys], i.e. written
+     * against a newer schema than this driver) is UNMET — the guarded step is
+     * skipped, never run-anyway, never a hard error.
+     */
+    private fun evaluateCondition(condition: StepCondition, warnings: MutableList<String>): Boolean {
+        if (condition.unknownKeys.isNotEmpty()) {
+            val message = "condition key(s) [${condition.unknownKeys.joinToString(", ")}] " +
+                "not supported by this driver - condition treated as unmet (fail-safe skip)"
+            log("    Warning: $message")
+            if (message !in warnings) warnings.add(message)
+            return false
+        }
+        condition.platform?.let { if (!it.includes(config.platform)) return false }
+        condition.responsive?.let { if (!currentSizeMatches(it)) return false }
+        // `within` scopes the three id keys (ElementLookup); a missing
+        // container leaves all three unmet (Within.missingContainerFails).
+        if (condition.visible != null || condition.notVisible != null || condition.hidden != null) {
+            val within = condition.within
+            if (Within.missingContainerFails(within, within?.let { elementLookup.container(it) } != null)) return false
+        }
+        condition.visible?.let { if (elementLookup.find(it, condition.within) == null) return false }
+        condition.notVisible?.let { if (elementLookup.find(it, condition.within) != null) return false }
+        condition.hidden?.let { if (!elementLookup.isHidden(it, condition.within)) return false }
+        condition.state?.let {
+            if (!assertionExecutor.stateMatches(it.path, it.equals)) return false
+        }
+        return true
+    }
+
+    // MARK: - Responsive Resolution
+
+    /**
+     * True when the current window size satisfies a `responsive` condition.
+     * The live size is read on every evaluation so a mid-test `setOrientation`
+     * (or a multi-window resize) is picked up immediately.
+     */
+    private fun currentSizeMatches(condition: ResponsiveCondition): Boolean {
+        val size = currentWindowSizeDp()
+        val matched = matchesResponsive(condition, size, config.responsive)
+        log("    responsive gate: window=${size.width}x${size.height}dp -> ${if (matched) "met" else "unmet"} ($condition)")
+        return matched
+    }
+
+    /**
+     * Current app-window size in dp — the `LocalWindowInfo.containerSize`
+     * equivalent the Android renderer (kjui compose codegen) resolves
+     * responsive layout from. Derived from the ACTUAL window the app occupies:
+     * the app package's root-window bounds in the accessibility tree
+     * (px ÷ density, truncated like the renderer's `toDp().value.toInt()`),
+     * so the driver agrees with the renderer in multi-window / foldable
+     * postures. Deliberately NOT `resources.configuration.screenWidthDp`,
+     * which kjui migrated off as deprecated and which disagrees with the
+     * window near the 600/840dp boundaries in multi-window. Falls back to the
+     * full display size when the app window cannot be located.
+     */
+    private fun currentWindowSizeDp(): WindowDimensions {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val context = instrumentation.targetContext
+        val density = context.resources.displayMetrics.density
+        // Root of the active accessibility window through the driver's single
+        // resolver (AppWindow) — NOT findObject(By.pkg(...)), which matches an
+        // ARBITRARY first node of the package: measured on a Compose tablet
+        // window it non-deterministically returned a 24x24dp icon leaf,
+        // flipping a 1280x800dp regular device into `compact` and running
+        // compact-gated steps on tablet. scrollUntilVisible's fallback surface
+        // is the same resolver (its By.pkg copy of this trap was removed in
+        // 1.8.6 after it popped screens via the back-gesture edge zone).
+        val bounds = AppWindow.rootBounds(instrumentation)
+        val (widthPx, heightPx) = if (bounds != null) {
+            bounds.width() to bounds.height()
+        } else {
+            device.displayWidth to device.displayHeight
+        }
+        return WindowDimensions((widthPx / density).toInt(), (heightPx / density).toInt())
+    }
+
+    /**
+     * The orientation the run asked for, after resolving file > run default;
+     * a `setOrientation` step overwrites it for the cases that follow, which
+     * is what makes it the DECLARED value rather than the configured one.
+     * Null means nothing declared an orientation at all.
+     */
+    private var declaredOrientation: String? = null
+
+    /**
+     * The orientation this process observed before it applied anything.
+     *
+     * 🚨 THE FLOOR. `setOrientation` is absolute from driver 1.12.0, so a
+     * single case that rotates the device leaves every later case in that
+     * orientation — there is nothing to come back to unless a run default is
+     * declared, and most faces declare none. Measured 2026-09-08 on a
+     * consumer's tablet lane: 76 cases ran in an orientation nobody chose,
+     * against the AVD's own `hw.initialOrientation=landscape`.
+     *
+     * ⚠️ Captured ONCE, from the first case, before any rotation. Re-reading
+     * it later would capture whatever the last `setOrientation` left, which
+     * is the state this exists to undo.
+     */
+    // Process-scoped: see RunOrientationFloor for why an instance field could
+    // never fire (the runner is new for every test, so capture and comparison
+    // landed in the same call).
+    private val runStartOrientation: String?
+        get() = RunOrientationFloor.current()
+
+    /**
+     * Resolve and apply the orientation this run starts in, once per file.
+     *
+     * Order: the file's own `orientation`, else the run default for this
+     * device's tier, else THE ORIENTATION THE RUN STARTED IN. A
+     * `setOrientation` step beats all three for the cases that follow it,
+     * which is why this runs at the start of each file — restoring the floor
+     * is what keeps one case's rotation from leaking into the next.
+     *
+     * 🚨 The tier here is resolved from `smallestWidth`, NOT the current
+     * window width, and that difference is the whole point. One function was
+     * answering two questions:
+     *
+     *     "what window is this drawn in?"  responsive gating — current width
+     *                                      is RIGHT, it must move with rotation
+     *     "which device is this lane?"     run orientation — current width is
+     *                                      WRONG, it must NOT move with rotation
+     *
+     * Measured by the reporting lane: a tablet at 1280x800dp resolves
+     * `regular` in landscape and `medium` in portrait, so a face that wrote
+     * `{"regular": "landscape"}` failed to match at exactly the moment it
+     * wanted to — the device was portrait. And a phone at 411x914dp resolves
+     * `regular` once rotated, matching the tablet's row and pinning itself
+     * landscape. `smallestWidth` is orientation-invariant and is the same
+     * measure Android's own `sw600dp` resource qualifier uses, so it names
+     * the device rather than the moment.
+     *
+     * ⚠️ This shifts a boundary: a 1280x800dp tablet is `medium` under
+     * `smallestWidth` where it was `regular` in landscape before. A face that
+     * declared only `regular` will stop matching — for a different reason
+     * than before, but it will still stop. That is why the floor above exists
+     * independently: it does not depend on any declaration matching.
+     */
+    private fun applyRunOrientation(declared: String?) {
+        val size = currentWindowSizeDp()
+        RunOrientationFloor.captureOnce(observeOrientation())
+        val tier = resolveSizeTier(minOf(size.width, size.height), config.responsive)
+        // ⚠️ `config.runDefaults` first so a face that sets it explicitly
+        // still wins; the sidecar is the fallback, not an override. Until
+        // 1.13.0 nothing filled either, so this whole line resolved to the
+        // floor every time — see RunDefaultsSource for the measurement.
+        val defaults = config.runDefaults ?: RunDefaultsSource.forThisProcess()
+        val wanted = declared
+            ?: RunDefaultsLoader.forTier(defaults, tier)
+            ?: runStartOrientation
+        declaredOrientation = wanted
+        if (wanted == null) return
+        if (observeOrientation() == wanted) {
+            log("[orientation] already '$wanted' - nothing to apply")
+            return
+        }
+        log("[orientation] applying run orientation '$wanted' (tier $tier)")
+        when (OrientationCommand.forOrientation(wanted)) {
+            OrientationCommand.PORTRAIT -> device.setOrientationPortrait()
+            OrientationCommand.LANDSCAPE -> device.setOrientationLandscape()
+            null -> {
+                // The CLI validates this value before it can reach a device,
+                // so arriving here means a hand-edited bundle. Say so and
+                // leave the device alone rather than picking one.
+                log("[orientation] unknown orientation '$wanted' - not applied")
+                return
+            }
+        }
+        device.waitForIdle(config.defaultTimeout)
+        Thread.sleep(500) // rotation animation + Compose semantics settle
+    }
+
+    /**
+     * The orientation the run is in RIGHT NOW, measured.
+     *
+     * Deliberately not derived from [declaredOrientation]: the pair exists to
+     * record a disagreement, and a derived value can never disagree.
+     *
+     * Measured through the SAME two functions `responsive` gating uses —
+     * `currentWindowSizeDp()` and `deriveOrientation` — rather than through
+     * `device.displayWidth/Height` and a fresh comparison. Two reasons, and
+     * the second was nearly missed: the app window is not the display in
+     * multi-window, and this face's `deriveOrientation` treats a SQUARE
+     * window as portrait (`width > height`, the kjui renderer's rule) where
+     * the web driver treats it as landscape. Rolling a second comparison here
+     * would let one device be gated `portrait` by `responsive` and reported
+     * `landscape` in the results of the same run.
+     *
+     * The cross-face difference is pre-existing and is left alone: each face
+     * matches its own renderer, which is what makes `responsive` mean the
+     * same thing as the layout it gates.
+     */
+    private fun observeOrientation(): String? =
+        runCatching { deriveOrientation(currentWindowSizeDp()) }.getOrNull()
+
+    /**
+     * Stamp a result that actually RAN with the orientation pair.
+     *
+     * Skipped rows are not stamped, for the same reason they carry no
+     * `attempts`: a case that never executed has no orientation it ran in,
+     * and a display reading taken at skip time would look like one.
+     *
+     * MEASURED: this guard is REDUNDANT and no test can reach it. The
+     * load-bearing one is `ResultsWriter`'s `if (!result.skipped)`, which a
+     * JVM arm does cover (`neitherIsEmittedOnASkippedRow`); deleting the
+     * guard here turns nothing red, because constructing this class needs a
+     * `UiDevice` and so no unit test can call the method at all. It is kept
+     * as depth — a future consumer of `TestResult` that is not
+     * `ResultsWriter` would otherwise see a stamped skipped row — but it is
+     * written down as redundant rather than described as the thing that
+     * makes the behaviour true, which is what the earlier draft of this
+     * comment claimed and the mutation matrix disproved.
+     */
+    internal fun stampOrientation(result: TestResult): TestResult =
+        if (result.skipped) result
+        else result.copy(
+            declaredOrientation = declaredOrientation,
+            observedOrientation = observeOrientation()
+        )
+
+    /**
+     * Implicit screen verification (canon: implicitVerification). Runs BEFORE
+     * the step, because the step is meant to run ON that screen.
+     */
+    /**
+     * Screens of the flow's initialState still to confirm, with the launch
+     * they were delivered in: removed as each one is reached and confirmed.
+     */
+    private var flowReceipts = FlowReceipts()
+
+    private fun verifyScreenTransitionIfNeeded(step: FlowTestStep) {
+        val screen = step.screen ?: return
+        // `state` reads the screen the step names (else the last one named);
+        // a screen not yet verified is verified, then its receipt checked —
+        // the first time the flow reaches a screen its initialState named, the
+        // screen confirms it (spec §10.5), and it stays pending until it has.
+        flowScreens.arrive(
+            screen,
+            flowReceipts,
+            verify = {
+                if (config.verifyScreenTransitions) {
+                    assertionExecutor.execute(
+                        TestStep(assert = "screen", name = it, timeout = config.screenTransitionTimeout.toInt())
+                    )
+                }
+            },
+            await = { screenId, launchId -> StateBridge.awaitReceipt(screenId, launchId, config.screenReadyTimeout) }
+        )
+    }
+
+    private fun executeFlowStep(step: FlowTestStep, warnings: MutableList<String>) {
+        // Step-level `when` for file / block / inline steps
+        step.whenCondition?.let { condition ->
+            if (!evaluateCondition(condition, warnings)) {
+                log("    Skipped flow step (when not satisfied)")
+                return
+            }
+        }
+
+        // Handle file reference steps
+        if (step.isFileReference) {
+            // A file reference carries no screen of its own, and the case it
+            // runs may end anywhere — reset to unknown so the next inline
+            // step is verified rather than trusted.
+            executeFileReferenceStep(step, warnings)
+            return
+        }
+
+        // Handle block steps (grouped inline actions)
+        if (step.isBlockStep) {
+            executeBlockStep(step, warnings)
+            return
+        }
+
+        // Handle inline steps - convert FlowTestStep to TestStep and execute
+        if (step.action != null || step.assert != null) {
+            verifyScreenTransitionIfNeeded(step)
+            executeStepGuarded(step.toTestStep(), warnings)
+        }
+    }
+
+    private fun executeBlockStep(step: FlowTestStep, warnings: MutableList<String>) {
+        val blockSteps = step.steps ?: return
+        log("    Executing block: ${step.block}")
+        for ((index, innerStep) in blockSteps.withIndex()) {
+            val inner = innerStep.toTestStep()
+            stepTrail.inFrame(StepTrail.frame("in block", index, blockSteps.size, innerStep.label, stepDescription(inner))) {
+                executeStepGuarded(inner, warnings)
+            }
+        }
+    }
+
+    private fun executeFileReferenceStep(step: FlowTestStep, warnings: MutableList<String>) {
+        val loader = testLoader
+            ?: throw IllegalStateException("TestLoader not set for file reference resolution: ${step.file}")
+
+        val testCases = loader.resolveFileReferenceCases(step)
+        // A file reference carries no screen of its own, and the case it runs
+        // may end anywhere: the next inline step is verified rather than
+        // trusted. `state` inside a referenced case reads that file's own
+        // screen, and the flow's last named screen again afterwards.
+        val fileScreen = step.file?.let { file ->
+            runCatching { loader.resolveFileReference(file) }.getOrNull()?.let { ScreenIdentity.screenId(it.source.layout) }
+        }
+        flowScreens.enterFileReference(fileScreen)
+        try {
+            runReferencedCases(testCases, warnings)
+        } finally {
+            flowScreens.leaveFileReference()
+        }
+    }
+
+    private fun runReferencedCases(testCases: List<TestCase>, warnings: MutableList<String>) {
+        for (testCase in testCases) {
+            // Skip if marked to skip
+            if (testCase.skip == true) {
+                log("    Skipping case: ${testCase.name}")
+                continue
+            }
+
+            // Check platform compatibility (before responsive — same precedence
+            // as the screen-case filter)
+            if (testCase.platform?.includes(config.platform) == false) {
+                log("    Skipping case ${testCase.name} - platform mismatch")
+                continue
+            }
+
+            // Check responsive compatibility against the current window size
+            val responsiveGate = testCase.responsive
+            if (responsiveGate != null && !currentSizeMatches(responsiveGate)) {
+                log("    Skipping case ${testCase.name} - responsive mismatch")
+                continue
+            }
+
+            log("    Running referenced case: ${testCase.name}")
+            executeSteps(testCase.steps, warnings)
+        }
+    }
+
+    /** Convert an inline / block-child flow step into a TestStep for execution. */
+    private fun FlowTestStep.toTestStep(): TestStep = TestStep(
+        action = action,
+        assert = assert,
+        id = id,
+        ids = ids,
+        text = text,
+        value = value,
+        direction = direction,
+        duration = duration,
+        timeout = timeout,
+        ms = ms,
+        name = name,
+        equals = equals,
+        contains = contains,
+        path = path,
+        amount = amount,
+        button = button,
+        label = label,
+        index = index,
+        retryTapIfNoChange = retryTapIfNoChange,
+        within = within,
+        container = container,
+        variable = variable,
+        times = times,
+        orientation = orientation,
+        whileCondition = whileCondition,
+        steps = steps?.map { it.toTestStep() },
+        maxRetries = maxRetries,
+        latitude = latitude,
+        longitude = longitude,
+        paths = paths,
+        cropId = cropId,
+        threshold = threshold,
+        mocks = mocks,
+        whenCondition = whenCondition,
+        optional = optional
+    )
+
+    // MARK: - Launch Configuration
+
+    /**
+     * Apply the state half of a launch configuration: clearState wipes the
+     * app's persisted state, permission allows are granted, and permission
+     * denies are ASSERTED — a granted permission declared deny throws
+     * [LaunchConfigException] (which the call sites turn into a loud
+     * per-file failure), because no mechanism can deny it mid-run without
+     * killing the process. clearState/permission-grant failures are logged
+     * best-effort. The arguments half rides the relaunch intent
+     * (see [launchExtras]); the relaunch itself is decided at the call site
+     * ([relaunchReason]) so mocks and launch share one restart.
+     *
+     * clearState is an IN-PROCESS wipe (files, shared_prefs, databases,
+     * cache, code_cache), not `pm clear`: instrumentation runs in the target
+     * package's process, so `pm clear` force-stops the process running the
+     * tests — measured 2026-09-02, the run died mid-flight ("Instrumentation
+     * run failed due to Process crashed"), no results, no teardown. Boundary:
+     * persisted state only — process memory (loaded singletons, an already
+     * cached SharedPreferences instance) survives the relaunch.
+     */
+    private fun applyLaunchState(launch: LaunchConfig) {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val packageName = context.packageName
+
+        if (launch.clearState == true) {
+            log("Launch: clearing app state (in-process wipe of $packageName)")
+            runCatching { clearAppState(context) }
+                .onFailure { log("Launch: clearState wipe failed: ${it.message}") }
+        }
+
+        // deny FIRST, before any grant this same config performs, so a file
+        // declaring {a: allow, b: deny} is judged against the state it arrived
+        // with. deny is an assert: measured 2026-09-02, `pm revoke` kills the
+        // instrumented process and appops is a silent no-op on
+        // permission-backed ops, so a granted permission cannot be denied
+        // from inside the run — the only honest outcome is a loud per-file
+        // failure that names the cure.
+        val violations = permissionDenyViolations(launch.permissions) { permission ->
+            context.checkSelfPermission(permission) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        if (violations.isNotEmpty()) {
+            throw LaunchConfigException(
+                "launch.permissions deny for " +
+                    violations.joinToString { "'${it.first}' (${it.second})" } +
+                    ": currently GRANTED. An in-run revoke kills the instrumented " +
+                    "process (ActivityManager: permissions revoked), so the driver " +
+                    "will not execute one. Establish a denied baseline before " +
+                    "instrumentation (jsonui-test pregrant), or split files that " +
+                    "deny after an allow into separate runs."
+            )
+        }
+
+        launch.permissions?.forEach { (name, value) ->
+            val androidPermission = ANDROID_PERMISSION_MAP[name] ?: return@forEach
+            when (value) {
+                "allow" -> runCatching { device.executeShellCommand("pm grant $packageName $androidPermission") }
+                "deny" -> { /* asserted denied above; nothing to execute */ }
+                "unset" -> { /* leaves inherited state untouched (see LaunchConfig) */ }
+            }
+        }
+    }
+
+    /** The persisted-state roots [applyLaunchState] wipes, from inside the app's own process. */
+    private fun clearAppState(context: android.content.Context) {
+        listOf(
+            context.filesDir,
+            context.cacheDir,
+            context.codeCacheDir,
+            java.io.File(context.dataDir, "shared_prefs"),
+            java.io.File(context.dataDir, "databases")
+        ).forEach { dir ->
+            dir.listFiles()?.forEach { child -> child.deleteRecursively() }
+        }
+    }
+
+    /**
+     * (Re)start the app under test from its launcher intent with CLEAR_TASK:
+     * mock scenarios are re-fetched and launch extras (JSONUI_TEST_ARGS)
+     * arrive on a fresh back stack. `reason` names who asked (mocks / launch
+     * / mocks+launch) in the log. Unlike XCUIApplication.launch() this reuses
+     * the process — the activity and its intent are new, process memory is not.
+     */
+    private fun relaunchApp(reason: String, extras: Map<String, String> = emptyMap()) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val context = instrumentation.targetContext
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        if (intent == null) {
+            log("relaunchApp($reason): no launch intent for ${context.packageName}")
+            return
+        }
+        intent.addFlags(
+            android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+        )
+        extras.forEach { (key, value) -> intent.putExtra(key, value) }
+        log("relaunchApp($reason)" + if (extras.isEmpty()) "" else " extras=${extras.keys}")
+        context.startActivity(intent)
+        device.waitForIdle(config.defaultTimeout)
+        Thread.sleep(500) // let Compose semantics settle
+    }
+
+    // MARK: - Results Output
+
+    private fun writeResultsIfNeeded(suite: TestSuiteResult) {
+        val path = config.resultsPath
+        if (path == null) {
+            // ⚠️ NOT `log()` — that is gated by `verbose`, whose default is
+            // false, so the default configuration would say this to nobody.
+            // A face silently losing its machine-readable results is exactly
+            // the state that needs saying out loud.
+            RunNotices.once(
+                "no-results-path",
+                "resultsPath is not set, so results (the per-case orientation " +
+                    "pair declaredOrientation / observedOrientation, attempts, " +
+                    "flaky, skipped) are written to " +
+                    "${DefaultResults.DEVICE_BASE}/<package>/ on the device, one " +
+                    "file per run (jui viz pulls them; or adb pull). Set " +
+                    "TestRunnerConfig.resultsPath to write them somewhere you choose."
+            )
+            return
+        }
+        runCatching {
+            ResultsWriter.write(
+                suites = listOf(suite),
+                file = path,
+                platform = config.platform,
+                generatedAt = java.time.Instant.now().toString()
+            )
+        }.onFailure { log("Failed to write results: ${it.message}") }
+    }
+
+    /**
+     * Device folder writes for the default results ([DefaultResults]); a seam
+     * so a test can point it elsewhere or make it fail. Null = write nothing.
+     */
+    internal var defaultResultsStore: () -> DefaultResultsStore? = {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val target = instrumentation.targetContext
+        DeviceResultsStore(
+            ownArea = target.getExternalFilesDir(null),
+            automation = instrumentation.uiAutomation,
+            location = DefaultResults.deviceFolder(target.packageName)
+        )
+    }
+
+    /**
+     * When resultsPath is unset: this run's results, one new file per run,
+     * under /data/local/tmp/jsonui-test-results/<package>/ (see
+     * [DefaultResults]; JSONUI_TEST_RESULTS_DIR has no effect on the device).
+     * Called after the suite result exists — and after the artifacts mirror,
+     * which it does not depend on. Never throws, never changes the suite.
+     */
+    private fun writeDefaultResults(suite: TestSuiteResult) {
+        if (config.resultsPath != null) return
+        runCatching {
+            DefaultResults.writeIfUnset(
+                resultsPath = config.resultsPath,
+                suite = suite,
+                platform = config.platform,
+                nowMs = System.currentTimeMillis(),
+                run = progress.currentRun,
+                app = InstrumentationRegistry.getInstrumentation().targetContext.packageName,
+                file = progress.currentFile,
+                store = defaultResultsStore
+            )
+        }.onFailure { if (it is VirtualMachineError) throw it }
+    }
+
+    private fun stepDescription(step: TestStep): String {
+        return when {
+            step.action != null -> "action=${step.action}, id=${step.id ?: step.ids?.joinToString(",") ?: "-"}"
+            step.assert != null -> "assert=${step.assert}, id=${step.id ?: "-"}"
+            else -> "unknown step"
+        } + (step.within?.let { ", within=$it" } ?: "")
+    }
+
+    /**
+     * Root for on-device artifacts. Default is the app's EXTERNAL files dir
+     * (`/sdcard/Android/data/<pkg>/files/jsonui-artifacts`) — pullable via
+     * plain `adb pull`, no run-as (the old filesDir default needed run-as,
+     * which is flaky). Falls back to filesDir only when external storage is
+     * unavailable.
+     */
+    private fun artifactsRoot(): java.io.File {
+        config.screenshotDir?.let { return it }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val base = context.getExternalFilesDir(null) ?: context.filesDir
+        return java.io.File(base, "jsonui-artifacts")
+    }
+
+    /**
+     * Raw window hierarchy at the first failure of the run. Once per run:
+     * the dump is large and the question it answers ("what did the
+     * projection actually hold when this broke") is answered by one.
+     */
+    private var hierarchyDumpSaved = false
+
+    private fun saveHierarchyDump() {
+        if (hierarchyDumpSaved) return
+        hierarchyDumpSaved = true
+        try {
+            val file = ArtifactPaths.hierarchyDumpFile(
+                artifactsRoot(), currentTestName, currentCaseName
+            )
+            file.parentFile?.mkdirs()
+            file.outputStream().use { device.dumpWindowHierarchy(it) }
+            log("Hierarchy dump saved: ${file.absolutePath}")
+        } catch (e: Exception) {
+            log("Failed to dump hierarchy: ${e.message}")
+        }
+    }
+
+    private fun takeScreenshot(name: String) {
+        try {
+            val file = ArtifactPaths.screenshotFile(
+                artifactsRoot(), currentTestName, currentCaseName, name
+            )
+            file.parentFile?.mkdirs()
+            // Once the display has caught up with the tree the steps waited on
+            // (StableScreenshot): a capture right after them can be the frame before.
+            val outcome = StableScreenshot.capture(device, file)
+            if (outcome == null) {
+                log("Failed to take screenshot: $name")
+                return
+            }
+            log("Screenshot saved: ${file.absolutePath} (${outcome.captures} capture(s)${if (outcome.stable) "" else ", never settled"})")
+        } catch (e: Exception) {
+            log("Failed to take screenshot: ${e.message}")
+        }
+    }
+
+    /**
+     * Mirror this suite's artifacts to /data/local/tmp so they survive the
+     * post-run APK uninstall.
+     *
+     * Gradle connectedAndroidTest uninstalls the app+test APKs when the run
+     * finishes, and the OS deletes the app-specific external dir (the default
+     * artifacts root) with it — `jsonui-test artifacts pull` would find
+     * nothing. /data/local/tmp is shell-owned and survives uninstall; the CLI
+     * already collects it as a fallback root and merges both trees.
+     *
+     * Skipped when config.screenshotDir is set (a custom root is
+     * consumer-managed and may not be shell-readable). Per-suite exact mirror
+     * (rm + cp of this suite's subtree) so a re-run of the same suite never
+     * mixes stale files; unrelated suites from previous runs are left alone —
+     * use `jsonui-test artifacts pull --clean` to clear the device between
+     * runs when that matters.
+     *
+     * The mirror is scoped by package (`ArtifactPaths.mirrorRoot`) since
+     * 1.8.9. It used to be one flat root for every app on the device, so on
+     * a shared emulator another app's `artifacts pull --clean` pulled and
+     * deleted this app's runs — there was nothing in the path for the CLI to
+     * scope on, even though the CLI knows the appId.
+     */
+    private fun mirrorArtifactsForPull(testName: String) {
+        if (config.screenshotDir != null) return
+        val suite = ArtifactPaths.sanitize(testName)
+        val src = java.io.File(artifactsRoot(), suite)
+        if (!src.exists()) return
+        try {
+            val instrumentation = InstrumentationRegistry.getInstrumentation()
+            val automation = instrumentation.uiAutomation
+            val dstRoot = ArtifactPaths.mirrorRoot(instrumentation.targetContext.packageName)
+            Shell.exec(automation, "rm -rf $dstRoot/$suite")
+            Shell.exec(automation, "mkdir -p $dstRoot")
+            Shell.exec(automation, "cp -r ${src.absolutePath} $dstRoot/")
+            log("Artifacts mirrored for pull: $dstRoot/$suite")
+        } catch (e: Exception) {
+            log("Failed to mirror artifacts: ${e.message}")
+        }
+    }
+
+    /** Start the per-case recording; failures are logged, never thrown. */
+    private fun startCaseRecording(testName: String, caseName: String) {
+        caseStartedAt = System.currentTimeMillis()
+        if (!config.record) return
+        try {
+            screenRecorder.start(
+                ArtifactPaths.recordingFile(artifactsRoot(), testName, caseName)
+            )
+        } catch (e: Exception) {
+            log("Failed to start recording: ${e.message}")
+        }
+    }
+
+    /**
+     * Stop the per-case recording. Passing cases discard the file unless
+     * keepRecordingOnSuccess; failing cases always keep it. No-op when no
+     * recording is running.
+     *
+     * A kept recording gets a `recording.json` beside it (case wall time,
+     * recorder start latency, finalised?) and a recording whose stop did not
+     * finalise is kept under `recording.truncated.mp4` — a consumer's
+     * 3 KB file with no moov atom sat next to good ones with the same name,
+     * and nothing distinguished "static screen, no frames" from "broken".
+     */
+    private fun finishCaseRecording(passed: Boolean) {
+        if (!screenRecorder.isRecording) return
+        val caseDurationMs = System.currentTimeMillis() - caseStartedAt
+        try {
+            val stopped = screenRecorder.stop()
+            when {
+                stopped == null -> log("No recording was running")
+                passed && !config.keepRecordingOnSuccess -> screenRecorder.discard(stopped.file)
+                else -> {
+                    val kept = if (stopped.finalized) stopped.file
+                    else screenRecorder.rename(stopped.file, RecordingSidecar.TRUNCATED_FILE_NAME)
+                    writeRecordingSidecar(kept, caseDurationMs, stopped.finalized)
+                    log(
+                        if (stopped.finalized) "Recording saved: ${kept.absolutePath}"
+                        else "Recording did not finalize in time; kept as ${kept.absolutePath}"
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            log("Failed to stop recording: ${e.message}")
+        }
+    }
+
+    private fun writeRecordingSidecar(recording: java.io.File, caseDurationMs: Long, finalized: Boolean) {
+        runCatching {
+            java.io.File(recording.parentFile, RecordingSidecar.FILE_NAME).writeText(
+                RecordingSidecar.json(recording.name, caseDurationMs, screenRecorder.startLatencyMs, finalized)
+            )
+        }.onFailure { log("Failed to write recording sidecar: ${it.message}") }
+    }
+
+    private fun log(message: String) {
+        if (config.verbose) {
+            println("[JsonUITestRunner] $message")
+        }
+    }
+
+    // MARK: - Args Substitution (Local fallback when testLoader is not available)
+
+    /**
+     * Apply args substitution locally when testLoader is not set
+     */
+    private fun applyArgsSubstitutionLocally(testCase: TestCase): TestCase {
+        val args = testCase.args
+        if (args.isNullOrEmpty()) {
+            return testCase
+        }
+
+        // Convert JsonElement args to Map<String, Any>
+        val argsMap = mutableMapOf<String, Any>()
+        args.forEach { (key, value) ->
+            argsMap[key] = jsonElementToValue(value)
+        }
+
+        // Apply substitution to steps
+        val substitutedSteps = testCase.steps.map { substituteArgsInStep(it, argsMap) }
+
+        return testCase.copy(steps = substitutedSteps)
+    }
+
+    /**
+     * Substitute @{varName} placeholders in a TestStep
+     */
+    private fun substituteArgsInStep(step: TestStep, args: Map<String, Any>): TestStep {
+        return step.copy(
+            id = substituteArgsInString(step.id, args),
+            ids = step.ids?.map { substituteArgsInString(it, args) ?: it },
+            text = substituteArgsInString(step.text, args),
+            value = substituteArgsInString(step.value, args),
+            contains = substituteArgsInString(step.contains, args),
+            button = substituteArgsInString(step.button, args),
+            label = substituteArgsInString(step.label, args),
+            name = substituteArgsInString(step.name, args),
+            path = substituteArgsInString(step.path, args),
+            container = substituteArgsInString(step.container, args),
+            within = substituteArgsInString(step.within, args),
+            cropId = substituteArgsInString(step.cropId, args),
+            equals = substituteArgsInJsonElement(step.equals, args)
+        )
+    }
+
+    /**
+     * Substitute @{varName} placeholders in a string
+     */
+    private fun substituteArgsInString(string: String?, args: Map<String, Any>): String? {
+        // Kotlin 2.x drops the smart cast on the lambda-captured `var result`,
+        // so bind a non-null local explicitly (compiles under K1 and K2).
+        val input: String = string ?: return null
+
+        var result: String = input
+        val pattern = """@\{([^}]+)\}""".toRegex()
+
+        pattern.findAll(input).toList().reversed().forEach { match ->
+            val varName = match.groupValues[1]
+            args[varName]?.let { value ->
+                result = result.replaceRange(match.range, valueToString(value))
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * Substitute @{varName} placeholders in JsonElement (only for string values)
+     */
+    private fun substituteArgsInJsonElement(element: kotlinx.serialization.json.JsonElement?, args: Map<String, Any>): kotlinx.serialization.json.JsonElement? {
+        if (element == null) return null
+        if (element is kotlinx.serialization.json.JsonPrimitive && element.isString) {
+            val substituted = substituteArgsInString(element.content, args)
+            return kotlinx.serialization.json.JsonPrimitive(substituted)
+        }
+        return element
+    }
+
+    /**
+     * Convert JsonElement to primitive value
+     */
+    private fun jsonElementToValue(element: kotlinx.serialization.json.JsonElement): Any {
+        return when {
+            element is kotlinx.serialization.json.JsonPrimitive -> {
+                element.booleanOrNull ?: element.intOrNull ?: element.doubleOrNull ?: element.contentOrNull ?: ""
+            }
+            else -> element.toString()
+        }
+    }
+
+    /**
+     * Convert Any to String for substitution
+     */
+    private fun valueToString(value: Any): String {
+        return when (value) {
+            is String -> value
+            is Int -> value.toString()
+            is Double -> value.toString()
+            is Boolean -> value.toString()
+            else -> value.toString()
+        }
+    }
+
+    private val kotlinx.serialization.json.JsonPrimitive.booleanOrNull: Boolean?
+        get() = if (this.isString) null else this.content.toBooleanStrictOrNull()
+
+    private val kotlinx.serialization.json.JsonPrimitive.intOrNull: Int?
+        get() = this.content.toIntOrNull()
+
+    private val kotlinx.serialization.json.JsonPrimitive.doubleOrNull: Double?
+        get() = this.content.toDoubleOrNull()
+
+    private val kotlinx.serialization.json.JsonPrimitive.contentOrNull: String?
+        get() = if (this.isString) this.content else null
+}

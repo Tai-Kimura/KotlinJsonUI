@@ -1,0 +1,6 @@
+{
+  "type": "Label",
+  "width": "wrapContent",
+  "height": "wrapContent",
+  "text": "@{title}"
+}

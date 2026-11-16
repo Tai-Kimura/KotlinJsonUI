@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CoilNetworkFetcherTest serves its image over plain HTTP from a
+     MockWebServer inside the test process; API 28+ blocks cleartext by
+     default, localhost included. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- ProbeAutofillService: a test-only autofill service, so a test sees a
+         field as the Autofill framework does (ContentTypeReachesAutofillTest). -->
+    <application android:usesCleartextTraffic="true">
+        <!-- The text size following video (test APK only): started from adb (am start), so exported. -->
+        <activity
+            android:name="com.kotlinjsonui.dynamic.demo.FontScalingDemoActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+        <service
+            android:name="com.kotlinjsonui.dynamic.autofill.ProbeAutofillService"
+            android:exported="true"
+            android:label="Probe autofill"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.autofill.AutofillService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

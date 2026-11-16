@@ -1,0 +1,2028 @@
+package com.jsonui.testrunner.actions
+
+import com.jsonui.testrunner.models.RunNotices
+import android.content.ContentValues
+import android.content.Context
+import android.graphics.Rect
+import android.location.Criteria
+import android.location.Location
+import android.location.LocationManager
+import android.os.SystemClock
+import android.provider.MediaStore
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.StaleObjectException
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
+import androidx.test.uiautomator.Until
+import com.jsonui.testrunner.models.TestStep
+import com.jsonui.testrunner.runner.AppWindow
+import com.jsonui.testrunner.runner.Deadline
+import com.jsonui.testrunner.runner.ElementLookup
+import com.jsonui.testrunner.runner.Within
+import com.jsonui.testrunner.runner.FindTimeoutReport
+import com.jsonui.testrunner.runner.ScrollHistory
+import com.jsonui.testrunner.runner.StableScreenshot
+import com.jsonui.testrunner.runner.NodeCache
+import com.jsonui.testrunner.runner.ProjectionProbe
+import java.io.File
+
+/**
+ * Executes test actions using UI Automator
+ * Uses resource-id for element matching (Compose testTag exposed via testTagsAsResourceId)
+ */
+class ActionExecutor(
+    private val device: UiDevice,
+    private val defaultTimeout: Long = 5000L
+) {
+
+    /**
+     * Pluggable sink for the `screenshot` action. When set, the embedding
+     * harness receives the screenshot name and owns capture + storage.
+     * When null, the default implementation saves a PNG via
+     * UiDevice.takeScreenshot into the instrumented app's filesDir.
+     */
+    var screenshotHandler: ((name: String) -> Unit)? = null
+
+    /**
+     * Runtime variable store shared with the runner. `readText` writes the
+     * element text here; later steps reference it via @{name} placeholders.
+     */
+    var variableStore: MutableMap<String, String>? = null
+
+    /**
+     * Every id an action targets is resolved through this, with the step's
+     * `within` (null: the whole screen, exactly as before). The fixed ids of
+     * the SelectBox sheet / wheel picker (`kjui_x7q_*`) live in their own
+     * window and are never scoped.
+     */
+    private val lookup = ElementLookup(device)
+
+    /** A step's target: its id, and the container it is looked for inside (or null). */
+    private data class Target(val id: String, val within: String?)
+
+    /** How many times a find-then-act is re-run when the handle goes stale. */
+    private val STALE_RETRY_ATTEMPTS = 3
+
+    /** Sink for non-fatal warnings (e.g. no-op action stubs), set by the runner */
+    var warningHandler: ((String) -> Unit)? = null
+
+    /**
+     * Directory for resolving relative `addMedia` paths. Defaults to the
+     * instrumented app's external files dir (falling back to filesDir).
+     * Limitation: the media files must already exist on the device — push
+     * fixtures (e.g. via `adb push` or asset extraction) before the run.
+     */
+    var mediaFixturesDir: File? = null
+
+    /**
+     * Execute an action step, re-finding once the tree moves under us.
+     *
+     * Every action here is find-then-act: `waitForElement(id, timeout)`
+     * returns a handle, and the interaction happens on that handle. If a
+     * Compose recomposition swaps the node in between, uiautomator throws
+     * `StaleObjectException` and the whole flow died -- a test measuring the
+     * timing of a subtree swap rather than the app. `main` contained the
+     * string `StaleObject` exactly zero times: nothing caught it anywhere.
+     *
+     * The retry is here, at the dispatch, rather than at each of the fifteen
+     * `waitForElement` call sites, because a fix applied per-site reaches
+     * only the sites someone remembered. One place covers all of them and
+     * cannot drift out of step with a new action added later.
+     *
+     * ⚠️ Retrying re-runs the WHOLE action, so an action that had already
+     * done something before going stale would repeat that part. This is
+     * acceptable for the exception being caught, and only for it: uiautomator
+     * raises `StaleObjectException` when the node backing the handle is gone
+     * BEFORE the interaction is delivered, so the interaction did not land.
+     * A stale thrown by a multi-interaction action (`selectOption` opens a
+     * sheet, then picks) restarts that action from its own first find, which
+     * is the recovery its own retry-on-no-change already assumes.
+     *
+     * Bounded and logged: three attempts inside the step's own timeout, and
+     * each retry says so, so "the tree is moving under this test" stays
+     * visible instead of being smoothed away.
+     */
+    fun execute(step: TestStep) {
+        var stale: StaleObjectException? = null
+        repeat(STALE_RETRY_ATTEMPTS) { attempt ->
+            try {
+                executeOnce(step)
+                return
+            } catch (e: StaleObjectException) {
+                stale = e
+                // The re-find must not read the node that just went stale.
+                NodeCache.clear()
+                warningHandler?.invoke(
+                    "stale element on '${step.action}' id=${step.id ?: "-"}; " +
+                        "re-finding (attempt ${attempt + 2}/$STALE_RETRY_ATTEMPTS)"
+                )
+            }
+        }
+        throw AssertionError(
+            "Element for '${step.action}' id=${step.id ?: "-"} went stale on every one of " +
+                "$STALE_RETRY_ATTEMPTS attempts -- the node backing it is being replaced faster " +
+                "than it can be acted on",
+            stale
+        )
+    }
+
+    private fun executeOnce(step: TestStep) {
+        val action = step.action ?: throw IllegalArgumentException("Step has no action")
+        val timeout = step.timeout?.toLong() ?: defaultTimeout
+
+        when (action) {
+            "tap" -> executeTap(step, timeout)
+            "doubleTap" -> executeDoubleTap(step, timeout)
+            "longPress" -> executeLongPress(step, timeout)
+            "input" -> executeInput(step, timeout)
+            "typeText" -> executeTypeText(step)
+            "clear" -> executeClear(step, timeout)
+            "scroll" -> executeScroll(step, timeout)
+            "scrollUntilVisible" -> executeScrollUntilVisible(step)
+            "swipe" -> executeSwipe(step, timeout)
+            "waitFor" -> executeWaitFor(step, timeout)
+            "waitForAny" -> executeWaitForAny(step, timeout)
+            "wait" -> executeWait(step)
+            "back" -> executeBack()
+            "hideKeyboard" -> executeHideKeyboard()
+            "screenshot" -> executeScreenshot(step)
+            "alertTap" -> executeAlertTap(step, timeout)
+            "selectOption" -> executeSelectOption(step, timeout)
+            "tapItem" -> executeTapItem(step, timeout)
+            "selectTab" -> executeSelectTab(step, timeout)
+            "readText" -> executeReadText(step, timeout)
+            "setLocation" -> executeSetLocation(step)
+            "addMedia" -> executeAddMedia(step)
+            // setViewport is web-only by design (an Android window cannot be
+            // freely resized), so it is permanently a no-op+warn here; width-
+            // dependent asserts must self-gate with a matching `when.responsive`
+            // (evaluated against the device's fixed size).
+            "setViewport" -> executeNoOpStub(
+                "setViewport",
+                "the viewport cannot be resized on Android; dependent asserts should self-gate with when.responsive"
+            )
+            // emitHook drives a browser-side hook (window.__jsonuiTestHooks);
+            // there is no equivalent injection channel into a native app, so it
+            // is permanently a no-op+warn here. Gate dependent steps/asserts
+            // with when.platform: web.
+            "emitHook" -> executeNoOpStub(
+                "emitHook",
+                "browser-side hooks do not exist on Android; gate dependent steps with when.platform"
+            )
+            "setOrientation" -> executeSetOrientation(step)
+            else -> throw IllegalArgumentException("Unknown action: $action")
+        }
+    }
+
+    private fun executeTap(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("tap requires 'id'")
+        val element = waitForElement(id, timeout, step.within)
+
+        // If text is specified, tap on the specific text portion within the element
+        val targetText = step.text
+        if (targetText != null) {
+            tapTextPortion(element, targetText)
+        } else {
+            element.click()
+        }
+
+        // Ghost-tap mitigation: when the UI did not change after the tap,
+        // tap once more (retryTapIfNoChange semantics).
+        if (step.retryTapIfNoChange == true) {
+            val packageName = InstrumentationRegistry.getInstrumentation().targetContext.packageName
+            val changed = device.waitForWindowUpdate(packageName, 500L)
+            if (!changed) {
+                // Re-find the element; the first tap may have invalidated it
+                val retryElement = waitForElement(id, timeout, step.within)
+                if (targetText != null) {
+                    tapTextPortion(retryElement, targetText)
+                } else {
+                    retryElement.click()
+                }
+            }
+        }
+    }
+
+    private fun executeDoubleTap(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("doubleTap requires 'id'")
+        val element = waitForElement(id, timeout, step.within)
+        // UIAutomator doesn't have direct double-click, so we click twice
+        element.click()
+        Thread.sleep(50)
+        element.click()
+    }
+
+    private fun executeLongPress(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("longPress requires 'id'")
+        val element = waitForElement(id, timeout, step.within)
+        element.longClick()
+    }
+
+    private fun executeInput(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("input requires 'id'")
+        val value = step.value ?: throw IllegalArgumentException("input requires 'value'")
+        val element = waitForElement(id, timeout, step.within)
+        element.click() // Focus the field
+        Thread.sleep(300) // Wait for keyboard to appear
+
+        // For Compose TextField, try to find the actual EditText child
+        val editText = element.findObject(By.clazz("android.widget.EditText"))
+        if (editText != null) {
+            editText.text = value
+        } else {
+            // Fallback: try setting text directly, then use keyboard input if that fails
+            val success = try {
+                element.text = value
+                true
+            } catch (e: Exception) {
+                false
+            }
+
+            if (!success || element.text != value) {
+                // Use keyboard input as fallback
+                device.pressKeyCode(android.view.KeyEvent.KEYCODE_MOVE_END)
+                // Clear existing text
+                val currentText = element.text ?: ""
+                repeat(currentText.length) {
+                    device.pressKeyCode(android.view.KeyEvent.KEYCODE_DEL)
+                }
+                // Type new text character by character using shell
+                for (char in value) {
+                    when {
+                        char == '@' -> {
+                            device.executeShellCommand("input text '@'")
+                        }
+                        char == '.' -> {
+                            device.executeShellCommand("input text '.'")
+                        }
+                        char.isLetterOrDigit() -> {
+                            device.executeShellCommand("input text '$char'")
+                        }
+                        else -> {
+                            device.executeShellCommand("input text '$char'")
+                        }
+                    }
+                    Thread.sleep(10)
+                }
+            }
+        }
+    }
+
+    /**
+     * Type into whatever currently holds keyboard focus — no element id.
+     * For fields that are focused but not directly targetable: an alpha(0)
+     * Compose node is excluded from the semantics tree entirely, so By.res(id)
+     * can never match (the standard invisible code-entry TextField pattern).
+     * Focus is established app-side (auto-focus or a prior tap on a visible
+     * container); this routes the characters to the focused editable via
+     * Instrumentation key events.
+     */
+    private fun executeHideKeyboard() {
+        // No-op when no keyboard is up — the action is a precondition
+        // normalizer, not an assertion.
+        if (!isKeyboardShown()) return
+
+        // Back closes the soft keyboard when one is open (and only then —
+        // the isKeyboardShown gate keeps this from navigating back).
+        device.pressBack()
+        device.waitForIdle()
+
+        if (isKeyboardShown()) {
+            throw IllegalStateException("hideKeyboard: keyboard still visible after back press")
+        }
+    }
+
+    private fun isKeyboardShown(): Boolean {
+        val out = device.executeShellCommand("dumpsys input_method")
+        return Regex("mInputShown=true").containsMatchIn(out)
+    }
+
+    private fun executeTypeText(step: TestStep) {
+        val value = step.value ?: throw IllegalArgumentException("typeText requires 'value'")
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        // Type CHARACTER BY CHARACTER, settling between keys. A whole-string
+        // sendStringSync burst corrupts Compose fields with a reactive two-way
+        // text binding (kjui generates one per TextField: a LaunchedEffect
+        // rewrites the field from the model on every change) — mid-burst the
+        // field and model are transiently out of sync and the rewrite clobbers
+        // characters that have not propagated yet, dropping/reordering input
+        // (test-android-typetext-burst-injection-corrupts-reactive-textfield).
+        // Espresso's typeText paces per character for the same reason.
+        // sendStringSync must run off the main thread (it is) and synchronously
+        // injects the key events into the focused window.
+        for (ch in value) {
+            instrumentation.sendStringSync(ch.toString())
+            instrumentation.waitForIdleSync()
+            Thread.sleep(TYPE_CHAR_DELAY_MS)
+        }
+    }
+
+    private fun executeClear(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("clear requires 'id'")
+        val element = waitForElement(id, timeout, step.within)
+        element.click() // Focus the field first
+        Thread.sleep(200)
+
+        // For Compose TextField, try to find the actual EditText child
+        val editText = element.findObject(By.clazz("android.widget.EditText"))
+        if (editText != null) {
+            editText.clear()
+        } else {
+            // Fallback to clearing the element directly
+            element.clear()
+        }
+    }
+
+    private fun executeScroll(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("scroll requires 'id'")
+        ScrollHistory.previousContainerId = id
+        val direction = step.direction ?: throw IllegalArgumentException("scroll requires 'direction'")
+
+        // Scroll WITHIN the target element's bounds (parity with `swipe` /
+        // `scrollUntilVisible` and with iOS, which scrolls the element's frame),
+        // not at fixed screen center. The `id` locates *where* to scroll, not
+        // merely that it exists. Fixed screen coordinates are a last resort only
+        // when bounds are unavailable.
+        val element = waitForElement(id, timeout, step.within)
+        val bounds = element.visibleBounds
+        if (!bounds.isEmpty) {
+            scrollWithinBounds(bounds, direction)
+        } else {
+            val (startX, startY, endX, endY) = getSwipeCoordinates(direction)
+            device.swipe(startX, startY, endX, endY, 20)
+        }
+    }
+
+    private fun executeSwipe(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("swipe requires 'id'")
+        val direction = step.direction ?: throw IllegalArgumentException("swipe requires 'direction'")
+
+        val element = waitForElement(id, timeout, step.within)
+        val bounds = element.visibleBounds
+
+        // Pure geometry in swipeActionLine (JVM-tested): 8px inside the
+        // element (Compose hit-tests the DOWN point) and, like scrollSwipe,
+        // never starting in the system back-gesture edge zones.
+        val line = try {
+            swipeActionLine(
+                bounds.left, bounds.top, bounds.right, bounds.bottom,
+                direction, device.displayWidth, gestureEdgeInsetPx()
+            )
+        } catch (e: SwipeOutsideGestureSafeBandException) {
+            throw IllegalStateException("swipe '$direction' on '$id': ${e.message}", e)
+        }
+        device.swipe(line.startX, line.startY, line.endX, line.endY, 10)
+    }
+
+    private fun executeWaitFor(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("waitFor requires 'id'")
+        // Presence, as on iOS (waitForExistence): an element whose drawn box is
+        // 0 x 0 is not in the accessibility tree, so it is asked of the
+        // semantics tree once By.res has missed (ZeroSizeNodes).
+        val deadline = Deadline.of(timeout)
+        deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            lookup.find(id, step.within) ?: lookup.zeroSize(id, step.within).firstOrNull()
+        }?.let { return }
+        throw AssertionError(notFoundMessage(id, timeout, deadline, step.within))
+    }
+
+    private fun executeWaitForAny(step: TestStep, timeout: Long) {
+        val ids = step.ids ?: throw IllegalArgumentException("waitForAny requires 'ids'")
+        if (ids.isEmpty()) {
+            throw IllegalArgumentException("waitForAny requires non-empty 'ids'")
+        }
+
+        val deadline = Deadline.of(timeout)
+        // Find by resource-id (Compose testTag); with `within`, every id is
+        // looked for inside that one container.
+        val within = step.within
+        deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            ids.firstOrNull { lookup.isPresent(it, within) }
+        }?.let { return }
+        val names = "[${ids.joinToString(", ")}]"
+        if (within != null && lookup.container(within) == null) {
+            throw AssertionError(Within.containerNotFound(within, names, timeout) + "\n  ${deadline.describe()}")
+        }
+        throw AssertionError(
+            "None of elements $names appeared" + (within?.let { " inside container '$it'" } ?: "") +
+                " within ${timeout}ms\n  ${deadline.describe()}"
+        )
+    }
+
+    private fun executeWait(step: TestStep) {
+        val ms = step.ms ?: throw IllegalArgumentException("wait requires 'ms'")
+        Thread.sleep(ms.toLong())
+    }
+
+    private fun executeBack() {
+        device.pressBack()
+    }
+
+    private fun executeScreenshot(step: TestStep) {
+        val name = step.name ?: "screenshot_${System.currentTimeMillis()}"
+
+        val handler = screenshotHandler
+        if (handler != null) {
+            handler(name)
+            return
+        }
+
+        // Default: save a PNG like the iOS / web drivers do
+        val dir = InstrumentationRegistry.getInstrumentation().targetContext.filesDir
+        StableScreenshot.capture(device, File(dir, "$name.png"))
+    }
+
+    private fun executeAlertTap(step: TestStep, timeout: Long) {
+        val buttonText = step.button ?: throw IllegalArgumentException("alertTap requires 'button'")
+
+        val deadline = Deadline.of(timeout)
+
+        while (true) {
+            // Prefer a CLICKABLE node with the label. A bare By.text match
+            // walks the hierarchy depth-first and hits a dialog *title* that
+            // shares the button's text (title "Sign Out" + button "Sign Out")
+            // before the button — the click is a no-op and the dialog stays
+            // open. iOS parity: its alertTap only queries .buttons[label].
+            //
+            // Same-node constraint (View Button: text lives on the clickable
+            // node itself).
+            val clickableButton = device.findObject(By.text(buttonText).clickable(true))
+            if (clickableButton != null) {
+                clickableButton.click()
+                return
+            }
+
+            // Compose TextButton: in the accessibility tree UiAutomator sees,
+            // the clickable node and the Text are SEPARATE nodes (semantics
+            // merging is TalkBack semantics — text+clickable never co-occur on
+            // one node here), so the same-node query above matches nothing.
+            // Match a clickable whose shallow descendant carries the label;
+            // maxDepth keeps a big clickable container with the title deep
+            // inside from stealing the match.
+            val composeButton = device.findObject(
+                By.clickable(true).hasDescendant(By.text(buttonText), 3)
+            )
+            if (composeButton != null) {
+                composeButton.click()
+                return
+            }
+
+            // Try standard Android dialog button IDs (View-based AlertDialog)
+            val positiveButton = device.findObject(By.res("android:id/button1"))
+            if (positiveButton != null && positiveButton.text == buttonText) {
+                positiveButton.click()
+                return
+            }
+
+            val negativeButton = device.findObject(By.res("android:id/button2"))
+            if (negativeButton != null && negativeButton.text == buttonText) {
+                negativeButton.click()
+                return
+            }
+
+            val neutralButton = device.findObject(By.res("android:id/button3"))
+            if (neutralButton != null && neutralButton.text == buttonText) {
+                neutralButton.click()
+                return
+            }
+
+            if (deadline.expired()) break
+            Thread.sleep(100)
+            NodeCache.clear()
+        }
+
+        // Legacy fallback: some custom dialogs expose a tappable label without
+        // the clickable flag. Only try the bare text match AFTER the clickable/
+        // res-id poll expires — inside the loop it would hit the title first
+        // on the very first pass, which is exactly the bug.
+        val fallback = device.findObject(By.text(buttonText))
+        if (fallback != null) {
+            fallback.click()
+            return
+        }
+
+        throw AssertionError("Alert button '$buttonText' not found within ${timeout}ms")
+    }
+
+    private fun executeTapItem(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("tapItem requires 'id'")
+        val index = step.index ?: throw IllegalArgumentException("tapItem requires 'index'")
+
+        // Find the item using the generated testTag pattern: {collectionId}_item_{index}
+        // (inside `within` when given — a collection nested in a cell).
+        val itemId = "${id}_item_${index}"
+        val element = waitForElement(itemId, timeout, step.within)
+        element.click()
+    }
+
+    private fun executeSelectTab(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("selectTab requires 'id'")
+        val index = step.index ?: throw IllegalArgumentException("selectTab requires 'index'")
+
+        // Find the tab using the generated testTag pattern: {tabViewId}_tab_{index}
+        val tabId = "${id}_tab_${index}"
+        val element = waitForElement(tabId, timeout, step.within)
+        element.click()
+    }
+
+    private fun executeSelectOption(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("selectOption requires 'id'")
+
+        // Step 1: Tap the SelectBox/DateSelectBox to open the bottom sheet
+        val selectBox = waitForElement(id, timeout, step.within)
+        val tapPoint = selectBox.visibleCenter
+        selectBox.click()
+
+        // Step 2: wait — up to the step's timeout, not a fixed 300 ms — for
+        // either sheet: the option list (SelectBox) or the wheel picker's Done
+        // button (DateSelectBox). The fixed sleep made the failure text's
+        // "within ${timeout}ms" a lie about how long it had actually looked.
+        val deadline = Deadline.of(timeout)
+        var optionList: UiObject2? = null
+        var doneButton: UiObject2? = null
+        while (true) {
+            optionList = device.findObject(By.res("kjui_x7q_optionList"))
+            if (optionList != null) break
+            doneButton = device.findObject(By.res("kjui_x7q_done"))
+            if (doneButton != null) break
+            if (deadline.expired()) break
+            Thread.sleep(100)
+            NodeCache.clear()
+        }
+
+        if (optionList != null) {
+            // Regular SelectBox with option list
+            selectFromOptionList(step, timeout)
+        } else if (doneButton != null) {
+            // DateSelectBox with wheel picker
+            selectFromDatePicker(step, timeout)
+        } else {
+            // Name what the tap hit: how much of the target was on screen and
+            // what clipped it (consumer capture 2026-09-04: 23% of the target
+            // inside the viewport at its top edge). A tap on a sliver of a
+            // target that is still sliding is cancelled by Compose when the
+            // release lands outside the node — the geometry is what separates
+            // that from "tapped squarely and nothing opened".
+            throw AssertionError(
+                "Neither option list nor date picker appeared within ${timeout}ms " +
+                    "after tapping '$id' at (${tapPoint.x}, ${tapPoint.y}); " + describeTarget(Target(id, step.within))
+            )
+        }
+    }
+
+    private fun selectFromOptionList(step: TestStep, timeout: Long) {
+        // Selector precedence is the schema's: index, then value, then label
+        // (SelectOptionSelector.resolve — shared order with ios / web).
+        when (val selector = SelectOptionSelector.resolve(step.index, step.value, step.label)) {
+            is SelectOptionSelector.ByIndex -> {
+                val optionElement = waitForElement("kjui_x7q_option_${selector.index}", timeout)
+                optionElement.click()
+            }
+            is SelectOptionSelector.ByValue, is SelectOptionSelector.ByLabel -> {
+                // Text match: the KotlinJsonUI option list renders the option's
+                // text, so value and label both resolve through By.text.
+                val text: String = when (selector) {
+                    is SelectOptionSelector.ByValue -> selector.value
+                    is SelectOptionSelector.ByLabel -> selector.label
+                    else -> error("unreachable")
+                }
+                val deadline = Deadline.of(timeout)
+                val option = deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) { device.findObject(By.text(text)) }
+                    ?: throw AssertionError("Option '$text' not found within ${timeout}ms\n  ${deadline.describe()}")
+                option.click()
+            }
+            null -> throw IllegalArgumentException("selectOption requires 'index', 'value', or 'label'")
+        }
+        // Note: KotlinJsonUI SelectBox auto-closes on selection, no need to tap Done button
+    }
+
+    private fun selectFromDatePicker(step: TestStep, timeout: Long) {
+        val value = step.value ?: throw IllegalArgumentException("selectOption for DateSelectBox requires 'value' with ISO format (e.g., '2024-01-15', '14:30', or '2024-01-15T14:30')")
+
+        // Parse ISO format and select appropriate wheel values
+        when {
+            value.contains("T") -> {
+                // DateTime format: "2024-01-15T14:30"
+                val parts = value.split("T")
+                if (parts.size == 2) {
+                    selectDateComponents(parts[0], timeout)
+                    selectTimeComponents(parts[1], timeout)
+                }
+            }
+            value.contains(":") -> {
+                // Time format: "14:30"
+                selectTimeComponents(value, timeout)
+            }
+            value.contains("-") -> {
+                // Date format: "2024-01-15"
+                selectDateComponents(value, timeout)
+            }
+            else -> throw IllegalArgumentException("Invalid date/time format: $value. Use ISO format (e.g., '2024-01-15', '14:30', or '2024-01-15T14:30')")
+        }
+
+        // Tap Done button to confirm selection
+        val doneButton = waitForElement("kjui_x7q_done", timeout)
+        doneButton.click()
+    }
+
+    private fun selectDateComponents(dateString: String, timeout: Long) {
+        // Parse "2024-01-15" format
+        val parts = dateString.split("-")
+        if (parts.size != 3) {
+            throw IllegalArgumentException("Invalid date format: $dateString. Expected YYYY-MM-DD")
+        }
+
+        val year = parts[0].toIntOrNull() ?: throw IllegalArgumentException("Invalid year: ${parts[0]}")
+        val month = parts[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid month: ${parts[1]}")
+        val day = parts[2].toIntOrNull() ?: throw IllegalArgumentException("Invalid day: ${parts[2]}")
+
+        // Click on year wheel item
+        val yearElement = device.findObject(By.res("kjui_x7q_year_$year"))
+        if (yearElement != null) {
+            yearElement.click()
+            Thread.sleep(100)
+        }
+
+        // Click on month wheel item (0-indexed internally)
+        val monthElement = device.findObject(By.res("kjui_x7q_month_${month - 1}"))
+        if (monthElement != null) {
+            monthElement.click()
+            Thread.sleep(100)
+        }
+
+        // Click on day wheel item
+        val dayElement = device.findObject(By.res("kjui_x7q_day_$day"))
+        if (dayElement != null) {
+            dayElement.click()
+            Thread.sleep(100)
+        }
+    }
+
+    private fun selectTimeComponents(timeString: String, timeout: Long) {
+        // Parse "14:30" format
+        val parts = timeString.split(":")
+        if (parts.size < 2) {
+            throw IllegalArgumentException("Invalid time format: $timeString. Expected HH:mm")
+        }
+
+        val hour = parts[0].toIntOrNull() ?: throw IllegalArgumentException("Invalid hour: ${parts[0]}")
+        val minute = parts[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid minute: ${parts[1]}")
+
+        // Click on hour wheel item
+        val hourElement = device.findObject(By.res("kjui_x7q_hour_$hour"))
+        if (hourElement != null) {
+            hourElement.click()
+            Thread.sleep(100)
+        }
+
+        // Click on minute wheel item
+        val minuteElement = device.findObject(By.res("kjui_x7q_minute_$minute"))
+        if (minuteElement != null) {
+            minuteElement.click()
+            Thread.sleep(100)
+        }
+    }
+
+    /**
+     * Brings `step.id` into view. ⚠️ It guarantees the target is VISIBLE, not
+     * where the scroll stops: a target that arrives clear of the edge stays
+     * where it arrived, one flush against the trailing edge is moved
+     * [ViewportMargin.LANDING_CLEARANCES] clearances in. The same target can
+     * therefore rest at different offsets depending on where the scroll
+     * started, and its neighbours land inside or outside the viewport
+     * accordingly (ticket android-driver-scroll-until-visible-stops-at-two-
+     * different-offsets-for-the-same-target, ruled: documented, not
+     * normalized). A test that asserts another element afterwards scrolls to
+     * that element itself.
+     */
+    private fun executeScrollUntilVisible(step: TestStep) {
+        val id = step.id ?: throw IllegalArgumentException("scrollUntilVisible requires 'id'")
+        ScrollHistory.previousContainerId = step.container
+        val direction = step.direction ?: "down"
+        val timeout = step.timeout?.toLong() ?: 20000L
+        // `within` scopes the TARGET (found = inside that container); the
+        // step's `container` keeps its meaning: the surface that is scrolled.
+        val target = Target(id, step.within)
+
+        if (lookup.find(id, target.within) != null) {
+            awaitTargetSettled(target, TargetSettle.ON_ARRIVAL)
+            unstickFromTrailingEdge(target, step.container, UnstickVia.ENTRY)
+            return
+        }
+
+        // Resolve the scrollable container: explicit id, else the app-under-test
+        // window bounds so fallback swipes stay ON the app surface (a fixed
+        // screen-center swipe can drift onto the status bar / notification shade
+        // over repeated scrolls and hide the app). The source is kept for the
+        // failure text: which rect the swipes ran in is the one fact that
+        // separates "target absent" from "swiped in the wrong place" (measured
+        // 2026-09-03: a header-sized rect at the left edge turned every swipe
+        // into a back gesture, and the plain "not found" read as flaky).
+        val explicitContainer = step.container?.let { containerId ->
+            boundsOf(containerId)
+                ?.takeIf { !it.isEmpty }
+                ?.let { SurfaceBounds(it, "container '$containerId'") }
+        }
+        val surface = explicitContainer ?: appSurfaceBounds()
+        val containerBounds = surface.rect
+
+        // `direction` is the FIRST direction to search, not a constraint: when
+        // the primary sweep reaches the end of content without a hit, the
+        // search continues from there in the OPPOSITE direction all the way to
+        // the other end. The target can legitimately sit on the far side of
+        // the starting offset — measured on a tablet 2-column page: a tall
+        // section left partially visible at the viewport top made an
+        // "scroll up until <section> visible" reset step a correct no-op, and
+        // a down-only search then ran to the bottom while the target sat just
+        // ABOVE the viewport (intermittent by a few px of scroll position).
+        if (searchInDirection(step.container, containerBounds, target, direction,
+                Deadline.of(timeout))) {
+            awaitTargetSettled(target, TargetSettle.ON_ARRIVAL)
+            // "Found" is a verdict about a tree that may still have been
+            // moving. Once at rest, a target that is gone is just past the
+            // edge it left through — reapproach it before trusting the exit.
+            if (boundsOf(target) == null && !reapproachAfterLoss(target, containerBounds, direction)) {
+                throw AssertionError(
+                    "Element ${Within.label(id, target.within)} was found while scrolling $direction but had left the " +
+                        "viewport by the time the scroll came to rest, and " +
+                        "$MAX_REAPPROACH_DRAGS drags back did not bring it in " +
+                        "(swipes ran within ${surface.rect.toShortString()} from ${surface.source})"
+                )
+            }
+            unstickFromTrailingEdge(target, step.container, UnstickVia.SCROLLED)
+            return
+        }
+
+        // Reverse leg: grant it a real budget even when the primary leg burned
+        // the step timeout scrolling a long page to its end (bounded: at most
+        // one extra half-timeout).
+        val reverse = oppositeDirection(direction)
+        if (searchInDirection(step.container, containerBounds, target, reverse,
+                Deadline.of(maxOf(timeout / 2, 6000L)))) {
+            awaitTargetSettled(target, TargetSettle.ON_ARRIVAL)
+            if (boundsOf(target) == null && !reapproachAfterLoss(target, containerBounds, reverse)) {
+                throw AssertionError(
+                    "Element ${Within.label(id, target.within)} was found while scrolling $reverse but had left the " +
+                        "viewport by the time the scroll came to rest, and " +
+                        "$MAX_REAPPROACH_DRAGS drags back did not bring it in " +
+                        "(swipes ran within ${surface.rect.toShortString()} from ${surface.source})"
+                )
+            }
+            unstickFromTrailingEdge(target, step.container, UnstickVia.SCROLLED)
+            return
+        }
+
+        throw AssertionError(
+            "Element ${Within.label(id, target.within)} not found after scrolling to both ends " +
+                "(swipes ran within ${surface.rect.toShortString()} from ${surface.source})" +
+                (lookup.scopedMiss(id, target.within, timeout)?.let { "\n$it" } ?: "")
+        )
+    }
+
+    /** Bounded: 8 drags of two clearances is about one phone screen. */
+    private val MAX_REAPPROACH_DRAGS = 8
+
+    private fun oppositeDirection(direction: String): String = when (direction) {
+        "down" -> "up"
+        "up" -> "down"
+        "left" -> "right"
+        "right" -> "left"
+        else -> "up"
+    }
+
+    /**
+     * One directional search leg: a11y-action scrolling first (container
+     * given), then gesture sweeps with end-of-content detection. Returns true
+     * when the target appeared; false when this direction is exhausted (end
+     * reached, container non-scrollable, or the leg's deadline passed) so the
+     * caller can try the opposite direction.
+     */
+    private fun searchInDirection(
+        containerId: String?,
+        containerBounds: Rect,
+        target: Target,
+        direction: String,
+        deadline: Deadline
+    ): Boolean {
+        // Preferred path (container given): scroll via the accessibility
+        // ACTION_SCROLL_FORWARD/BACKWARD on the container node instead of
+        // injecting gestures. The action is dispatched by node identity, not
+        // coordinates, so it still reaches the target when the semantics tree's
+        // POSITIONS are stale (measured on a consumer page: a visibility
+        // collapse while scrolled desynced a whole column's bounds
+        // permanently — gesture scrolling then never finds an on-screen
+        // element). It also scrolls in page-sized steps with no fling
+        // momentum, so the overscroll-clamp freeze cannot occur at all.
+        if (semanticsScrollUntilVisible(containerId, target, direction, deadline)) return true
+
+        var previousSnapshot: String? = null
+        var unchangedCount = 0
+
+        while (!deadline.expired()) {
+            scrollWithinBounds(containerBounds, direction)
+
+            // Let the fling settle before looking: an immediate findObject reads
+            // the mid-scroll (or not-yet-updated) a11y tree. The bounded wait
+            // both settles and polls for the target.
+            device.waitForIdle(1000)
+            NodeCache.clear()
+            if (waitForTarget(target, 800)) return true
+
+            // End-reached detection: two consecutive scrolls with no change.
+            // Never silently disabled — error states become distinct sentinel
+            // strings that still participate in the comparison (a persistently
+            // unreadable tree ends in the end-of-scroll diagnostic below
+            // instead of burning the full timeout).
+            val snapshot = scrollSnapshot()
+            if (previousSnapshot != null && snapshot == previousSnapshot) {
+                unchangedCount++
+                if (unchangedCount >= 1) {
+                    // End of scroll (or the a11y tree froze): a fling that lands
+                    // on the overscroll clamp can leave the Compose semantics
+                    // tree one swipe stale with no resync trigger — the target
+                    // is rendered on screen but absent from the frozen tree
+                    // (measured on a bottom-flush target: the dumped hierarchy
+                    // trailed the real scroll offset by exactly one swipe).
+                    // A small reverse drag forces a scroll event and a fresh
+                    // semantics pass before this leg's verdict.
+                    nudgeBackward(containerBounds, direction)
+                    device.waitForIdle(1000)
+                    NodeCache.clear()
+                    if (waitForTarget(target, 1500)) return true
+                    return recoverFrozenSemantics(target, containerBounds, direction)
+                }
+            } else {
+                unchangedCount = 0
+            }
+            previousSnapshot = snapshot
+        }
+
+        // Last look before this leg gives up — the loop may have exited right
+        // after a swipe whose settle revealed the target.
+        return lookup.find(target.id, target.within) != null
+    }
+
+    /**
+     * Change-detection snapshot: hash of the full window hierarchy dump, so
+     * any node's bounds/text change (i.e. actual scroll progress anywhere in
+     * the tree) reads as "changed". Shallow alternatives fail both ways:
+     * the app root's direct children are a full-screen container whose id and
+     * bounds never change while scrolling (constant snapshot → end detection
+     * fires immediately), and the pre-1.6.2 join of child ids/text was empty
+     * on Compose windows (empty snapshot → detection silently disabled and
+     * the full timeout burned). Error states return distinct sentinels that
+     * still participate in the comparison.
+     */
+    private fun scrollSnapshot(): String = runCatching {
+        val out = java.io.ByteArrayOutputStream()
+        device.dumpWindowHierarchy(out)
+        val digest = java.security.MessageDigest.getInstance("MD5").digest(out.toByteArray())
+        digest.joinToString("") { "%02x".format(it) }
+    }.getOrElse { e -> "<error:${e.javaClass.simpleName}>" }
+
+    /**
+     * Small, slow reverse drag (not a fling) — enough to force a scroll event
+     * and a fresh Compose semantics pass at the overscroll clamp without
+     * materially losing the end position.
+     */
+    private fun nudgeBackward(b: Rect, direction: String) {
+        val cx = gestureSafeX(b.centerX())
+        val cy = b.centerY()
+        val d = 60 // px each way; slow steps make it a drag, not a fling
+        when (direction) {
+            // Opposite finger motion of scrollWithinBounds for each direction.
+            "up" -> device.swipe(cx, cy + d, cx, cy - d, 40)
+            "down" -> device.swipe(cx, cy - d, cx, cy + d, 40)
+            "left" -> device.swipe(cx + d, cy, cx - d, cy, 40)
+            "right" -> device.swipe(cx - d, cy, cx + d, cy, 40)
+        }
+    }
+
+    /**
+     * Frozen-semantics recovery. On complex Compose pages a visibility
+     * collapse shortly after entry can leave the app-side accessibility
+     * provider serving a stale, viewport-clipped snapshot: rendering and
+     * scrolling stay correct, but nodes keep pre-collapse coordinates and
+     * content below the stale viewport (the scroll target included) never
+     * enters the tree — even though a11y events keep flowing. Measured on a
+     * real page: dumps stay byte-identical across time, and
+     * UiAutomation.clearCache() alone right after failure still misses the
+     * target, but a pair of full-step bidirectional swipes followed by
+     * clearCache + a serviceInfo resync brings the live tree back.
+     *
+     * This runs ONLY on the failure path (end of scroll, target still
+     * missing), so healthy pages never pay for it. Returns true when the
+     * target appeared after a recovery round.
+     */
+    private fun recoverFrozenSemantics(target: Target, b: Rect, direction: String): Boolean {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val cx = gestureSafeX(b.centerX())
+        val cy = b.centerY()
+        val d = (b.height() * 0.25).toInt().coerceAtLeast(120)
+        repeat(2) {
+            // Net-zero bidirectional swipe: forces real scroll traffic (and the
+            // layout passes that come with it) without losing the end position.
+            when (direction) {
+                "up", "down" -> {
+                    device.swipe(cx, cy - d, cx, cy + d, 20)
+                    device.waitForIdle(1000)
+                    device.swipe(cx, cy + d, cx, cy - d, 20)
+                }
+                else -> {
+                    device.swipe(cx - d, cy, cx + d, cy, 20)
+                    device.waitForIdle(1000)
+                    device.swipe(cx + d, cy, cx - d, cy, 20)
+                }
+            }
+            device.waitForIdle(1000)
+            // Drop the UiAutomation-side node cache (API 34+; older APIs skip)
+            // and resync the a11y service state, then look again.
+            NodeCache.clear(automation)
+            runCatching { automation.serviceInfo = automation.serviceInfo }
+            if (waitForTarget(target, 2000)) return true
+        }
+        return false
+    }
+
+    /**
+     * Accessibility-action scrolling: repeatedly performs
+     * ACTION_SCROLL_FORWARD/BACKWARD on the container node until the target's
+     * viewId appears VISIBLE TO THE USER in a FRESH rootInActiveWindow tree (no
+     * UiObject2 caching, no coordinates). Returns false when the container is missing / not
+     * scrollable / the end is reached without finding the target — the caller
+     * falls back to gesture scrolling and its end-of-scroll diagnostics.
+     */
+    private fun semanticsScrollUntilVisible(
+        containerId: String?,
+        target: Target,
+        direction: String,
+        deadline: Deadline
+    ): Boolean {
+        if (containerId == null) return false
+        val action = when (direction) {
+            "down", "right" -> android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_FORWARD
+            "up", "left" -> android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD
+            else -> return false
+        }
+        return runCatching {
+            var guard = 0
+            while (!deadline.expired() && guard < 100) {
+                // ⚠️ "FOUND" HERE IS A VERDICT ABOUT A SNAPSHOT THAT MAY LAG THE
+                // SCREEN. Measured 2026-09-20 on a phone lane: this BFS reported
+                // the target at [84,829][996,901], visibleToUser=true, +120–230ms
+                // after the action, while UiAutomator's findObject at the same
+                // instant returned null and the target was at rest ~40px BELOW
+                // the viewport — the scroll had carried it in and out again
+                // while the node cache still held a frame from mid-animation.
+                // The caller therefore confirms the target through UiAutomator
+                // once it has settled and re-approaches it when it is gone
+                // (reapproachAfterLoss); polling this tree for "rest" was tried
+                // and measured useless (it reads the same cache).
+                if (isVisibleInTree(target)) return@runCatching true
+                val container = findByViewId(containerId) ?: return@runCatching false
+                if (!container.isScrollable) return@runCatching false
+                val moved = container.performAction(action)
+                device.waitForIdle(1000)
+                // The next BFS reads this process's node cache, which Compose
+                // does not invalidate (NodeCache): drop it so the BFS sees the
+                // scroll the action just made.
+                NodeCache.clear()
+                if (!moved) {
+                    // End of content (or action refused): one final fresh look.
+                    return@runCatching isVisibleInTree(target)
+                }
+                guard++
+            }
+            isVisibleInTree(target)
+        }.getOrDefault(false)
+    }
+
+    /** A rect swipes run in, plus where it came from (named in failure text). */
+    private class SurfaceBounds(val rect: Rect, val source: String)
+
+    /**
+     * The app-under-test window bounds, used to keep fallback scroll gestures
+     * on the app surface instead of the raw screen center (which can drift
+     * onto the status bar / notification shade).
+     *
+     * Resolved through the driver's single root resolver ([AppWindow]) — the
+     * active a11y window root, package-guarded. NOT `findObject(By.pkg(..))`:
+     * that returned an arbitrary first node, and right after a bottom sheet
+     * closed it was a ~148x63px header node at x=0, which put every fallback
+     * swipe at x=74 inside the back-gesture zone (screens popped, target
+     * "not found"). When the app root cannot be resolved (another package's
+     * window is active), the full display is the surface: a 35% swipe around
+     * its center never reaches the status bar.
+     */
+    private fun appSurfaceBounds(): SurfaceBounds {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        AppWindow.rootBounds(instrumentation)?.let {
+            return SurfaceBounds(it, "app window root (rootInActiveWindow)")
+        }
+        return SurfaceBounds(
+            Rect(0, 0, device.displayWidth, device.displayHeight),
+            "display (app window root not resolvable)"
+        )
+    }
+
+    private fun scrollWithinBounds(bounds: Rect, direction: String) {
+        // Content moves toward `direction`; the finger swipes the opposite way.
+        // Pure geometry in scrollSwipe (JVM-tested), including the rule that a
+        // swipe never STARTS inside the back-gesture edge zones.
+        val line = scrollSwipe(
+            bounds.left, bounds.top, bounds.right, bounds.bottom,
+            direction, device.displayWidth, gestureEdgeInsetPx()
+        )
+        device.swipe(line.startX, line.startY, line.endX, line.endY, 20)
+    }
+
+    /** The device's touch slop: a drag moves content only beyond it. */
+    private fun touchSlop(): Int =
+        android.view.ViewConfiguration.get(InstrumentationRegistry.getInstrumentation().context).scaledTouchSlop
+
+    private fun gestureSafeX(x: Int): Int =
+        clampToGestureSafeX(x, device.displayWidth, gestureEdgeInsetPx())
+
+    /**
+     * Width in px of the left/right band a touch must not go DOWN in: the
+     * larger of 48dp and what the system itself reports as its gesture insets
+     * (API 30+; the report is only advisory, the 48dp floor is the contract).
+     */
+    private fun gestureEdgeInsetPx(): Int {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val floor = (48 * context.resources.displayMetrics.density).toInt()
+        val reported = if (android.os.Build.VERSION.SDK_INT >= 30) runCatching {
+            val wm = context.getSystemService(android.view.WindowManager::class.java)
+            val insets = wm.currentWindowMetrics.windowInsets
+                .getInsets(android.view.WindowInsets.Type.systemGestures())
+            maxOf(insets.left, insets.right)
+        }.getOrDefault(0) else 0
+        return maxOf(floor, reported)
+    }
+
+    private fun executeReadText(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("readText requires 'id'")
+        val variable = step.variable ?: throw IllegalArgumentException("readText requires 'variable'")
+        // Read as iOS reads it (value, else label): a 0 x 0 element reads its
+        // semantics text (ZeroSizeNodes), "" when it has none.
+        val deadline = Deadline.of(timeout)
+        val text = deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            lookup.find(id, step.within)?.let { it.text ?: "" } ?: lookup.zeroSize(id, step.within).firstOrNull()?.text
+        } ?: throw AssertionError(notFoundMessage(id, timeout, deadline, step.within))
+        val store = variableStore
+            ?: throw IllegalStateException("readText requires a variable store (set ActionExecutor.variableStore)")
+        store[variable] = text
+    }
+
+    private fun executeSetLocation(step: TestStep) {
+        val latitude = step.latitude ?: throw IllegalArgumentException("setLocation requires 'latitude'")
+        val longitude = step.longitude ?: throw IllegalArgumentException("setLocation requires 'longitude'")
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val packageName = context.packageName
+        try {
+            // Enable mock locations for the instrumented app
+            device.executeShellCommand("appops set $packageName android:mock_location allow")
+
+            val locationManager = InstrumentationRegistry.getInstrumentation()
+                .context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val provider = LocationManager.GPS_PROVIDER
+            @Suppress("DEPRECATION")
+            locationManager.addTestProvider(
+                provider,
+                false, false, false, false, true, true, true,
+                Criteria.POWER_LOW, Criteria.ACCURACY_FINE
+            )
+            locationManager.setTestProviderEnabled(provider, true)
+            val mockLocation = Location(provider).apply {
+                this.latitude = latitude
+                this.longitude = longitude
+                this.accuracy = 1.0f
+                this.time = System.currentTimeMillis()
+                this.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+            }
+            locationManager.setTestProviderLocation(provider, mockLocation)
+        } catch (e: Exception) {
+            throw AssertionError("setLocation failed: ${e.message}. Ensure the app has mock-location permission.")
+        }
+    }
+
+    private fun executeAddMedia(step: TestStep) {
+        val paths = step.paths ?: throw IllegalArgumentException("addMedia requires 'paths'")
+        if (paths.isEmpty()) throw IllegalArgumentException("addMedia 'paths' must be non-empty")
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val baseDir = mediaFixturesDir
+            ?: context.getExternalFilesDir(null)
+            ?: context.filesDir
+
+        for (path in paths) {
+            val file = if (File(path).isAbsolute) File(path) else File(baseDir, path)
+            if (!file.exists()) {
+                throw AssertionError("addMedia file not found: ${file.absolutePath}")
+            }
+            val mimeType = when (file.extension.lowercase()) {
+                "png" -> "image/png"
+                "jpg", "jpeg" -> "image/jpeg"
+                "gif" -> "image/gif"
+                "mp4" -> "video/mp4"
+                else -> throw IllegalArgumentException("addMedia unsupported file type: ${file.name}")
+            }
+            val isVideo = mimeType.startsWith("video/")
+            val collection = if (isVideo) MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
+                put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            }
+            val resolver = context.contentResolver
+            // 🚨 RE-SEED, DO NOT ACCUMULATE. Until 1.15.6 this inserted and never
+            // deleted, so every run left one more row: MediaStore uniquifies a
+            // repeated DISPLAY_NAME as `name (n).ext`, and AOSP's
+            // FileUtils.buildUniqueFileWithExtension gives up at n = 32 with
+            // "Failed to build unique file" — a shared emulator went red on
+            // the 33rd run of any test that adds the same fixture, with an
+            // exception text that names MediaStore rather than the fixture
+            // (reported 2026-09-20: 32 rows on one AVD, 9 on another, all
+            // from one flow test, oldest from 2026-09-03).
+            //
+            // The documented contract is "the fixture EXISTS afterwards; it
+            // accumulates across runs, so assert presence, not counts" —
+            // iOS's PhotoKit seeding is add-only. So the row still persists
+            // after the run (parity), but our own earlier rows for the same
+            // name — the exact spelling and the `name (n).ext` copies — are
+            // removed first. Only rows this package owns can be touched on
+            // API 29+, which is also the only rows that are ours to remove.
+            val removed = deleteOwnMediaRows(resolver, collection, file) +
+                deleteOrphanedMediaRows(collection, file)
+            val uri = try {
+                resolver.insert(collection, values)
+                    ?: throw AssertionError("addMedia could not insert ${file.name} into MediaStore")
+            } catch (e: IllegalStateException) {
+                // The unique-name exhaustion, named for what it is.
+                val leftovers = countMediaRows(resolver, collection, file, ownOnly = false)
+                throw AssertionError(
+                    "addMedia could not insert ${file.name}: ${e.message}. " +
+                        "$leftovers row(s) named like it exist in MediaStore (this run removed " +
+                        "$removed owned by this package); MediaStore stops uniquifying a repeated " +
+                        "name at 32. Rows owned by another package (an earlier build of the app, " +
+                        "another test package) must be removed by hand: " +
+                        "adb shell content delete --uri content://media/external/images/media " +
+                        "--where \"_display_name LIKE '${file.nameWithoutExtension}%'\"", e
+                )
+            }
+            resolver.openOutputStream(uri)?.use { out ->
+                file.inputStream().use { it.copyTo(out) }
+            } ?: throw AssertionError("addMedia could not open output stream for ${file.name}")
+            println("[ActionExecutor] addMedia '${file.name}': removed $removed earlier row(s) of this " +
+                "package or orphaned by its uninstall, inserted $uri")
+        }
+    }
+
+    /**
+     * Selection matching a fixture's DISPLAY_NAME as inserted and as
+     * MediaStore respells a duplicate (`name (n).ext`). Restricted to rows
+     * this package owns on API 29+, where OWNER_PACKAGE_NAME exists and is
+     * also the boundary of what an app may delete without permission.
+     */
+    private fun mediaRowSelection(file: File, ownOnly: Boolean): Pair<String, Array<String>> {
+        val stem = file.nameWithoutExtension
+        val ext = file.extension
+        val name = "(${MediaStore.MediaColumns.DISPLAY_NAME} = ? OR ${MediaStore.MediaColumns.DISPLAY_NAME} LIKE ?)"
+        val args = mutableListOf(file.name, "$stem (%).$ext")
+        if (ownOnly && android.os.Build.VERSION.SDK_INT >= 29) {
+            args.add(InstrumentationRegistry.getInstrumentation().targetContext.packageName)
+            return "$name AND ${MediaStore.MediaColumns.OWNER_PACKAGE_NAME} = ?" to args.toTypedArray()
+        }
+        return name to args.toTypedArray()
+    }
+
+    private fun deleteOwnMediaRows(resolver: android.content.ContentResolver, collection: android.net.Uri, file: File): Int {
+        val (where, args) = mediaRowSelection(file, ownOnly = true)
+        return runCatching { resolver.delete(collection, where, args) }.getOrDefault(0)
+    }
+
+    /**
+     * Rows the resolver cannot reach: the ones whose owner is gone.
+     *
+     * 🚨 UNINSTALLING THE APP ORPHANS ITS ROWS, IT DOES NOT REMOVE THEM.
+     * MediaProvider sets `owner_package_name` to NULL for the package's rows
+     * when it is uninstalled, and a reinstalled app — same package name,
+     * same fixture — may not delete them: under scoped storage the resolver
+     * silently skips rows it does not own (measured 2026-09-21 on an API 35
+     * emulator: `OR owner_package_name IS NULL` in the selection deleted
+     * nothing and threw nothing, and the next insert was respelled `(1)`).
+     * A test matrix that reinstalls the app per lane therefore grew one
+     * orphan per run through 1.15.6's own-rows sweep, and the 33rd run was
+     * back (reported 2026-09-20 from that lane).
+     *
+     * The shell can delete any row, and the instrumentation has the shell.
+     * `content delete` through UiAutomation, scoped to this fixture's two
+     * spellings AND (owner NULL OR owner = this package) — a live app's row
+     * of the same name is left alone. Measured: removes the orphan and its
+     * file. The count is the shell's own row count before minus after.
+     *
+     * ⚠️ RUN AS A SCRIPT, NOT AS A COMMAND LINE. UiAutomation hands the
+     * string to Runtime.exec, which splits on whitespace and knows no
+     * quoting — a WHERE clause cannot survive that. So the command is
+     * written to a file under this package's external files dir (which the
+     * shell user can read) and run with `sh`, and names are escaped for
+     * both the shell and SQL.
+     */
+    private fun deleteOrphanedMediaRows(collection: android.net.Uri, file: File): Int {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val pkg = context.packageName
+        val where = MediaSweep.whereClause(file.name, pkg)
+        val script = MediaSweep.script(collection.toString(), where)
+        val out = runShellScript("jsonui_media_sweep.sh", script) ?: return 0
+        return MediaSweep.sweptCount(out)
+    }
+
+    /**
+     * Writes [body] to a file the shell can read and runs it with `sh`.
+     * Returns the output, or null when there is nowhere to write it.
+     */
+    private fun runShellScript(name: String, body: String): String? {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val dir = context.getExternalFilesDir(null) ?: return null
+        val f = File(dir, name)
+        return runCatching {
+            f.writeText(body)
+            device.executeShellCommand("sh ${f.absolutePath}")
+        }.getOrNull().also { runCatching { f.delete() } }
+    }
+
+    private fun countMediaRows(resolver: android.content.ContentResolver, collection: android.net.Uri, file: File, ownOnly: Boolean): Int {
+        val (where, args) = mediaRowSelection(file, ownOnly)
+        return runCatching {
+            resolver.query(collection, arrayOf(MediaStore.MediaColumns._ID), where, args, null)?.use { it.count } ?: -1
+        }.getOrDefault(-1)
+    }
+
+    /**
+     * Rotate the device to a requested ORIENTATION, not to a rotation
+     * relative to whatever this device calls natural.
+     *
+     * Until 1.12.0 this was `landscape -> setOrientationLeft()` and
+     * `portrait -> setOrientationNatural()`, both of which are natural-
+     * relative, so BOTH arms inverted on a landscape-natural tablet: the
+     * conf_ci AVD (2560x1600, rotation 0) turned portrait on `"landscape"`
+     * and stayed landscape on `"portrait"`. See [OrientationCommand] for the
+     * measurement and for what the replacements actually do.
+     *
+     * The visible cost of the old pair was not a red test — every case still
+     * passed, in the wrong orientation — but a gate that could never be met:
+     * `responsive: { orientation: "portrait" }` was unreachable on such a
+     * device, so filling in responsive conditions added unreachable arms.
+     *
+     * Waits for idle (plus a short settle) so the rotated layout is stable
+     * before the next step; responsive conditions re-read the live window
+     * size afterwards.
+     */
+    private fun executeSetOrientation(step: TestStep) {
+        val orientation = step.orientation
+            ?: throw IllegalArgumentException("setOrientation requires 'orientation'")
+        when (OrientationCommand.forOrientation(orientation)) {
+            OrientationCommand.PORTRAIT -> device.setOrientationPortrait()
+            OrientationCommand.LANDSCAPE -> device.setOrientationLandscape()
+            null -> throw IllegalArgumentException(
+                "Invalid orientation: $orientation (expected 'portrait' or 'landscape')"
+            )
+        }
+        device.waitForIdle(defaultTimeout)
+        Thread.sleep(500) // rotation animation + Compose semantics settle
+    }
+
+    /**
+     * No-op stub for actions this driver deliberately does not (yet) execute.
+     * Warns through the runner's warning sink (surfaces in TestResult.warnings)
+     * and on stdout, mirroring the AssertionExecutor convention.
+     */
+    private fun executeNoOpStub(action: String, reason: String) {
+        val message = "'$action' is a no-op on this driver: $reason"
+        println("[ActionExecutor] Warning: $message")
+        warningHandler?.invoke(message)
+    }
+
+    // Helper functions
+
+    /**
+     * The target is in the fresh tree AND visible to the user — the meaning
+     * "found" has for a scroll that stops on it. [findByViewId] alone means
+     * only "in the tree": a Views ScrollView keeps its off-screen children
+     * there with `isVisibleToUser=false` (Compose does not project them), so
+     * "found" by presence stopped the scroll before its first action whenever
+     * the target was below the viewport. Measured 2026-10-08 on a form
+     * (FormFooterOnDeviceTest): 7 of 7 starts below the target failed with 0
+     * settle samples, and the re-approach then dragged the wrong way.
+     * Any visible node with the id counts, not the first node: a repeated id
+     * (list rows) can have an off-screen copy ahead of the on-screen one.
+     */
+    private fun isVisibleInTree(target: Target): Boolean =
+        findTargetNode(target) { it.isVisibleToUser } != null
+
+    /**
+     * [findByViewId] for a [Target]: unscoped, exactly that; with `within`,
+     * the first node with the target's id (and [accept]) under ANY node with
+     * the container's id — the BFS twin of ElementLookup.find.
+     */
+    private fun findTargetNode(
+        target: Target,
+        accept: (android.view.accessibility.AccessibilityNodeInfo) -> Boolean = { true }
+    ): android.view.accessibility.AccessibilityNodeInfo? {
+        val within = target.within ?: return findByViewId(target.id, accept)
+        return runCatching {
+            val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+            val root = automation.rootInActiveWindow ?: return@runCatching null
+            // (node, inside the container?) — the container itself is not a match.
+            val queue = ArrayDeque<Pair<android.view.accessibility.AccessibilityNodeInfo, Boolean>>()
+            queue.add(root to false)
+            while (queue.isNotEmpty()) {
+                val (node, inside) = queue.removeFirst()
+                if (inside && node.viewIdResourceName == target.id && accept(node)) return@runCatching node
+                val childrenInside = inside || node.viewIdResourceName == within
+                for (i in 0 until node.childCount) {
+                    node.getChild(i)?.let { queue.add(it to childrenInside) }
+                }
+            }
+            null
+        }.getOrNull()
+    }
+
+    /**
+     * Wait up to [ms] for [target] to be findable. Unscoped it is the
+     * UiAutomator wait it always was; scoped, the same poll through
+     * ElementLookup (container, then the target inside it).
+     */
+    private fun waitForTarget(target: Target, ms: Long): Boolean {
+        if (target.within == null) return device.wait(Until.hasObject(By.res(target.id)), ms)
+        val deadline = Deadline.of(ms)
+        return deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            lookup.find(target.id, target.within)
+        } != null
+    }
+
+    /**
+     * BFS over a FRESH rootInActiveWindow comparing viewIdResourceName
+     * directly — findAccessibilityNodeInfosByViewId does NOT match Compose's
+     * raw testTag ids (measured: returns nothing for tags that By.res finds),
+     * so it would silently turn the a11y scroll path into dead code that
+     * always falls back to gestures.
+     */
+    private fun findByViewId(
+        viewId: String,
+        accept: (android.view.accessibility.AccessibilityNodeInfo) -> Boolean = { true }
+    ): android.view.accessibility.AccessibilityNodeInfo? =
+        runCatching {
+            val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+            val root = automation.rootInActiveWindow ?: return@runCatching null
+            val queue = ArrayDeque<android.view.accessibility.AccessibilityNodeInfo>()
+            queue.add(root)
+            while (queue.isNotEmpty()) {
+                val node = queue.removeFirst()
+                if (node.viewIdResourceName == viewId && accept(node)) return@runCatching node
+                for (i in 0 until node.childCount) {
+                    node.getChild(i)?.let(queue::add)
+                }
+            }
+            null
+        }.getOrNull()
+
+    /**
+     * A found target that is not visible once the motion has ended sits just
+     * past the edge it left through — the trailing edge of the leg's motion,
+     * so the way back is a short scroll AGAINST the leg's direction. Bounded
+     * drags ([UnstickMotion], two clearances each) with a settle after each,
+     * at most [MAX_REAPPROACH_DRAGS]. Prints one line either way: this is
+     * the recovery for the 2026-09-19 report, and a face reading its capture
+     * must be able to tell "never needed" from "needed and worked" from
+     * "needed and did not".
+     */
+    private fun reapproachAfterLoss(target: Target, surface: Rect, direction: String): Boolean {
+        val id = target.id
+        val clearance = ViewportMargin.clearanceFor(surface.height(), surface.width())
+        val travel = 2 * clearance
+        val landing = ViewportMargin.LANDING_CLEARANCES * clearance
+        val cx = gestureSafeX(surface.centerX())
+        val cy = surface.centerY()
+        var drags = 0
+        // Not "visible" but "clear": stopping at first sight leaves the target
+        // a few px inside the edge it left through — measured (v2 of this
+        // fix, 6 runs of 6 red): the heading came back at 148px above the
+        // edge and the rows the test wanted under it stayed outside. So the
+        // re-approach continues until the target's trailing side is
+        // [ViewportMargin.LANDING_CLEARANCES] clearances from that edge —
+        // the same landing the clearance rule gives a flush target.
+        fun clear(): Boolean {
+            val b = boundsOf(target) ?: return false
+            return when (direction) {
+                "up" -> b.bottom <= surface.bottom - landing   // left through the bottom
+                else -> b.top >= surface.top + landing         // left through the top
+            }
+        }
+        var done = clear()
+        while (!done && drags < MAX_REAPPROACH_DRAGS && travel > 0) {
+            // The leg moved the content toward `direction`; move it back.
+            when (direction) {
+                "up" -> device.swipe(UnstickMotion.path(cx, cy + travel / 2, cy - travel / 2), UnstickMotion.STEPS)
+                "down" -> device.swipe(UnstickMotion.path(cx, cy - travel / 2, cy + travel / 2), UnstickMotion.STEPS)
+                else -> return false
+            }
+            drags++
+            awaitTargetSettled(target, TargetSettle.ON_ARRIVAL)
+            NodeCache.clear()
+            done = clear()
+        }
+        val visible = boundsOf(target) != null
+        println("[ActionExecutor] scrollUntilVisible '$id' [re-approach]: lost after arrival, " +
+            "$drags drag(s) of ${travel}px against '$direction', visible=$visible, " +
+            "clear=$done, resting ${boundsOf(target)?.toShortString()}")
+        return visible
+    }
+
+    /**
+     * Wait for a found scroll target to stop moving before the next step taps
+     * it. With a container given, scrollUntilVisible scrolls through the
+     * accessibility ACTION_SCROLL_FORWARD, which Compose animates and reports
+     * complete the moment it starts; the loop's waitForIdle runs BEFORE the
+     * lookup and waits on accessibility events Compose does not send under a
+     * bare UiAutomator (isEnabled=false, measured 2026-09-04). So the target
+     * could still be sliding when this returned, and a tap on it was
+     * cancelled by Compose when the release landed outside the node — with
+     * the press itself stopping the animation, parking the target where the
+     * failed tap caught it (consumer capture: 23% inside the viewport).
+     *
+     * Bounded by [TargetSettle.BUDGET_MS]; a target still moving after that
+     * is logged, not failed. One line is printed per call so a consumer can
+     * read whether targets ever move after being found (movement 0 on every
+     * line is the refutation of the mechanism above).
+     */
+    /**
+     * One extra scroll when the target stopped FLUSH against the trailing
+     * edge, kept only if it improved the position.
+     *
+     * See [ViewportMargin]. Every exit of scrollUntilVisible is satisfied by
+     * EXISTENCE, so a target peeking a few pixels above the bottom is "found"
+     * and the search stops there. That is fine until operating it reveals
+     * something directly below it, which then lands off-screen and is not
+     * projected — producing a census identical to the operation having done
+     * nothing.
+     *
+     * 🚨 CALLED FROM ALL THREE EXITS ([UnstickVia]). 1.14.0 called it from
+     * one: the early return taken when the target was already visible. The
+     * two scroll legs return the instant the target APPEARS — which, scrolling
+     * down, is the instant it has entered from the trailing edge — so the exits
+     * most likely to leave a target flush against that edge were the exits the
+     * rule never reached. The rule was covered per-RULE and shipped with two of
+     * its three call sites bare.
+     *
+     * ⚠️ Speculative by construction, so it is guarded rather than trusted:
+     * [ViewportMargin.keepScrolledPosition] re-measures afterwards and the
+     * scroll is reverted when the target went away or ended up nearer the
+     * edge. A test that passes today can only see the target in the same
+     * place or further from the edge.
+     *
+     * 🚨 THAT GUARANTEE IS ABOUT POSITION AND NOTHING ELSE. Widening this to
+     * the scroll legs costs a lookup on every scrollUntilVisible, and a swipe
+     * plus up to [TargetSettle.BUDGET_MS] on every one that fires. On a suite
+     * running near a per-case or per-action timeout, a timing change and a
+     * pass/fail change are the same event, so "only the timing changes" is a
+     * claim in the direction that hurts. THE TIMEOUT HEADROOM IS NOT MEASURED
+     * — no face has reported how close to its limits it runs, and this repo
+     * cannot see that. Read this as "the position cannot get worse; the
+     * duration grows by an unmeasured amount", never as "this cannot redden a
+     * test".
+     *
+     * ⚠️ That objection is a LOGICAL one and nobody has measured it. It was
+     * raised by two faces reading the release notice, and this comment first
+     * credited them as agreeing "independently" — wrongly. They were reacting
+     * to the same sentence in that notice, so the sources are two readers of
+     * one stimulus, not two observations; the reviewer who spotted the
+     * inflation also asked not to be cited as having measured anything.
+     * Counting readers of your own claim as corroboration of it inflates
+     * exactly the way an unverified consensus does.
+     *
+     * 📌 The headroom instrument that DOES exist is in this driver's own
+     * output: [TargetSettle.settleLine] prints `after <N>ms` against
+     * [TargetSettle.BUDGET_MS], so `settled=false after 2000ms` IS a call that
+     * has already spent its whole budget. Suite wall-clock cannot substitute —
+     * a total over dozens of cases cannot say whether one step reached its own
+     * 20s limit. Read the settle lines, not the lane time.
+     */
+    private fun unstickFromTrailingEdge(target: Target, containerId: String?, via: String) {
+        val id = target.id
+        val surface = (containerId?.let { cid ->
+            boundsOf(cid)?.takeIf { !it.isEmpty }
+        } ?: appSurfaceBounds().rect)
+        val before = boundsOf(target) ?: return
+        // 🚨 THE RULE CAN ONLY MOVE A TARGET THAT IS INSIDE THE SURFACE IT
+        // SCROLLS, and until now it never asked. `isFlushAgainstTrailingEdge`
+        // reads one edge; a target painted BELOW the container — a pinned
+        // footer, say — is "past the trailing edge" by that test and cannot be
+        // moved by scrolling the container at all. The swipe and the settle
+        // are then paid for nothing.
+        //
+        // Measured 2026-09-09 across two faces, 78 firings: 47 moved the
+        // target 0px, and 19 of those had the target outside the named
+        // container. Both faces then read their own layouts and found the
+        // same cause on each side — a `container` naming a node that is NOT
+        // an ancestor of the target.
+        //
+        // ⚠️ SO IT MUST NOT RETURN SILENTLY. A quiet skip fixes the wasted
+        // motion and makes the mis-specification permanently invisible: on one
+        // face those steps had been paying 14 useless swipes a run without
+        // ever going red. The line names both ids, because the fix is in the
+        // TEST, not here.
+        //
+        // ⚠️ ONE-SIDED ON PURPOSE. The first draft used `surface.contains(before)`
+        // — four edges for a one-sided claim. `visibleBounds` is clipped to the
+        // SCREEN, not to this container, so a target inside a horizontally
+        // scrollable container fails `contains` for a reason a vertical swipe
+        // was never going to address. And a face raised a boundary case before
+        // this shipped: `flush 1307 of 1307`, a true descendant, moved 248px.
+        // Only `bottom > surface.bottom` is the thing the rule cannot fix.
+        //
+        // ⚠️ And this sees only part of it. A container that cannot hold the
+        // target still says nothing when the target is not near the trailing
+        // edge — those never reach this function. The complete audit is
+        // static (is `container` an ancestor of `id` in the layout?) and
+        // belongs to the test validator, not to a runtime line.
+        if (ViewportMargin.isOutsideTrailingEdge(before.bottom, surface.bottom)) {
+            // 🚨 WARN-ONLY IN 1.15.1. THE SWIPE STILL RUNS.
+            //
+            // Requested by the face that supplied the population, and the
+            // reasoning is theirs: if this judgment is a FALSE POSITIVE and
+            // it also suppresses the scroll, the target never becomes
+            // visible and a LATER step fails somewhere else. The warning is
+            // printed, and the red appears on an unrelated tap. Changing
+            // control flow on a discriminator whose precision is unmeasured
+            // makes a false positive and a real defect look the same.
+            //
+            // That face classified all 106 of its container-bearing steps
+            // and found 14 that STATICALLY look outside but are inside at
+            // the moment they run — 9 embedded in collection cells, 5 whose
+            // container name exists on more than one screen. Neither shape
+            // is resolvable from the layout alone. So the first release
+            // measures the firings; a later one may act on them.
+            //
+            // ⚠️ Greppable ON PURPOSE, and the channel is named. The same
+            // face was bitten this morning by `WARNING [toolchain]:`, which
+            // the conventional warning count (`warning:` needs the colon
+            // adjacent, `\[WARN` does not match `[toolchain]`) silently
+            // misses — a gate whose output its own readers cannot count. The
+            // prefix here is `WARN [scrollUntilVisible]` and it goes BOTH to
+            // the structured result warnings AND to System.out, which logcat
+            // tags `I/System.out:`, beside the `[ActionExecutor] unstick`
+            // lines faces already capture.
+            val line = "WARN [scrollUntilVisible] '$id': target is not inside " +
+                (containerId?.let { "container '$it'" } ?: "the app surface") +
+                " (target bottom ${before.bottom} > surface bottom ${surface.bottom}). " +
+                "Scrolling that surface cannot move the target. The unstick still " +
+                "runs in 1.15.1 — this line is the measurement, not the fix. If the " +
+                "step names a `container`, check it is an ancestor of '$id'."
+            warningHandler?.invoke(line)
+            println("[ActionExecutor] $line")
+        }
+        if (!ViewportMargin.isFlushAgainstTrailingEdge(
+                before.bottom, surface.bottom, surface.height(), surface.width())) {
+            return
+        }
+        val cx = surface.centerX()
+        val cy = surface.centerY()
+        // 🚨 A DRAG SIZED TO THE SHORTFALL, NOT A FLING SIZED TO THE SCREEN.
+        // `step` is the whole travel of the finger (the field of that name on
+        // the unstick line keeps its meaning: how far the motion nominally
+        // moved the content). Until 1.15.5 it was 12% of the surface height
+        // each way in a 20-step swipe — 492px nominal on a phone, 613–645px
+        // measured, because a 100ms swipe releases at fling velocity — and
+        // the rollback was the same fling backwards. Two half-screen flings
+        // that do not cancel is how a FOUND target was handed back off-screen
+        // (reported 2026-09-19: success returned, target outside the
+        // viewport, the page at the far end of the search direction; 1 run
+        // in 4 on a phone lane after a layout change moved the section).
+        // [ViewportMargin.unstickTravel] is one to two clearances, and
+        // [UnstickMotion] holds the finger before lifting so nothing flings.
+        val step = ViewportMargin.unstickTravel(
+            before.bottom, surface.bottom,
+            ViewportMargin.clearanceFor(surface.height(), surface.width()))
+        device.swipe(UnstickMotion.path(cx, cy + step / 2, cy - step / 2), UnstickMotion.STEPS)
+        // 🚨 NOT `device.waitForIdle()`. This swipe is 20 steps, which is a
+        // FLING, and waitForIdle waits on accessibility events Compose does
+        // not send under a bare UiAutomator (isEnabled=false, measured
+        // 2026-09-04) — the same fact [TargetSettle] was written for. Two
+        // separate defects came out of the bare wait that used to be here
+        // (reported 2026-09-09, capture on a landscape tablet):
+        //
+        //   (a) THE READING BELOW WAS TAKEN MID-FLING. `after` is the whole
+        //       basis of the "never make it worse" guarantee in
+        //       [ViewportMargin.keepScrolledPosition] — the position is
+        //       re-measured and the scroll reverted when it did not improve.
+        //       Measuring a target that is still moving does not re-measure
+        //       anything; it samples the animation. The reporter's capture
+        //       logged `after=1184` and the target came to REST at ~1157, so
+        //       the guard ruled on a number 27px away from the fact it claims
+        //       to check. It can keep a scroll that ended worse and revert one
+        //       that ended better; both directions are reachable.
+        //
+        //   (b) THE STEP RETURNED WITH THE TARGET STILL MOVING. This function
+        //       is the LAST thing scrollUntilVisible does, so its motion was
+        //       the one motion no settle covered. The next step's tap then
+        //       landed on a sliding target, Compose cancelled the press, and
+        //       the press itself stopped the animation — leaving the target
+        //       parked where the failed tap caught it. Measured: 27px of
+        //       travel after this function returned, 1px in the 5s after the
+        //       tap. 1 failure in 5 identical runs.
+        awaitTargetSettled(target, TargetSettle.AFTER_UNSTICK)
+        val after = boundsOf(target)
+        val slop = touchSlop()
+        val keep = ViewportMargin.keepScrolledPosition(
+            before.bottom, after?.bottom, surface.bottom, slop)
+        var rollback = 0
+        if (!keep) {
+            // The rollback undoes what the target DID (ViewportMargin.
+            // rollbackTravel): a target the drag took out of view gets the
+            // drag reversed; a visible one that slipped down is moved back up
+            // by the slip. Reversing the whole drag over a 4px slip at the end
+            // of a container pushed the target off the screen (2026-10-18,
+            // driver 1.17.2). It is then the last motion of the step, so (b)
+            // above applies to this branch unchanged.
+            rollback = ViewportMargin.rollbackTravel(before.bottom, after?.bottom, step, slop)
+            if (rollback != 0) {
+                device.swipe(UnstickMotion.path(cx, cy - rollback / 2, cy + rollback / 2), UnstickMotion.STEPS)
+            }
+            awaitTargetSettled(target, TargetSettle.AFTER_REVERT)
+        }
+        // 🚨 THE STEP'S PROMISE IS VISIBILITY, AND THIS IS WHERE IT IS CHECKED.
+        // Every exit of scrollUntilVisible reached this function with the
+        // target FOUND; the two motions above are the only things that can
+        // have moved it since. If it is gone now, the step is about to return
+        // success over a target the next step cannot see — the exact shape of
+        // the 2026-09-19 report, whose failure text then named the NEXT
+        // step's id and a projection of the wrong end of the page.
+        //
+        // ⚠️ WARN, NOT THROW, for the reason 1.15.1 gave: a scrollUntilVisible
+        // whose next step does not need the target on screen (parking at the
+        // end of a page before a second scroll) passes today, and a throw
+        // here would redden it for a loss the following step repairs. The
+        // line carries every number the guard ruled on, so the next report
+        // of this shape arrives with the mechanism measured rather than read.
+        // One re-approach before giving up, the way the target left
+        // (ViewportMargin.reapproachDirection): a drag that took it out of
+        // view overshot through the top; a downward rollback or a slip
+        // sends it out through the bottom.
+        if (boundsOf(target) == null) {
+            reapproachAfterLoss(target, surface, ViewportMargin.reapproachDirection(after == null, rollback))
+        }
+        if (boundsOf(target) == null) {
+            val line = "WARN [scrollUntilVisible] '$id' was found and then lost by the " +
+                "edge-clearance motion: it is no longer visible after " +
+                (if (keep) "a drag of ${step}px" else "a drag of ${step}px and a rollback of ${rollback}px") +
+                " (was flush at ${before.bottom} of ${surface.bottom}, after=${after?.bottom}). " +
+                "The step returns without it on screen; the next step will not see it."
+            warningHandler?.invoke(line)
+            println("[ActionExecutor] $line")
+        }
+        // 🚨 THE LINE A FACE READS TO TELL "THE RULE DID NOT FIRE" FROM "I
+        // COULD NOT SEE IT". Reported 2026-09-09 by the face that accepted
+        // this fix: `adb logcat | grep unstick` came back 0 and they nearly
+        // wrote "the rule never ran". Three different facts produce that 0 —
+        //
+        //     the rule did not fire
+        //     Android discarded System.out (log.redirect-stdio is empty by
+        //         default, and the JUnit XML then carries 0 <system-out>)
+        //     the grep looked for a bare `unstick` while logcat tags it
+        //         `I/System.out:`
+        //
+        // ⚠️ Same family as `[orientation]`, which this driver shipped behind
+        // a verbose flag until 1.13.0. A judgment line that only a debug
+        // setting reveals is worth nothing at the moment someone doubts it.
+        //
+        // ⚠️ Still `println`, not `log()`: the point is that it must NOT
+        // depend on `config.verbose`. What changes is that the RUN says once,
+        // by default, that this rule is in play and where its output goes —
+        // so a face that greps and finds nothing knows which of the three
+        // facts it is looking at.
+        RunNotices.once(
+            "unstick-output",
+            // 🚨 THIS TEXT MUST NOT CONTAIN ANY SUBSTRING OF THE LINES IT
+                // DESCRIBES, AND THAT IS A PROPERTY OF THE EMITTED BYTES, NOT
+                // OF THE SOURCE.
+                //
+                // v1: the notice spelled the data line's prefix in full, so a
+                // consumer's `grep -c` for that prefix counted the notice too —
+                // exactly +1 per run, reproduced on five captures across two
+                // faces. One face then saw `unstick 13 / after-unstick 12`,
+                // which the emit order makes IMPOSSIBLE, and closed it with a
+                // plausible explanation until another face shot it from the
+                // ordering. A warning whose subject is "an absent line is not
+                // evidence" was manufacturing a presence, and only for the
+                // people who read it — they are the ones who go and count.
+                //
+                // v2 (this lane, minutes later) made it WORSE in two ways, and
+                // both are recorded because the fix looks obvious and is not:
+                //   * it split the token as `"un" + "stick"`. Concatenation
+                //     changes the source and not one byte of the output.
+                //   * it then named `flush at` as the predicate to count with,
+                //     INSIDE the notice — recreating the identical collision
+                //     against the replacement token.
+                // Both passed a check that grepped the SOURCE. The consumer
+                // greps the LOG.
+                //
+                // v3 reproduces nothing. It names the tag boundary instead:
+                // the data lines are tagged with this class, this notice is
+                // tagged by the runner, and a filter on the data tag excludes
+                // it without needing any literal from either.
+                // ⚠️ HYPHENATED ON PURPOSE. `scrollUntilVisible` is itself a
+                // token consumers count — one face measured 132 against 131
+                // real lines and 135 against 134, the same +1 this notice was
+                // rewritten to remove, one line family over. The action's own
+                // name cannot appear here contiguously.
+                "the scroll-until-visible step may print one diagnostic line " +
+                "per target, " +
+                "tagged with this class rather than with the runner. It goes to " +
+                "System.out, which logcat tags `I/System.out:` and which Android " +
+                "discards entirely unless stdio redirection is on — so an absent " +
+                "line is not evidence the rule did not fire. ⚠️ When counting " +
+                "them, filter on that class tag: this notice carries the " +
+                "runner's tag and no substring of the lines it describes, so it " +
+                "cannot be counted as one of them."
+        )
+        // 📌 THE CANONICAL PREDICATE FOR COUNTING THESE LINES IS
+        //
+        //         [ActionExecutor] unstick '
+        //
+        // — the prefix INCLUDING THE OPENING QUOTE. Prose does not write a
+        // bare quote after the word, so a sentence about the rule cannot
+        // match it, while every emitted line does.
+        //
+        // 🚫 IT CANNOT BE STATED IN THE NOTICE, and that is not an oversight:
+        // a notice that spells the predicate becomes an instance of it. That
+        // is the defect this file already carries a fix for. So the predicate
+        // is documented HERE, at the line it describes, and the notice
+        // describes without reproducing.
+        //
+        // ⚠️ THE TAG ALONE IS NOT ENOUGH. `[ActionExecutor]` also prefixes the
+        // settle lines, the retry warnings and the tap diagnostics; filtering
+        // on it counts all of them. The tag separates this from the RUNNER's
+        // notice, which is what stops the notice being counted — it does not
+        // isolate the unstick lines from their siblings.
+        //
+        // ⚠️ AND THE SUBSTRING GUARD PROTECTS THIS PREDICATE, NOT EVERY LOOSE
+        // ONE. A consuming face raised that `unstick` alone is seven
+        // characters and slips under the bound, so a notice rewritten as "the
+        // unstick rule may not print" would inflate a `grep -c unstick`. It
+        // would — and that count is not the canonical one. Forbidding the
+        // word from a notice whose subject IS the word is not a rule anyone
+        // can keep; protecting the predicate that carries the quote is.
+        //
+        // 🚨 ORDER IS PART OF THE CONTRACT, AND "THE END" MEANS AFTER
+        // `kept=`, NOT AFTER `clearance=`.
+        //
+        // Two faces parse this line and neither reads it the same way. One
+        // matches `flush at (\d+) of (\d+)` and tolerates anything after it.
+        // The other matches all seven groups through to `kept=(\w+)`, which
+        // requires `clearance=` to be IMMEDIATELY followed by `after=`.
+        //
+        // The first placement of `surface=` and `step=` put them between
+        // those two. The loose face reviewed it and called it safe — its own
+        // regex was unaffected — and the strict face's seven-group parser
+        // would have returned nothing at all: no firing counts, no no-op
+        // rate, no margins, every derived number silently zero. It was caught
+        // by that face reading the proposal, not by any check here.
+        //
+        // ⚠️ ONE CONSUMER'S REVIEW IS NOT THE CONTRACT. The arm below asserts
+        // BOTH predicates against the assembled line, so the next field
+        // cannot be placed by judgement about where "the end" is.
+        //
+        // ⚠️ `surface` AND `step` ARE HERE SO THE OPEN QUESTION IS ANSWERABLE
+        // FROM AN ORDINARY RUN. A filed report establishes that
+        // CLEARANCE_FRACTION is applied to two different bases in one flow —
+        // the shorter side for the clearance, the scroll axis for the swipe —
+        // and stops there, because whether 576px of travel to recover 129px
+        // is excessive or merely safe needs a device, and the reporting lane
+        // had none. Neither number was printed, so no face could answer it
+        // from logs it already keeps. Now both are, and the ratio falls out
+        // of any capture: on a 1080x2400 surface the clearance is 129 and the
+        // step 288, and on the same surface reduced to 1000 tall they are 120
+        // and 120.
+        //
+        // 🚫 NOT A FIX FOR THAT REPORT, and it must not be recorded as one.
+        // Aligning the two bases changes how far the driver swipes, which
+        // changes what passing tests do; that decision belongs to whoever can
+        // measure it. This only removes the reason nobody could.
+        println("[ActionExecutor] unstick '$id' [$via]: flush at ${before.bottom} of " +
+            "${surface.bottom}, clearance=" +
+            "${ViewportMargin.clearanceFor(surface.height(), surface.width())}, " +
+            "after=${after?.bottom}, kept=$keep, " +
+            "surface=${surface.width()}x${surface.height()}, step=$step, " +
+            "slop=$slop, rollback=$rollback")
+    }
+
+    /**
+     * Visible bounds of [id], or null when it is not there.
+     *
+     * 🚨 STALE IS THE SAME FACT AS ABSENT, AND ONLY ONE SPELLING WAS HANDLED.
+     * `UiObject2.visibleBounds` reads the accessibility node behind the handle
+     * `findObject` just returned; when that node is replaced in between,
+     * uiautomator raises `StaleObjectException` instead of returning null.
+     * Every caller here already decides what to do about "it is not there" —
+     * [awaitTargetSettled] says so in as many words (`?: break`, "Gone
+     * mid-animation (recomposed away)"). It never saw the other spelling.
+     *
+     * ⚠️ THE COST OF MISSING IT IS NOT A LOST READING. [awaitTargetSettled]
+     * returns Unit and only prints: it is ADVISORY. But a throw from it
+     * propagates to [execute], which retries the WHOLE action three times and
+     * then fails the test. An advisory helper that can fail a test is the
+     * defect, whatever its rate. 1.15.0 is where it became reachable — the
+     * settle polls this value every [TargetSettle.SAMPLE_INTERVAL_MS] for up
+     * to [TargetSettle.BUDGET_MS] (up to 20 reads, median 2 as measured on
+     * two faces), and the poll runs ONLY WHILE THE UI IS MOVING, which is the
+     * one condition under which nodes are recycled. Before 1.15.0 this place
+     * was a single `device.waitForIdle()`: zero node reads.
+     *
+     * ⚠️ Reported 2026-09-09 by two faces that saw `StaleObjectException` on
+     * runs of 1.15.0. NEITHER COULD LOCALISE ITS FAILURES TO THIS SITE, and
+     * this fix does not claim to repair them. It is the consistency repair
+     * and it stands on its own: one spelling of "gone" was handled and the
+     * other was not.
+     *
+     * ⚠️ The reads it does NOT cover are the ones on a handle the caller
+     * already holds (an element passed in, a text node) — those belong to
+     * [execute]'s retry, which restarts the action that obtained the handle.
+     * This helper is for the re-finds, where "gone" is an answer rather than
+     * a failure.
+     */
+    private fun boundsOf(id: String): Rect? = try {
+        device.findObject(By.res(id))?.visibleBounds
+    } catch (e: StaleObjectException) {
+        null
+    }
+
+    /** [boundsOf] for a step's target, inside its `within` when it has one. */
+    private fun boundsOf(target: Target): Rect? = try {
+        lookup.find(target.id, target.within)?.visibleBounds
+    } catch (e: StaleObjectException) {
+        null
+    }
+
+    private fun awaitTargetSettled(target: Target, phase: String) {
+        val id = target.id
+        val budget = Deadline.of(TargetSettle.BUDGET_MS)
+        val samples = mutableListOf<Box>()
+        while (!budget.expired()) {
+            // Each sample reads fresh bounds: from the cache, every sample
+            // would repeat the first and "settle" at once (NodeCache).
+            NodeCache.clear()
+            // Gone mid-animation (recomposed away): nothing to settle on.
+            val b = boundsOf(target) ?: break
+            samples.add(Box(b.left, b.top, b.right, b.bottom))
+            if (TargetSettle.settled(samples)) break
+            Thread.sleep(TargetSettle.SAMPLE_INTERVAL_MS)
+        }
+        println("[ActionExecutor] " + TargetSettle.settleLine(id, phase, samples, budget.elapsedMs))
+    }
+
+    /**
+     * Visible bounds, unclipped bounds and the nearest scrollable ancestor of
+     * [id], as one line for a failure message (see [TargetSettle.describe]).
+     */
+    private fun describeTarget(target: Target): String {
+        val id = target.id
+        val visible = boundsOf(target)
+            ?.let { Box(it.left, it.top, it.right, it.bottom) }
+        val node = findTargetNode(target)
+        val full = node?.let { n -> Rect().also { n.getBoundsInScreen(it) } }
+            ?.let { Box(it.left, it.top, it.right, it.bottom) }
+        var clipper: Pair<String, Box>? = null
+        var ancestor = node?.parent
+        while (ancestor != null) {
+            val current: android.view.accessibility.AccessibilityNodeInfo = ancestor
+            if (current.isScrollable) {
+                val r = Rect()
+                current.getBoundsInScreen(r)
+                clipper = (current.viewIdResourceName ?: "<no id>") to Box(r.left, r.top, r.right, r.bottom)
+                break
+            }
+            ancestor = current.parent
+        }
+        return TargetSettle.describe(id, visible, full, clipper)
+    }
+
+    /**
+     * Wait for element to appear by id (using resource-id)
+     */
+    private fun waitForElement(id: String, timeout: Long, within: String? = null): UiObject2 {
+        val deadline = Deadline.of(timeout)
+        // Find by resource-id (Compose testTag with testTagsAsResourceId = true);
+        // with `within`, the container first and the id among its descendants,
+        // both inside this one deadline (ElementLookup).
+        return deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) { lookup.find(id, within) }
+            ?: throw AssertionError(notFoundMessage(id, timeout, deadline, within))
+    }
+
+    /**
+     * Why an id was not found. When the id IS on screen on a node whose drawn
+     * box is 0 x 0 (ZeroSizeNodes), it says so instead: the element exists,
+     * as on iOS, but there is nothing to tap, type into, scroll or swipe.
+     */
+    private fun notFoundMessage(id: String, timeout: Long, deadline: Deadline, within: String? = null): String {
+        lookup.zeroSize(id, within).firstOrNull()?.let { hit ->
+            return "Element ${Within.label(id, within)} exists, but its drawn box is ${hit.width}x${hit.height}: " +
+                "there is nothing to act on (an empty container draws no area). " +
+                "Waited ${timeout}ms."
+        }
+        // Scoped: which one was missing — the container or the target in it —
+        // then the whole-screen census of the target id (a copy outside the
+        // container shows up there).
+        lookup.scopedMiss(id, within, timeout)?.let { miss ->
+            return miss + "\n" + FindTimeoutReport.render(device, id, deadline)
+        }
+        return "Element '$id' not found by resource-id within ${timeout}ms\n" +
+            FindTimeoutReport.render(device, id, deadline) + "\n" + ProjectionProbe.report(id)
+    }
+
+    private fun getSwipeCoordinates(direction: String): SwipeCoordinates {
+        val displayWidth = device.displayWidth
+        val displayHeight = device.displayHeight
+        val centerX = displayWidth / 2
+        val centerY = displayHeight / 2
+
+        return when (direction) {
+            "up" -> SwipeCoordinates(centerX, centerY + 300, centerX, centerY - 300)
+            "down" -> SwipeCoordinates(centerX, centerY - 300, centerX, centerY + 300)
+            "left" -> SwipeCoordinates(centerX + 300, centerY, centerX - 300, centerY)
+            "right" -> SwipeCoordinates(centerX - 300, centerY, centerX + 300, centerY)
+            else -> throw IllegalArgumentException("Invalid direction: $direction")
+        }
+    }
+
+    private data class SwipeCoordinates(
+        val startX: Int,
+        val startY: Int,
+        val endX: Int,
+        val endY: Int
+    )
+
+    /**
+     * Tap on a specific text portion within an element
+     * Calculates the approximate position of the target text and taps there
+     */
+    private fun tapTextPortion(element: UiObject2, targetText: String) {
+        // Preferred: a clickable descendant hit-target carrying the range text.
+        // KotlinJsonUI PartialAttributesText (2.11.0+) emits one per clickable
+        // range, sized to the real glyph rect — exact for centered/matchParent
+        // and wrapped labels where the proportional estimate below misses
+        // (test-partialattributes-subrange-tap-misses-on-centered-matchparent-label).
+        val hitTarget = element.findObject(By.desc(targetText).clickable(true))
+            ?: element.findObject(By.text(targetText).clickable(true))
+        if (hitTarget != null) {
+            hitTarget.click()
+            return
+        }
+
+        // Fallback: proportional position (assumes left-aligned, single-line,
+        // full-width text). The text may live on a descendant TextView rather
+        // than the tagged node itself — use that node's bounds when it does.
+        val textNode = if (element.text != null) element
+            else element.findObjects(By.clazz("android.widget.TextView"))
+                .firstOrNull { it.text?.contains(targetText) == true } ?: element
+        val fullText = textNode.text ?: throw IllegalArgumentException("Element has no text")
+        val startIndex = fullText.indexOf(targetText)
+
+        if (startIndex == -1) {
+            throw IllegalArgumentException("Text '$targetText' not found in element text '$fullText'")
+        }
+
+        val endIndex = startIndex + targetText.length
+        val totalLength = fullText.length
+
+        if (totalLength == 0) {
+            element.click()
+            return
+        }
+
+        // Calculate the center position of the target text (as a ratio of the element width)
+        val startRatio = startIndex.toFloat() / totalLength.toFloat()
+        val endRatio = endIndex.toFloat() / totalLength.toFloat()
+        val centerRatio = (startRatio + endRatio) / 2f
+
+        // Calculate the tap coordinate
+        val bounds = textNode.visibleBounds
+        val tapX = bounds.left + (bounds.width() * centerRatio).toInt()
+        val tapY = bounds.centerY()
+
+        // Tap at the calculated position
+        device.click(tapX, tapY)
+    }
+
+    companion object {
+        /**
+         * Inter-character settle for typeText. waitForIdleSync alone covers
+         * recomposition; the extra margin lets the field->model->field
+         * round-trip of a reactive two-way binding converge before the next
+         * key event.
+         */
+        private const val TYPE_CHAR_DELAY_MS = 50L
+    }
+}

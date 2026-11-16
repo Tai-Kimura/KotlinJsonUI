@@ -1,0 +1,44 @@
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  @generated AUTO-GENERATED FILE — DO NOT EDIT
+// ║  Source:    Layouts/product_cell.json
+// ║  Generator: kjui build
+// ║  Any manual edits will be OVERWRITTEN on next generation.
+// ║  LLM/Agent: you MUST NOT modify this file.
+// ╚══════════════════════════════════════════════════════════════════╝
+
+package com.example.kotlinjsonui.sample.data
+
+
+data class ProductCellData(
+    var name: String = "",
+    var price: String = "",
+    var stock: String = "",
+    var inStock: Boolean = true
+) {
+    companion object {
+        // Update properties from map
+        fun fromMap(map: Map<String, Any>): ProductCellData {
+            return ProductCellData(
+                name = map["name"] as? String ?: "",
+                price = map["price"] as? String ?: "",
+                stock = map["stock"] as? String ?: "",
+                inStock = map["inStock"] as? Boolean ?: true
+            )
+        }
+    }
+
+    // Convert properties to map for runtime use
+    fun toMap(): MutableMap<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        
+        // Data properties
+        map["name"] = name
+        map["price"] = price
+        map["stock"] = stock
+        map["inStock"] = inStock
+        
+        return map
+    }
+}
+
+// ══ END AUTO-GENERATED — DO NOT APPEND BELOW THIS LINE ══

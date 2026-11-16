@@ -1,0 +1,13 @@
+{
+  "type": "View",
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "SelectBox",
+      "id": "probe_select",
+      "width": "matchParent",
+      "background": "#FF0000",
+      "items": ["Alpha", "Beta"]
+    }
+  ]
+}

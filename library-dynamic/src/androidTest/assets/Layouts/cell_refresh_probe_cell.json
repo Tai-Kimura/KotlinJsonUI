@@ -1,0 +1,22 @@
+{
+  "type": "View",
+  "width": "matchParent",
+  "height": 40,
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": ""
+    }
+  ],
+  "child": [
+    {
+      "type": "Label",
+      "id": "cell_refresh_title",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "text": "@{title}",
+      "fontSize": 14
+    }
+  ]
+}

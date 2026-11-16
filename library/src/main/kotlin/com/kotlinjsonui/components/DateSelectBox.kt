@@ -1,0 +1,1146 @@
+package com.kotlinjsonui.components
+
+import com.kotlinjsonui.core.jsonUILetterSpacing
+import com.kotlinjsonui.core.jsonUILineHeight
+import com.kotlinjsonui.core.jsonUIFontSize
+import com.kotlinjsonui.core.AppLocale
+import com.kotlinjsonui.core.DateFormats
+import androidx.compose.foundation.background
+import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.ResolvedFont
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import com.kotlinjsonui.R
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.launch
+import java.util.*
+
+/**
+ * A date/time selection component for KotlinJsonUI
+ * 
+ * @param value The currently selected date value (ISO 8601 format)
+ * @param onValueChange Callback when a new value is selected
+ * @param datePickerMode Mode of picker: "date", "time", "dateAndTime"
+ * @param datePickerStyle Style of date picker: "wheels", "inline", "compact", "graphical"
+ * @param dateFormat Format string for displaying the date
+ * @param minuteInterval Interval for minute selection (e.g., 15 for 15-minute intervals)
+ * @param minimumDate Minimum selectable date (ISO 8601 format)
+ * @param maximumDate Maximum selectable date (ISO 8601 format)
+ * @param modifier Modifier for the component
+ * @param placeholder Optional placeholder text when no value is selected
+ * @param enabled Whether the component is enabled
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateSelectBox(
+    value: String,
+    onValueChange: (String) -> Unit,
+    datePickerMode: String = "date",
+    datePickerStyle: String = "compact",
+    dateFormat: String = "yyyy-MM-dd",
+    minuteInterval: Int = 1,
+    minimumDate: String? = null,
+    maximumDate: String? = null,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    enabled: Boolean = true,
+    backgroundColor: Color = Color.White,
+    borderColor: Color = Color(0xFFCCCCCC),
+    textColor: Color = Color.Black,
+    hintColor: Color = Color(0xFF999999),
+    cornerRadius: Int = 8,
+    fontSize: Int = 16,
+    fontWeight: FontWeight = FontWeight.Normal,
+    /**
+     * The app's font for the text (Configuration.Font.resolve of the component's FontSpec): its family, weight,
+     * size and style win where it gives one; null, or a null slot, draws [fontSize] / [fontWeight] as before.
+     */
+    resolvedFont: ResolvedFont? = null,
+    /** Whether the text follows the system text size (null: Configuration.Font.scaling); see FontScaling. */
+    fontScaling: Boolean? = null,
+    /** At most fontSize × this when following (null: Configuration.Font.maxScale); see FontScaling. */
+    maxFontScale: Float? = null,
+    /** The select's own padding (SelectBoxDefaults: 12 dp at the sides, none above and below). */
+    contentPadding: PaddingValues = SelectBoxDefaults.contentPadding,
+    /** The arrow when the layout styles it (caretAttributes); null draws the chevron. */
+    caret: SelectBoxCaret? = null,
+    sheetBackgroundColor: Color = Configuration.DatePicker.defaultSheetBackgroundColor,
+    sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    sheetTitle: String? = null,
+    cancelButtonText: String? = null,
+    doneButtonText: String? = null
+) {
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true  // Always expand to full height
+    )
+    val scope = rememberCoroutineScope()
+    
+    // Parse the current date/time value
+    val calendar = remember { Calendar.getInstance() }
+    // The label in the app's language; the bound value in Locale.ROOT (DateFormats).
+    val displayLocale = AppLocale.current()
+    val dateFormatter = remember(dateFormat, displayLocale) { DateFormats.display(dateFormat, displayLocale) }
+    
+    // The bound value's pattern. The component writes this form back in
+    // Locale.ROOT and reads it the same way; a value in the label's form (one
+    // an app keeps as the text it shows) reads in the app's language, then
+    // the device's — the language a label was written in before 2.43.3.
+    val valuePattern = when (datePickerMode) {
+        "time" -> "HH:mm"
+        "dateAndTime" -> "yyyy-MM-dd HH:mm"
+        else -> "yyyy-MM-dd"
+    }
+    fun readValue(text: String): Date? =
+        DateFormats.parseValue(text, valuePattern) ?: DateFormats.parseDisplay(text, dateFormat, displayLocale)
+
+    // Parse current value if not empty
+    LaunchedEffect(value) {
+        if (value.isNotEmpty()) {
+            readValue(value)?.let { calendar.time = it }
+        }
+    }
+    
+    // Format display text
+    val displayText = remember(value, dateFormat, displayLocale) {
+        if (value.isEmpty()) {
+            ""
+        } else {
+            readValue(value)?.let { dateFormatter.format(it) } ?: value
+        }
+    }
+    
+    // Parse min/max dates
+    val minCalendar = remember(minimumDate) {
+        minimumDate?.let {
+            Calendar.getInstance().apply {
+                try {
+                    time = DateFormats.parseValue(it, "yyyy-MM-dd") ?: Date()
+                } catch (e: Exception) {
+                    // Invalid date format
+                }
+            }
+        }
+    }
+    
+    val maxCalendar = remember(maximumDate) {
+        maximumDate?.let {
+            Calendar.getInstance().apply {
+                try {
+                    time = DateFormats.parseValue(it, "yyyy-MM-dd") ?: Date()
+                } catch (e: Exception) {
+                    // Invalid date format
+                }
+            }
+        }
+    }
+    
+    // Choose icon based on mode
+    val iconRes = when (datePickerMode) {
+        "time" -> R.drawable.ic_schedule
+        else -> R.drawable.ic_date_range
+    }
+    
+    // Custom SelectBox field
+    // The select is as tall as its layout says: a fixed height (the text centred, as before), or, with wrapContent
+    // or no height, its content and paddings — a value folded to 2 lines grows it. No height of its own (ticket
+    // kjui-selectbox-fixed-56dp-ignores-wrap-content-height: .height(56.dp) after the caller's modifier won).
+    Box(
+        contentAlignment = Alignment.CenterStart,
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled) { 
+                showBottomSheet = true
+            }
+            .border(
+                width = 1.dp,
+                color = if (enabled) borderColor else borderColor.copy(alpha = 0.38f),
+                shape = RoundedCornerShape(cornerRadius.dp)
+            )
+            .background(
+                color = backgroundColor,
+                shape = RoundedCornerShape(cornerRadius.dp)
+            )
+    ) {
+        // As SelectBox: text, 8 dp, the arrow's box (a chevron, as the three faces draw a select's arrow;
+        // the app's own picture through caretAttributes); the end padding is the edge-to-box distance.
+        val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = contentPadding.calculateStartPadding(layoutDirection),
+                    top = contentPadding.calculateTopPadding(),
+                    end = selectBoxRowEnd(caret, contentPadding.calculateEndPadding(layoutDirection)),
+                    bottom = contentPadding.calculateBottomPadding()
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (displayText.isNotEmpty()) displayText else (placeholder ?: ""),
+                color = if (displayText.isNotEmpty()) textColor else hintColor,
+                fontSize = jsonUIFontSize(resolvedFont?.size ?: fontSize.sp, fontScaling, maxFontScale),
+                fontFamily = resolvedFont?.family,
+                fontStyle = resolvedFont?.style,
+                letterSpacing = jsonUILetterSpacing(fontScaling, maxFontScale),
+                lineHeight = jsonUILineHeight(jsonUIFontSize(resolvedFont?.size ?: fontSize.sp, fontScaling, maxFontScale), fontScaling, maxFontScale),
+                fontWeight = resolvedFont?.weight ?: fontWeight,
+                modifier = Modifier.weight(1f)
+            )
+            SelectBoxArrow(caret, defaultTint = textColor)
+        }
+    }
+    
+    // Bottom Sheet with picker
+    if (showBottomSheet) {
+        // Ensure sheet is fully expanded when shown
+        LaunchedEffect(showBottomSheet) {
+            sheetState.expand()
+        }
+        
+        ModalBottomSheet(
+            onDismissRequest = { 
+                scope.launch {
+                    sheetState.hide()
+                    showBottomSheet = false
+                }
+            },
+            sheetState = sheetState,
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            containerColor = sheetBackgroundColor,
+            contentColor = sheetTextColor,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .navigationBarsPadding()  // Proper padding for navigation bar
+                    .padding(bottom = 16.dp)
+                    // The sheet is its own window: re-enable testTag -> resource-id
+                    // mapping so UI-test drivers (UIAutomator) can find the
+                    // kjui_x7q_* elements inside it.
+                    .semantics { testTagsAsResourceId = true }
+            ) {
+                when (datePickerMode) {
+                    "time" -> {
+                        // Time picker
+                        if (datePickerStyle == "wheels") {
+                            // iOS-style wheel time picker
+                            Text(
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_time),
+                                style = sheetFontScaled(sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                )),
+                                color = sheetTextColor,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(vertical = 16.dp)
+                            )
+                            
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
+                            
+                            TimeWheelPicker(
+                                selectedTime = calendar,
+                                onTimeSelected = { hour, minute ->
+                                    calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                    calendar.set(Calendar.MINUTE, minute)
+                                },
+                                minuteInterval = minuteInterval,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                                textColor = sheetTextColor
+                            )
+
+                            // Confirm and Cancel buttons
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                ) {
+                                    Text(
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        val newValue = DateFormats.value("HH:mm").format(calendar.time)
+                                        onValueChange(newValue)
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done"),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Configuration.DatePicker.SheetButton.defaultButtonBackgroundColor,
+                                        contentColor = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+                                    )
+                                ) {
+                                    Text(
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+                                    )
+                                }
+                            }
+                        } else {
+                            // Default time picker in sheet
+                            Text(
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_time),
+                                style = sheetFontScaled(sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                )),
+                                color = sheetTextColor,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(vertical = 16.dp)
+                            )
+                            
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
+                            
+                            // Use wheel picker as default for time
+                            TimeWheelPicker(
+                                selectedTime = calendar,
+                                onTimeSelected = { hour, minute ->
+                                    calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                    calendar.set(Calendar.MINUTE, minute)
+                                },
+                                minuteInterval = minuteInterval,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                                textColor = sheetTextColor
+                            )
+
+                            // Confirm and Cancel buttons
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                ) {
+                                    Text(
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        val newValue = DateFormats.value("HH:mm").format(calendar.time)
+                                        onValueChange(newValue)
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done"),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Configuration.DatePicker.SheetButton.defaultButtonBackgroundColor,
+                                        contentColor = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+                                    )
+                                ) {
+                                    Text(
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    "dateAndTime" -> {
+                        // Date and time picker
+                        if (datePickerStyle == "wheels") {
+                            // iOS-style wheel date/time picker
+                            Text(
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_date_and_time),
+                                style = sheetFontScaled(sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                )),
+                                color = sheetTextColor,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(vertical = 16.dp)
+                            )
+
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
+
+                            DateTimeWheelPicker(
+                                selectedDateTime = calendar,
+                                onDateTimeSelected = { year, month, day, hour, minute ->
+                                    calendar.set(year, month, day, hour, minute)
+                                },
+                                minDate = minCalendar,
+                                maxDate = maxCalendar,
+                                minuteInterval = minuteInterval,
+                                dateFormat = dateFormat,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                                textColor = sheetTextColor
+                            )
+
+                            // Confirm and Cancel buttons
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                ) {
+                                    Text(
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        val newValue = DateFormats.value("yyyy-MM-dd HH:mm").format(calendar.time)
+                                        onValueChange(newValue)
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
+                                ) {
+                                    Text(
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+                                    )
+                                }
+                            }
+                        } else {
+                            // Default date/time picker in sheet
+                            Text(
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_date_and_time),
+                                style = sheetFontScaled(sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                )),
+                                color = sheetTextColor,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(vertical = 16.dp)
+                            )
+
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
+
+                            // Use wheel picker as default for date/time
+                            DateTimeWheelPicker(
+                                selectedDateTime = calendar,
+                                onDateTimeSelected = { year, month, day, hour, minute ->
+                                    calendar.set(year, month, day, hour, minute)
+                                },
+                                minDate = minCalendar,
+                                maxDate = maxCalendar,
+                                minuteInterval = minuteInterval,
+                                dateFormat = dateFormat,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                                textColor = sheetTextColor
+                            )
+
+                            // Confirm and Cancel buttons
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                ) {
+                                    Text(
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        val newValue = DateFormats.value("yyyy-MM-dd HH:mm").format(calendar.time)
+                                        onValueChange(newValue)
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
+                                ) {
+                                    Text(
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
+                                        fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
+                                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                        fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
+                                        color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    else -> {
+                        // Date picker (default)
+                        when (datePickerStyle) {
+                            "wheels" -> {
+                                // iOS-style wheel date picker
+                                Text(
+                                    text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_date),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = sheetTextColor,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .padding(vertical = 16.dp)
+                                )
+
+                                HorizontalDivider()
+
+                                DateWheelPicker(
+                                    selectedDate = calendar,
+                                    onDateSelected = { year, month, day ->
+                                        calendar.set(year, month, day)
+                                    },
+                                    minDate = minCalendar,
+                                    maxDate = maxCalendar,
+                                    dateFormat = dateFormat,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                                    textColor = sheetTextColor
+                                )
+
+                                // Confirm and Cancel buttons
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    TextButton(
+                                        onClick = {
+                                            scope.launch {
+                                                sheetState.hide()
+                                                showBottomSheet = false
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel")
+                                    ) {
+                                        Text(
+                                            text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
+                                            fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                            letterSpacing = jsonUILetterSpacing(),
+                                            lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                            fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                            color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
+                                        )
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            val newValue = DateFormats.value("yyyy-MM-dd").format(calendar.time)
+                                            onValueChange(newValue)
+                                            scope.launch {
+                                                sheetState.hide()
+                                                showBottomSheet = false
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
+                                    ) {
+                                        Text(
+                                            text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
+                                            fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                            letterSpacing = jsonUILetterSpacing(),
+                                            lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                                            fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                            color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+                                        )
+                                    }
+                                }
+                            }
+
+                            "graphical", "inline" -> {
+                                // Material3 DatePicker
+                                DateCalendarPicker(
+                                    title = sheetTitle,
+                                    doneButtonText = doneButtonText,
+                                    selectedDate = calendar,
+                                    onDateSelected = { year, month, day ->
+                                        calendar.set(year, month, day)
+                                        val newValue = DateFormats.value("yyyy-MM-dd").format(calendar.time)
+                                        onValueChange(newValue)
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    minDate = minCalendar,
+                                    maxDate = maxCalendar,
+                                    dateFormat = dateFormat,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    sheetTextColor = sheetTextColor
+                                )
+                            }
+                            
+                            else -> {
+                                // Default: calendar picker in sheet
+                                DateCalendarPicker(
+                                    title = sheetTitle,
+                                    doneButtonText = doneButtonText,
+                                    selectedDate = calendar,
+                                    onDateSelected = { year, month, day ->
+                                        calendar.set(year, month, day)
+                                        val newValue = DateFormats.value("yyyy-MM-dd").format(calendar.time)
+                                        onValueChange(newValue)
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                    minDate = minCalendar,
+                                    maxDate = maxCalendar,
+                                    dateFormat = dateFormat,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    sheetTextColor = sheetTextColor
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+/**
+ * Date wheel picker component (iOS-style spinner)
+ */
+@Composable
+fun DateWheelPicker(
+    selectedDate: Calendar,
+    onDateSelected: (year: Int, month: Int, day: Int) -> Unit,
+    minDate: Calendar? = null,
+    maxDate: Calendar? = null,
+    dateFormat: String,
+    modifier: Modifier = Modifier,
+    textColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    enableTestTags: Boolean = true
+) {
+    var selectedYear by remember { mutableStateOf(selectedDate.get(Calendar.YEAR)) }
+    var selectedMonth by remember { mutableStateOf(selectedDate.get(Calendar.MONTH)) }
+    var selectedDay by remember { mutableStateOf(selectedDate.get(Calendar.DAY_OF_MONTH)) }
+
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    val years = remember {
+        val minYear = minDate?.get(Calendar.YEAR) ?: (currentYear - 100)
+        val maxYear = maxDate?.get(Calendar.YEAR) ?: (currentYear + 100)
+        (minYear..maxYear).toList()
+    }
+
+    // Determine month format based on dateFormat string
+    val months = if (dateFormat.contains("MM月") || dateFormat.contains("月")) {
+        listOf("1月", "2月", "3月", "4月", "5月", "6月",
+               "7月", "8月", "9月", "10月", "11月", "12月")
+    } else {
+        listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    }
+
+    val daysInMonth = remember(selectedYear, selectedMonth) {
+        val cal = Calendar.getInstance()
+        cal.set(selectedYear, selectedMonth, 1)
+        cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+    }
+
+    val days = remember(daysInMonth) {
+        (1..daysInMonth).toList()
+    }
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        // Year spinner
+        NumberPicker(
+            value = selectedYear,
+            onValueChange = {
+                selectedYear = it
+                onDateSelected(it, selectedMonth, selectedDay)
+            },
+            range = years,
+            label = sheetString(R.string.kjui_sheet_year),
+            modifier = Modifier.weight(1f),
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_year" else null
+        )
+
+        // Month spinner (uses 1-12 for testTag instead of 0-11)
+        NumberPicker(
+            value = selectedMonth,
+            onValueChange = {
+                selectedMonth = it
+                onDateSelected(selectedYear, it, selectedDay)
+            },
+            range = (0..11).toList(),
+            labels = months,
+            label = sheetString(R.string.kjui_sheet_month),
+            modifier = Modifier.weight(1f),
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_month" else null
+        )
+
+        // Day spinner
+        NumberPicker(
+            value = selectedDay,
+            onValueChange = {
+                selectedDay = it
+                onDateSelected(selectedYear, selectedMonth, it)
+            },
+            range = days,
+            label = sheetString(R.string.kjui_sheet_day),
+            modifier = Modifier.weight(1f),
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_day" else null
+        )
+    }
+}
+
+/**
+ * Time wheel picker component (iOS-style spinner)
+ */
+@Composable
+fun TimeWheelPicker(
+    selectedTime: Calendar,
+    onTimeSelected: (hour: Int, minute: Int) -> Unit,
+    minuteInterval: Int = 1,
+    modifier: Modifier = Modifier,
+    textColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    enableTestTags: Boolean = true
+) {
+    var selectedHour by remember { mutableStateOf(selectedTime.get(Calendar.HOUR_OF_DAY)) }
+    var selectedMinute by remember { mutableStateOf(selectedTime.get(Calendar.MINUTE)) }
+
+    val hours = (0..23).toList()
+    val minutes = (0..59 step minuteInterval).toList()
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        // Hour spinner
+        NumberPicker(
+            value = selectedHour,
+            onValueChange = {
+                selectedHour = it
+                onTimeSelected(it, selectedMinute)
+            },
+            range = hours,
+            label = sheetString(R.string.kjui_sheet_hour),
+            modifier = Modifier.weight(1f),
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_hour" else null
+        )
+
+        // Minute spinner
+        NumberPicker(
+            value = selectedMinute,
+            onValueChange = {
+                selectedMinute = it
+                onTimeSelected(selectedHour, it)
+            },
+            range = minutes,
+            label = sheetString(R.string.kjui_sheet_minute),
+            modifier = Modifier.weight(1f),
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_minute" else null
+        )
+    }
+}
+
+/**
+ * Date and time wheel picker component
+ */
+@Composable
+fun DateTimeWheelPicker(
+    selectedDateTime: Calendar,
+    onDateTimeSelected: (year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Unit,
+    minDate: Calendar? = null,
+    maxDate: Calendar? = null,
+    minuteInterval: Int = 1,
+    dateFormat: String,
+    modifier: Modifier = Modifier,
+    textColor: Color = Configuration.DatePicker.defaultSheetTextColor
+) {
+    Column(modifier = modifier) {
+        DateWheelPicker(
+            selectedDate = selectedDateTime,
+            onDateSelected = { year, month, day ->
+                onDateTimeSelected(
+                    year, month, day,
+                    selectedDateTime.get(Calendar.HOUR_OF_DAY),
+                    selectedDateTime.get(Calendar.MINUTE)
+                )
+            },
+            minDate = minDate,
+            maxDate = maxDate,
+            dateFormat = dateFormat,
+            modifier = Modifier.fillMaxWidth(),
+            textColor = textColor
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        TimeWheelPicker(
+            selectedTime = selectedDateTime,
+            onTimeSelected = { hour, minute ->
+                onDateTimeSelected(
+                    selectedDateTime.get(Calendar.YEAR),
+                    selectedDateTime.get(Calendar.MONTH),
+                    selectedDateTime.get(Calendar.DAY_OF_MONTH),
+                    hour, minute
+                )
+            },
+            minuteInterval = minuteInterval,
+            modifier = Modifier.fillMaxWidth(),
+            textColor = textColor
+        )
+    }
+}
+
+/**
+ * Simple number picker component with scrollable list
+ */
+@Composable
+fun NumberPicker(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    range: List<Int>,
+    labels: List<String>? = null,
+    label: String? = null,
+    modifier: Modifier = Modifier,
+    textColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    testTagPrefix: String? = null
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (label != null) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = textColor
+            )
+        }
+        
+        Box(
+            modifier = Modifier
+                .height(150.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Use LazyColumn for scrollable list
+            val listState = rememberLazyListState()
+            val currentIndex = range.indexOf(value)
+            
+            // Scroll to the selected item on first composition
+            LaunchedEffect(Unit) {
+                if (currentIndex >= 0) {
+                    listState.scrollToItem(
+                        index = currentIndex,
+                        scrollOffset = -50 // Center the item
+                    )
+                }
+            }
+            
+            // Detect when scrolling stops and snap to nearest item
+            LaunchedEffect(listState.isScrollInProgress) {
+                if (!listState.isScrollInProgress) {
+                    val centerIndex = listState.firstVisibleItemIndex + 1
+                    if (centerIndex in range.indices) {
+                        onValueChange(range[centerIndex])
+                    }
+                }
+            }
+            
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Add padding items at the start
+                item { 
+                    Spacer(modifier = Modifier.height(50.dp))
+                }
+                
+                itemsIndexed(range) { index, item ->
+                    val isSelected = item == value
+                    val distance = kotlin.math.abs(index - currentIndex)
+                    Text(
+                        text = labels?.getOrNull(index) ?: item.toString().padStart(2, '0'),
+                        style = when {
+                            isSelected -> MaterialTheme.typography.headlineMedium
+                            distance == 1 -> MaterialTheme.typography.titleMedium
+                            else -> MaterialTheme.typography.bodyLarge
+                        },
+                        color = if (isSelected) {
+                            textColor
+                        } else {
+                            textColor.copy(
+                                alpha = when (distance) {
+                                    1 -> 0.6f
+                                    2 -> 0.4f
+                                    else -> 0.3f
+                                }
+                            )
+                        },
+                        modifier = Modifier
+                            .then(
+                                if (testTagPrefix != null) Modifier.testTag("${testTagPrefix}_$item")
+                                else Modifier
+                            )
+                            .clickable {
+                                onValueChange(item)
+                            }
+                            .padding(vertical = if (isSelected) 4.dp else 6.dp)
+                    )
+                }
+                
+                // Add padding items at the end
+                item { 
+                    Spacer(modifier = Modifier.height(50.dp))
+                }
+            }
+            
+            // Add selection indicator lines
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .align(Alignment.Center)
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    color = textColor.copy(alpha = 0.2f),
+                    thickness = 1.dp
+                )
+                HorizontalDivider(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    color = textColor.copy(alpha = 0.2f),
+                    thickness = 1.dp
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Calendar date picker component
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateCalendarPicker(
+    selectedDate: Calendar,
+    onDateSelected: (year: Int, month: Int, day: Int) -> Unit,
+    minDate: Calendar? = null,
+    maxDate: Calendar? = null,
+    dateFormat: String,
+    modifier: Modifier = Modifier,
+    sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    title: String? = null,
+    doneButtonText: String? = null
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate.timeInMillis,
+        yearRange = (minDate?.get(Calendar.YEAR) ?: 1900)..(maxDate?.get(Calendar.YEAR) ?: 2100)
+    )
+    
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Title
+        Text(
+            text = title ?: sheetString(R.string.kjui_sheet_select_date),
+            style = MaterialTheme.typography.titleMedium,
+            color = sheetTextColor,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        
+        DatePicker(
+            state = datePickerState,
+            modifier = Modifier.fillMaxWidth(),
+            showModeToggle = false,
+            colors = DatePickerDefaults.colors(
+                containerColor = Color.Transparent,
+                titleContentColor = sheetTextColor,
+                headlineContentColor = sheetTextColor,
+                weekdayContentColor = sheetTextColor,
+                subheadContentColor = sheetTextColor,
+                yearContentColor = sheetTextColor,
+                currentYearContentColor = sheetTextColor,
+                selectedYearContentColor = Configuration.DatePicker.defaultSheetBackgroundColor,
+                selectedYearContainerColor = sheetTextColor,
+                dayContentColor = sheetTextColor,
+                selectedDayContentColor = Configuration.DatePicker.defaultSheetBackgroundColor,
+                selectedDayContainerColor = sheetTextColor,
+                todayContentColor = sheetTextColor,
+                todayDateBorderColor = sheetTextColor
+            )
+        )
+        
+        // Confirm button
+        Button(
+            onClick = {
+                datePickerState.selectedDateMillis?.let { millis ->
+                    val cal = Calendar.getInstance().apply { timeInMillis = millis }
+                    onDateSelected(
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH),
+                        cal.get(Calendar.DAY_OF_MONTH)
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .testTag("kjui_x7q_done"),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Configuration.DatePicker.SheetButton.defaultButtonBackgroundColor,
+                contentColor = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+            )
+        ) {
+            Text(
+                text = doneButtonText ?: sheetString(R.string.kjui_sheet_select),
+                fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                letterSpacing = jsonUILetterSpacing(),
+                lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp)),
+                fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
+            )
+        }
+    }
+}

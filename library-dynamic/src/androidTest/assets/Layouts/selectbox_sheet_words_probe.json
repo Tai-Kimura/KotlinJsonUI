@@ -1,0 +1,24 @@
+{
+  "type": "View",
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "SelectBox",
+      "id": "probe_list",
+      "width": "matchParent",
+      "items": ["Alpha", "Beta"],
+      "sheetTitle": "Pick a store",
+      "cancelButtonText": "Back"
+    },
+    {
+      "type": "SelectBox",
+      "id": "probe_date",
+      "width": "matchParent",
+      "selectItemType": "Date",
+      "datePickerMode": "time",
+      "sheetTitle": "When",
+      "cancelButtonText": "Not now",
+      "doneButtonText": "Apply"
+    }
+  ]
+}

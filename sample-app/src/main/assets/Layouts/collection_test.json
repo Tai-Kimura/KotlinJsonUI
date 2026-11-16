@@ -1,0 +1,199 @@
+{
+  "type": "View",
+  "background": "white_12",
+  "child": [
+    {
+      "type": "ScrollView",
+      "child": [
+        {
+          "type": "View",
+          "padding": 16,
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Label",
+              "text": "CollectionView Test",
+              "fontSize": 28,
+              "fontWeight": "bold",
+              "fontColor": "black",
+              "bottomMargin": 20
+            },
+            {
+              "type": "Label",
+              "text": "Basic Collection with Headers & Footers",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "black",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "section_header",
+                  "cell": "basic_cell",
+                  "footer": "section_footer",
+                  "columns": 2
+                }
+              ],
+              "layout": "vertical",
+              "items": "@{items1}",
+              "height": 300,
+              "bottomMargin": 20
+            },
+            {
+              "type": "Label",
+              "text": "Grid Collection with Multiple Cell Types",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "black",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "layout": "vertical",
+              "columns": 2,
+              "sections": [
+                {
+                  "header": "grid_header",
+                  "cell": "image_cell",
+                  "footer": "grid_footer",
+                  "columns": 3
+                }
+              ],
+              "items": "@{mixedItems}",
+              "height": 400,
+              "bottomMargin": 20
+            },
+            {
+              "type": "Label",
+              "text": "Horizontal Collection",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "black",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "horizontal_header",
+                  "cell": "horizontal_card",
+                  "columns": 1
+                }
+              ],
+              "layout": "horizontal",
+              "items": "@{horizontalItems}",
+              "height": 150,
+              "bottomMargin": 20
+            },
+            {
+              "type": "Label",
+              "text": "Sectioned Collection",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "black",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "category_header",
+                  "cell": "product_cell",
+                  "footer": "category_footer",
+                  "columns": 2
+                }
+              ],
+              "layout": "vertical",
+              "items": "@{sectionedItems}",
+              "height": 400,
+              "bottomMargin": 20
+            },
+            {
+              "type": "Label",
+              "text": "Multi-Section Collection",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "black",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "category_header",
+                  "cell": "product_cell",
+                  "footer": "category_footer",
+                  "columns": 3
+                },
+                {
+                  "header": "featured_header",
+                  "cell": "feature_cell",
+                  "columns": 2
+                },
+                {
+                  "header": "grid_header",
+                  "cell": "image_cell",
+                  "footer": "grid_footer",
+                  "columns": 4
+                }
+              ],
+              "layout": "vertical",
+              "items": "@{multiSectionItems}",
+              "height": 600
+            },
+            {
+              "type": "Button",
+              "style": "dynamic_toggle",
+              "fontColor": "white",
+              "cornerRadius": 8,
+              "topMargin": 20
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeEnabled",
+      "class": "Boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "items1",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "mixedItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "horizontalItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "sectionedItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "multiSectionItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    }
+  ]
+}

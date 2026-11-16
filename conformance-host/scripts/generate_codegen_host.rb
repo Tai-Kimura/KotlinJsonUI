@@ -1,0 +1,341 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+#
+# generate_codegen_host.rb — build the CODEGEN side of the conformance host.
+#
+# The dynamic host renders fixture layouts through DynamicView at runtime;
+# production apps ship kjui-GENERATED Compose code. This script makes the
+# generated pipeline hostable so `jui conformance parity` can prove
+# dynamic ≡ codegen per fixture (same shape as the SwiftJsonUI host's
+# scripts/generate_codegen_host.rb and the web host's generate.mjs):
+#
+#   1. Stages every android-applicable VISUAL fixture layout as fx_NNNN.json
+#      in a NEUTRAL tmp dir (stable synthetic names — fixture ids collide as
+#      Kotlin type names, indices never do).
+#   2. Runs `kjui build` (kjui_tools — the exact production Compose codegen
+#      path) over it.
+#   3. Copies the generated kotlin into src/codegen/kotlin/ (gitignored;
+#      build.gradle.kts prefers it over src/fallback/kotlin/) and emits
+#      CodegenFixtureEntries.kt — fixture id → generated composable — plus
+#      codegen-map.json for diagnostics.
+#
+# Environment:
+#   CONFORMANCE_DIR   conformance directory (manifest.json, fixtures/) [required]
+#   KJUI_TOOLS_PATH   kjui_tools checkout (default: $CONFORMANCE_DIR/../kjui_tools)
+#
+
+require 'digest'
+require 'fileutils'
+require 'json'
+require_relative 'codegen_build_dir'
+
+host_dir = File.expand_path('..', __dir__)
+conformance_dir = ENV['CONFORMANCE_DIR'] or abort 'error: CONFORMANCE_DIR is not set'
+kjui_tools = ENV['KJUI_TOOLS_PATH'] || File.expand_path('../kjui_tools', conformance_dir)
+kjui_bin = File.join(kjui_tools, 'bin', 'kjui')
+abort "error: kjui_tools not found: #{kjui_bin} (set KJUI_TOOLS_PATH)" unless File.file?(kjui_bin)
+
+manifest_path = File.join(conformance_dir, 'manifest.json')
+abort "error: manifest not found: #{manifest_path}" unless File.file?(manifest_path)
+manifest = JSON.parse(File.read(manifest_path))
+
+# A directory of this run's own (codegen_build_dir.rb): it was one fixed
+# /tmp path, and two runs at once emptied each other's.
+build_dir, owned_build_dir = CodegenBuildDir.for_run
+at_exit { FileUtils.rm_rf(build_dir) if owned_build_dir }
+codegen_src = File.join(host_dir, 'src', 'codegen', 'kotlin')
+FileUtils.rm_rf(codegen_src)
+# Consumer-shaped staging: the color extraction writes
+# assets/Layouts/Resources/colors.json at the DEFAULT layouts path
+# regardless of config, while emission-side resolution reads the
+# configured path — align both on the consumer default or every
+# named color falls back to parseColor('pale_gray') and crashes
+# at render (caught by the first codegen suite run).
+layouts_dir = File.join(build_dir, 'src', 'assets', 'Layouts')
+FileUtils.mkdir_p(layouts_dir)
+
+# Host namespace: generated code references R.drawable.* (fixture images),
+# and R lives in the app's namespace — a distinct generated package produced
+# 'Unresolved reference R' across every Image fixture.
+PACKAGE = 'com.kotlinjsonui.conformance'
+
+# ---------------------------------------------------------------- selection
+entries = []
+compile_only = []
+skipped = []
+manifest.fetch('fixtures', []).each do |fixture|
+  next unless (fixture['platforms'] || []).include?('android')
+  # Non-visual fixtures (assertable / interactive) are drawn by the dynamic
+  # suite only, and the codegen suite asserts visual ones. They are still
+  # layouts a consumer writes, so they go through `kjui build` and the host's
+  # compile: a fixture whose generated Kotlin does not compile fails this
+  # build. Until 2.43.1 they were not staged at all, and an interactive
+  # fixture's emission that did not compile (an Object path binding, a
+  # handler called with the wrong arguments, focus handlers written with the
+  # binding's braces — jsonui-cli 1.9.6's tickets) reached no compiler.
+  # Compiled, not registered: the runtime registry stays the visual set.
+  #
+  # A testBridge fixture (INTERACTIVE_HOST_CONTRACT.md §6) is hosted at run
+  # time although it is interactive: it drives no input, and the generated
+  # screen view carrying the bridge is what it measures.
+  test_bridge = fixture.key?('testBridge') && !fixture['testBridge'].nil?
+  compile = %w[assertable interactive].include?(fixture['class']) && !test_bridge
+  next unless fixture['class'] == 'visual' || compile || test_bridge
+  mode = fixture['mode']
+  mode_values =
+    case mode
+    when String then [mode]
+    when Hash then mode.values.flatten
+    else []
+    end
+  if !mode_values.empty? && !mode_values.include?('compose')
+    skipped << { 'id' => fixture['id'], 'reason' => "mode #{mode_values.join(',')} not hosted" }
+    next
+  end
+  # Companions split by directory: __screens/ layouts are Embed screens the
+  # generated code cannot resolve by name (dynamic-loader navigation story) —
+  # still skipped. __cells/ layouts are Collection cell views: staging them
+  # under their bare name is all codegen needs — kjui build generates
+  # ConformanceCellView from conformance_cell.json and the collection code
+  # references exactly that class.
+  screen_companions = (fixture['companions'] || []).reject { |c| c.include?('__cells/') }
+  if screen_companions.any?
+    skipped << { 'id' => fixture['id'], 'reason' => 'embed-companion resolution not hosted in codegen yet' }
+    next
+  end
+  (compile ? compile_only : entries) << fixture
+end
+
+entries.each_with_index do |fixture, i|
+  FileUtils.cp(
+    File.join(conformance_dir, fixture['layout']),
+    File.join(layouts_dir, format('fx_%04d.json', i + 1))
+  )
+end
+compile_only.each_with_index do |fixture, i|
+  FileUtils.cp(
+    File.join(conformance_dir, fixture['layout']),
+    File.join(layouts_dir, format('cx_%04d.json', i + 1))
+  )
+end
+
+cell_companions = (entries + compile_only)
+  .flat_map { |f| f['companions'] || [] }
+  .select { |c| c.include?('__cells/') }
+  .uniq
+  .sort
+cell_companions.each do |companion|
+  src = File.join(conformance_dir, companion)
+  abort "error: cell companion layout missing: #{companion}" unless File.file?(src)
+  bare = File.basename(companion).sub(/\.layout\.json\z/, '') + '.json'
+  FileUtils.cp(src, File.join(layouts_dir, bare))
+end
+puts "[codegen-host] staged #{entries.size} visual fixture layout(s), #{compile_only.size} compile-only (assertable / interactive) + #{cell_companions.size} cell companion(s), skipped #{skipped.size}"
+
+# Cell wrapper rewrite happens AFTER kjui build (see below): build scaffolds
+# the plain view wrapper, but the collection call sites pass `modifier =`,
+# which only the `kjui g cell` scaffold accepts.
+def rewrite_cell_wrappers(cell_companions, build_dir, package)
+  cell_companions.each do |companion|
+    stem = File.basename(companion).sub(/\.layout\.json\z/, '')
+    pascal = stem.split('_').map(&:capitalize).join
+    wrapper = File.join(build_dir, 'src', 'kotlin', 'views', stem, "#{pascal}View.kt")
+    next unless File.file?(wrapper)
+    File.write(wrapper, <<~KOTLIN)
+      // @generated by scripts/generate_codegen_host.rb — cell wrapper.
+      // kjui build scaffolds the plain view wrapper here, but collection
+      // call sites pass `modifier =`; consumers get this shape from
+      // `kjui g cell` (user-owned scaffold), so the host synthesizes it.
+      package #{package}.views.#{stem}
+
+      import androidx.compose.runtime.Composable
+      import androidx.compose.runtime.collectAsState
+      import androidx.compose.runtime.getValue
+      import androidx.compose.ui.Modifier
+      import #{package}.viewmodels.#{pascal}ViewModel
+
+      @Composable
+      fun #{pascal}View(
+          viewModel: #{pascal}ViewModel,
+          modifier: Modifier = Modifier
+      ) {
+          // This is a cell view for use in Collection components
+          // Data is observed from viewModel using collectAsState
+          val data by viewModel.data.collectAsState()
+
+          #{pascal}GeneratedView(
+              data = data,
+              viewModel = viewModel,
+              modifier = modifier
+          )
+      }
+    KOTLIN
+  end
+end
+
+# ---------------------------------------------------------------- kjui build
+File.write(File.join(build_dir, 'kjui.config.json'), JSON.pretty_generate(
+  'mode' => 'compose',
+  'project_name' => 'ConformanceCodegen',
+  'package_name' => PACKAGE,
+  'source_directory' => 'src',
+  'layouts_directory' => 'assets/Layouts',
+  'styles_directory' => 'Styles',
+  'view_directory' => 'kotlin/views',
+  'data_directory' => 'kotlin/data',
+  'viewmodel_directory' => 'kotlin/viewmodels',
+  'compose' => { 'output_directory' => 'kotlin/generated' }
+) + "\n")
+
+# Nothing staged — an `only` whose fixtures none applies to Android (a web-
+# or iOS-only fixture) — leaves kjui nothing to build, and it writes no
+# kotlin: the script stopped there and the android-codegen job failed on a
+# run with no Android fixture in it. The host is then the empty registry
+# below (jsonui-cli ticket kjui-codegen-host-empty-registry-on-an-assertable-
+# only-run, its family).
+nothing_staged = entries.empty? && compile_only.empty? && cell_companions.empty?
+if nothing_staged
+  puts "[codegen-host] no layout staged — kjui build skipped, the registry is empty"
+  FileUtils.mkdir_p(codegen_src)
+else
+  puts "[codegen-host] running kjui build (#{kjui_tools})"
+  build_log = File.join(host_dir, 'codegen-build.log')
+  ok = system({ 'PWD' => build_dir }, RbConfig.ruby, kjui_bin, 'build',
+              chdir: build_dir, out: build_log, err: %i[child out])
+  abort "error: kjui build failed — see #{build_log}" unless ok
+
+  rewrite_cell_wrappers(cell_companions, build_dir, PACKAGE)
+
+  # Copy the whole generated kotlin tree (views/data/viewmodels/generated).
+  FileUtils.mkdir_p(codegen_src)
+  src_kotlin = File.join(build_dir, 'src', 'kotlin')
+  abort "error: kjui build produced no kotlin output" unless File.directory?(src_kotlin)
+  FileUtils.cp_r(File.join(src_kotlin, '.'), codegen_src)
+end
+
+# Generated resources (extracted strings/colors): the generated views
+# reference R.string.* / R.color.*, so the staged res tree rides along
+# (build.gradle.kts adds src/codegen/res when present).
+src_res = File.join(build_dir, 'src', 'res')
+if File.directory?(src_res)
+  codegen_res = File.join(host_dir, 'src', 'codegen', 'res')
+  FileUtils.rm_rf(codegen_res)
+  FileUtils.mkdir_p(codegen_res)
+  FileUtils.cp_r(File.join(src_res, '.'), codegen_res)
+  # With the consumer-shaped staging paths the extractor emits clean
+  # screen-scoped string keys (fx_0013_sample) that the generated views
+  # reference via R.string — the res tree rides along verbatim.
+end
+
+# ---------------------------------------------------------------- registry
+generated = 0
+imports = []
+pairs = []
+screen_ids = []
+entries.each_with_index do |fixture, i|
+  name = format('Fx%04d', i + 1)
+  dir_name = format('fx_%04d', i + 1)
+  view_file = File.join(codegen_src, 'views', dir_name, "#{name}View.kt")
+  has_view = File.file?(view_file)
+  fixture['_codegen'] = { 'component' => name, 'generated' => has_view }
+  next unless has_view
+
+  generated += 1
+  imports << "import #{PACKAGE}.views.#{dir_name.delete('_')}.#{name}View"
+  change = (fixture['state'] || {})['afterFirstDraw']
+  test_bridge = !fixture['testBridge'].nil?
+  screen_ids << [fixture['id'], dir_name] if test_bridge
+  if change
+    # afterFirstDraw (jsonui-cli INTERACTIVE_HOST_CONTRACT.md): the one change
+    # the host makes after the first draw, through the generated ViewModel's
+    # updateData — the codegen face's `set`. A ViewModel of this composition's
+    # own (keyed per composition) so a fixture drawn again starts from its
+    # first-draw value, not from the change a previous draw made.
+    imports << "import #{PACKAGE}.viewmodels.#{name}ViewModel"
+    set = change.fetch('set')
+    var = set.fetch('var')
+    value = set.fetch('value').to_s.inspect
+    body = "val key = androidx.compose.runtime.remember { \"#{name}-\" + System.nanoTime() }; " \
+           "val vm: #{name}ViewModel = androidx.lifecycle.viewmodel.compose.viewModel(key = key); " \
+           "#{name}View(viewModel = vm); " \
+           "val drawn = vm.data.collectAsState().value; " \
+           "ConformanceAfterFirstDraw(#{fixture['id'].inspect}, applied = drawn.#{var} == #{value}) " \
+           "{ vm.updateData(mapOf(#{var.inspect} to #{value})) }"
+    pairs << [fixture['id'], body, :raw]
+  elsif test_bridge
+    # testBridge: a ViewModel of this composition's own, so a remount (§6
+    # job 4) builds a new store — the activity-scoped default would keep the
+    # values the first instance applied.
+    imports << "import #{PACKAGE}.viewmodels.#{name}ViewModel"
+    body = "val key = androidx.compose.runtime.remember { \"#{name}-\" + System.nanoTime() }; " \
+           "val vm: #{name}ViewModel = androidx.lifecycle.viewmodel.compose.viewModel(key = key); " \
+           "#{name}View(viewModel = vm)"
+    pairs << [fixture['id'], body, :raw]
+  else
+    pairs << [fixture['id'], "#{name}View"]
+  end
+end
+
+# mapOf with ~500 composable-lambda pairs risks the JVM method-size limit —
+# chunk the initializers.
+chunks = pairs.each_slice(80).to_a
+chunk_funcs = chunks.each_with_index.map do |chunk, ci|
+  body = chunk.map do |id, view, raw|
+    raw ? "        #{id.inspect} to { #{view} }," : "        #{id.inspect} to { #{view}() },"
+  end.join("\n")
+  <<~KOTLIN
+    private fun chunk#{ci}(): Map<String, @Composable () -> Unit> = mapOf(
+    #{body}
+    )
+  KOTLIN
+end
+
+registry = +"// @generated by scripts/generate_codegen_host.rb — DO NOT EDIT\n"
+registry << "// Fixture id → kjui-generated Compose view (production codegen pipeline).\n"
+registry << "// Compiled in place of src/fallback/kotlin's empty registry (build.gradle.kts).\n\n"
+registry << "package com.kotlinjsonui.conformance\n\n"
+registry << "import androidx.compose.runtime.Composable\n"
+registry << "import androidx.compose.runtime.collectAsState\n"
+registry << imports.sort.join("\n")
+registry << "\n\nobject CodegenFixtureEntries {\n"
+registry << "    val map: Map<String, @Composable () -> Unit> =\n"
+# No visual fixture staged (an `only` of assertable / interactive fixtures,
+# which are compiled but not drawn) leaves no chunk: the sum of none was an
+# empty right-hand side and the registry did not compile (jsonui-cli ticket
+# kjui-codegen-host-empty-registry-on-an-assertable-only-run).
+registry << "        " + (chunks.empty? ? 'emptyMap()' : (0...chunks.size).map { |ci| "chunk#{ci}()" }.join(" +\n        ")) + "\n\n"
+registry << chunk_funcs.join("\n").gsub(/^/, '    ').gsub(/^    $/, '')
+registry << "\n    /** testBridge fixture id → the staged layout's screen id (its ScreenMarker / bridge). */\n"
+registry << "    val screenIds: Map<String, String> = mapOf(\n"
+registry << screen_ids.map { |id, screen| "        #{id.inspect} to #{screen.inspect}," }.join("\n")
+registry << "\n    )\n"
+registry << "}\n"
+
+registry_dir = File.join(codegen_src, 'registry', 'com', 'kotlinjsonui', 'conformance')
+FileUtils.mkdir_p(File.dirname(File.join(codegen_src, 'CodegenFixtureEntries.kt')))
+File.write(File.join(codegen_src, 'CodegenFixtureEntries.kt'), registry)
+# The script that wrote this folder, by its sha256 (build.gradle.kts compares it with the script as it is now: a folder
+# an older script wrote stops the build, never builds silently — ticket 2026-10-21-kjui-conformance-host-does-not-compile)
+File.write(File.join(codegen_src, '.generator-sha256'), Digest::SHA256.file(__FILE__).hexdigest + "\n")
+
+compiled_only = compile_only.each_with_index.count do |_, i|
+  File.file?(File.join(codegen_src, 'views', format('cx_%04d', i + 1), format('Cx%04dView.kt', i + 1)))
+end
+map = {
+  'generated' => generated,
+  'staged' => entries.size,
+  'compile_only' => { 'staged' => compile_only.size, 'generated' => compiled_only,
+                      'fixtures' => compile_only.each_with_index.map { |f, i| [f['id'], format('cx_%04d', i + 1)] }.to_h },
+  'skipped' => skipped,
+  'fixtures' => entries.map { |f| [f['id'], f['_codegen']] }.to_h
+}
+File.write(File.join(host_dir, 'codegen-map.json'), JSON.pretty_generate(map) + "\n")
+
+missing = entries.reject { |f| f.dig('_codegen', 'generated') }
+puts "[codegen-host] #{generated}/#{entries.size} generated views; registry written"
+unless missing.empty?
+  puts "[codegen-host] fixtures WITHOUT a generated view (parity reports them as missing):"
+  missing.each { |f| puts "  - #{f['id']}" }
+end
+puts "[codegen-host] next: HOST_MODE=codegen scripts/run_conformance.sh"

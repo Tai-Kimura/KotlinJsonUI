@@ -1,0 +1,338 @@
+package com.kotlinjsonui.core
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import com.google.gson.JsonObject
+import java.util.UUID
+
+/**
+ * Configuration object for default values used across KotlinJsonUI components
+ */
+object Configuration {
+
+    /**
+     * Custom color parser function
+     * If set, this function will be used to parse colors from JSON instead of the default parser
+     * The function receives the JsonObject and key
+     * The function should return null if it cannot parse the color
+     */
+    var colorParser: ((JsonObject, String) -> Color?)? = null
+
+    /**
+     * Theme-aware color parser. Called by Dynamic-mode color resolution
+     * BEFORE the existing `colorParser` + ResourceCache + hex fallback.
+     * Apps wire the tool-generated `ColorManager.compose.color(key)` here so
+     * layout color keys follow the active mode without touching every
+     * Composable.
+     *
+     * Closure args: `(currentThemeMode, key)` → `Color?`. Return `null` to
+     * fall through to the remaining resolution chain.
+     *
+     * Wiring example:
+     * ```
+     * Configuration.themedColorParser = { _, key -> ColorManager.compose.color(key) }
+     * // (ColorManager reads its own currentMode internally, so the mode arg
+     * //  can be ignored if you let ColorManager own the state.)
+     * ```
+     */
+    var themedColorParser: ((mode: String, key: String) -> Color?)? = null
+
+    /**
+     * Current theme mode as a raw string label (e.g. `"light"`, `"dark"`,
+     * `"high_contrast"`). Backed by `mutableStateOf` so Composables reading
+     * `currentThemeMode.value` auto-recompose on `setThemeMode(...)`.
+     *
+     * Purely a label — actual color values live in `themedColorParser`.
+     */
+    private val _currentThemeMode: MutableState<String> = mutableStateOf("light")
+
+    val currentThemeMode: String
+        get() = _currentThemeMode.value
+
+    /**
+     * Switch the active theme mode. Updates the `mutableStateOf`-backed
+     * value (triggering Compose recomposition for every reader) AND fires
+     * registered callbacks for non-Compose observers (Views, legacy code).
+     * No-op when `mode` already matches.
+     */
+    fun setThemeMode(mode: String) {
+        if (_currentThemeMode.value == mode) return
+        _currentThemeMode.value = mode
+        themeChangeCallbacks.values.forEach { it.invoke(mode) }
+    }
+
+    private val themeChangeCallbacks: MutableMap<UUID, (String) -> Unit> = mutableMapOf()
+
+    /**
+     * Subscribe to theme-mode changes from non-Compose code. Returns a
+     * closure that unsubscribes when invoked.
+     */
+    fun subscribeToThemeChanges(callback: (String) -> Unit): () -> Unit {
+        val id = UUID.randomUUID()
+        themeChangeCallbacks[id] = callback
+        return { themeChangeCallbacks.remove(id) }
+    }
+
+    /**
+     * Whether to show error components in debug mode
+     * When true, components that fail to render will show an error message
+     * When false, errors are silently logged
+     */
+    var showErrorsInDebug: Boolean = true
+
+    /**
+     * Custom fallback component to render when an unknown component type is encountered
+     * The function receives the JsonObject and data map
+     */
+    var fallbackComponent: (@Composable (JsonObject, Map<String, Any>) -> Unit)? = null
+
+    /**
+     * Custom component handler to render app-specific custom components
+     * The function receives the component type, JsonObject and data map
+     * Should return true if the component was handled, false otherwise
+     */
+    var customComponentHandler: (@Composable (String, JsonObject, Map<String, Any>) -> Boolean)? = null
+
+    /**
+     * The component types [customComponentHandler] draws — the spellings it
+     * answers `true` for. A type named here is read as written by what
+     * classifies a node by its type (its viewId, its tap role, its image
+     * role), as the app draws it, before any built-in or synonym reading —
+     * as kjui's codegen reads the app's converters first.
+     *
+     * The DynamicComponentInitializer that `jui g converter` generates sets
+     * it from DynamicComponentRegistry. **If you write the handler by hand,
+     * add each type it draws here too.** A type the handler draws that is
+     * not named here is read as the built-in its spelling names (an app's
+     * ProgressBar as the built-in Progress), and a debuggable build says so
+     * once per type.
+     */
+    var customComponentTypes: Set<String> = emptySet()
+
+    // Global color defaults (all mutable for app customization)
+    object Colors {
+        var background = Color.White
+        var text = Color.Black
+        var placeholder = Color.Gray
+        var border = Color.LightGray
+        var primary = Color(0xFF007AFF)
+        var secondary = Color(0xFF34C759)
+        var error = Color(0xFFFF3B30)
+        var disabled = Color(0xFFC7C7CC)
+        var shadow = Color.Black.copy(alpha = 0.1f)
+        var linkColor = Color(0xFF0000EE)  // Default blue color for links
+    }
+
+    // Global font defaults (all mutable for app customization)
+    object Font {
+        /** Default font family (null uses system default) */
+        var family: FontFamily? = null
+
+        /** Default font weight */
+        var weight: FontWeight = FontWeight.Normal
+
+        /** Default font size in sp */
+        var size: Int = 14
+
+        /**
+         * Whether a text follows the system text size (Settings → Font size) when its component declares no
+         * `fontScaling` (ticket sjui-label-font-size-ignores-dynamic-type; jsonui-cli
+         * shared/core/font_scale_vectors.json). True by default: KotlinJsonUI's texts have always been `.sp`.
+         * The same setting as SwiftJsonUI's `SwiftJsonUIConfiguration.shared.font.scaling`.
+         */
+        var scaling: Boolean = true
+
+        /**
+         * The largest factor a following text grows by when its component declares no `maxFontScale`: drawn at
+         * most `fontSize × maxScale` (dp). Null: no cap beyond the system's own (Android caps the font scale at
+         * 2.0, and Android 14+ grows large sizes less). An app whose screens break at large sizes sets 2.0 here
+         * in one line, as on iOS (`SwiftJsonUIConfiguration.shared.font.maxScale`).
+         */
+        var maxScale: Float? = null
+
+        /**
+         * Custom font provider function.
+         *
+         * Receives a [FontSpec] (family-name string, weight, size, italic flag) and
+         * returns a [ResolvedFont] whose fields are passed directly to Compose
+         * `Text(...)` parameters. Return `null` to fall through to the library's
+         * built-in [defaultResolved] fallback.
+         *
+         * NOTE: This is a breaking change from KotlinJsonUI 2.6.x where the
+         * provider was `((String) -> FontFamily?)?`. The new signature gives the
+         * provider full visibility of weight/size/italic so apps can map e.g.
+         * `(family = "Inter", weight = Bold)` to a single resource like
+         * `R.font.inter_bold`.
+         */
+        var fontProvider: ((FontSpec) -> ResolvedFont?)? = null
+
+        /**
+         * Resolve a [FontSpec] to a concrete [ResolvedFont].
+         *
+         * Order:
+         * 1. Delegate to [fontProvider] if set; if it returns non-null, use that.
+         * 2. Otherwise build a [ResolvedFont] from the spec via [defaultResolved].
+         */
+        fun resolve(spec: FontSpec): ResolvedFont {
+            fontProvider?.invoke(spec)?.let { return it }
+            return defaultResolved(spec)
+        }
+
+        /**
+         * Library-internal fallback when no [fontProvider] is registered (or it
+         * returned `null`).
+         *
+         * - `family`: there is no string-to-`FontFamily` lookup at this level, so
+         *   `spec.family` is intentionally **dropped**. Apps that want named
+         *   families resolved must register a [fontProvider]. The global
+         *   [Configuration.Font.family] is *not* substituted here either, since
+         *   that would silently override `null` requests.
+         * - `weight` / `size`: passed through unchanged.
+         * - `style`: derived from `spec.italic` (`Italic` if true, `Normal` if
+         *   false).
+         */
+        fun defaultResolved(spec: FontSpec): ResolvedFont = ResolvedFont(
+            family = null,
+            weight = spec.weight,
+            size = spec.size,
+            style = if (spec.italic) FontStyle.Italic else FontStyle.Normal
+        )
+    }
+
+    // Global size defaults
+    object Sizes {
+        const val fontSize = 14
+        const val padding = 16
+        const val spacing = 8
+        const val shadowElevation = 4f
+    }
+
+    // Global animation defaults
+    object Animation {
+        const val duration = 300
+    }
+
+    // TextField specific defaults (mutable for app customization)
+    object TextField {
+        var defaultBackgroundColor = Colors.background
+        var defaultHighlightBackgroundColor = Colors.background
+        var defaultTextColor = Colors.text
+        var defaultPlaceholderColor = Colors.placeholder
+        var defaultBorderColor = Colors.border
+        const val defaultHeight = 44
+        const val defaultFontSize = Sizes.fontSize
+    }
+
+    // Button specific defaults
+    object Button {
+        val defaultBackgroundColor = Colors.primary
+        val defaultTextColor = Color.White
+        val defaultDisabledBackgroundColor = Colors.disabled
+        val defaultDisabledTextColor = Color.Gray
+        const val defaultHeight = 44
+        const val defaultFontSize = Sizes.fontSize
+        // A Button's corner when the layout writes no cornerRadius: 0, as on iOS and the web (the
+        // requester's ruling 2026-11-15, jsonui-cli ticket jui-button-default-corner-radius-differs;
+        // it was 8). Not a setting: kept only because code generated by kjui before jsonui-cli 2.5.44
+        // reads it.
+        const val defaultCornerRadius = 0
+    }
+
+    // Switch specific defaults
+    object Switch {
+        val defaultOnColor = Colors.secondary
+        val defaultOffColor = Colors.disabled
+        val defaultThumbColor = Color.White
+    }
+
+    // SelectBox specific defaults
+    object SelectBox {
+        val defaultBackgroundColor = Colors.background
+        val defaultTextColor = Colors.text
+        val defaultPlaceholderColor = Colors.placeholder
+        val defaultBorderColor = Colors.border
+        // Sheet chrome is app-brand styling, not per-screen semantics: these
+        // are mutable so apps can restyle the option sheet globally without
+        // any layout attribute. Precedence stays: layout-declared attribute >
+        // Configuration > built-in default.
+        var defaultSheetBackgroundColor = Colors.background  // 白
+        var defaultSheetTextColor = Colors.text  // 黒
+        const val defaultHeight = 44
+
+        // Sheet typography overrides. null keeps the MaterialTheme-derived
+        // style the sheet has always used, so an app that sets nothing sees
+        // no change at all.
+        /** Font family for ALL sheet text (title, option rows, cancel). */
+        var sheetFontFamily: FontFamily? = null
+        /** Option-row font size in sp. null → MaterialTheme bodyLarge. */
+        var sheetItemFontSize: Int? = null
+        /** Option-row font weight. null → MaterialTheme bodyLarge. */
+        var sheetItemFontWeight: FontWeight? = null
+        /** Sheet title font size in sp. null → MaterialTheme titleMedium. */
+        var sheetTitleFontSize: Int? = null
+
+        // Sheet button styles
+        object SheetButton {
+            var defaultCancelButtonTextColor = Colors.primary
+            // NOTE deliberately no longer `const`: existing binaries that
+            // inlined 17/700 keep those values until recompiled.
+            var defaultFontSize = 17  // sp
+            var defaultFontWeight = 700  // Bold
+        }
+    }
+
+    // Slider specific defaults
+    object Slider {
+        val defaultActiveColor = Colors.primary
+        val defaultInactiveColor = Colors.disabled
+        val defaultThumbColor = Color.White
+    }
+
+    // DatePicker specific defaults
+    object DatePicker {
+        val defaultBackgroundColor = Colors.background
+        val defaultTextColor = Colors.text
+        val defaultSelectedColor = Colors.primary
+        val defaultTodayColor = Colors.secondary
+        // Mutable sheet chrome — same contract as Configuration.SelectBox.
+        var defaultSheetBackgroundColor = Colors.background  // 白
+        var defaultSheetTextColor = Colors.text  // 黒
+        const val defaultHeight = 44
+
+        // Sheet typography overrides (title + buttons; the Material picker
+        // internals keep their own typography). null = no change.
+        var sheetFontFamily: FontFamily? = null
+        /** Sheet title font size in sp. null → MaterialTheme titleMedium. */
+        var sheetTitleFontSize: Int? = null
+
+        // Sheet button styles
+        object SheetButton {
+            var defaultButtonBackgroundColor = Colors.primary
+            var defaultButtonTextColor = Color.White
+            var defaultCancelButtonBackgroundColor = Color.Transparent
+            var defaultCancelButtonTextColor = Colors.primary
+            // NOTE deliberately no longer `const` — see SelectBox.SheetButton.
+            var defaultFontSize = 17  // sp
+            var defaultFontWeight = 700  // Bold
+        }
+    }
+
+    // Segment (TabLayout) specific defaults
+    object Segment {
+        // The app's own Segment colours; null (the default) is iOS's, by the theme: the track the
+        // system's translucent grey, the selected fill white / 99,99,102, the labels black / white
+        // (the requester's ruling 2026-11-15, Segment drawn as iOS draws it). A layout's
+        // background / tintColor / fontColor / selectedFontColor wins over them.
+        var defaultBackgroundColor: Color? = null
+        var defaultTextColor: Color? = null
+        var defaultSelectedBackgroundColor: Color? = null
+        var defaultSelectedTextColor: Color? = null
+        var defaultBorderColor = Colors.border
+        const val defaultHeight = 44
+    }
+}

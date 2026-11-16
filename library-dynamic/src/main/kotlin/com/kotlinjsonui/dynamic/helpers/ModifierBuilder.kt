@@ -1,0 +1,1826 @@
+package com.kotlinjsonui.dynamic.helpers
+
+import com.kotlinjsonui.core.DeclaredSpelling
+import android.content.Context
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.composed
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import com.kotlinjsonui.components.collectionReorderActions
+import com.kotlinjsonui.components.collectionReorderHandle
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.AppComponentStages
+import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.dynamic.ResourceCache
+import com.kotlinjsonui.dynamic.TypeSynonyms
+
+/**
+ * Builds Compose Modifier from JSON attributes.
+ * Method order matches modifier_builder.rb in kjui_tools.
+ *
+ * Modifier application order:
+ * margins → weight → size → offset → testTag → alpha → shadow → background(clip+border+bg) → clickable → padding → alignment
+ *
+ * The testTag (with testTagsAsResourceId) sits after the margins and the
+ * offset, so the tagged box — the resource-id bounds, TalkBack's focus frame
+ * — is the box the view draws. Before KotlinJsonUI 2.43.5 it came first and a
+ * view with a margin reported its margin-inclusive box (ticket
+ * kjui-a11y-bounds-of-a-margined-view-include-its-margin).
+ */
+object ModifierBuilder {
+
+    // ── Binding Helpers ──────────────────────────────────────────────
+
+    fun isBinding(value: Any?): Boolean {
+        return value is String && value.startsWith("@{") && value.endsWith("}")
+    }
+
+    fun extractBindingProperty(value: String): String? {
+        if (value.startsWith("@{") && value.endsWith("}")) {
+            return value.drop(2).dropLast(1)
+        }
+        return null
+    }
+
+    /**
+     * The handler an event attribute names, as a binding expression: `@{onPage}`
+     * as written, a bare name `onPage` as `@{onPage}`. For the event attributes
+     * the SSoT types `string | binding` (Collection onValueChange / onItemAppear,
+     * TabView onValueChange), where a bare name is a declared form. Anything
+     * else — empty, or text that is no name — is no handler.
+     */
+    fun handlerExpression(raw: String?): String? {
+        val value = raw?.trim() ?: return null
+        if (isBinding(value)) return value
+        return if (BARE_HANDLER_NAME.matches(value)) "@{$value}" else null
+    }
+
+    private val BARE_HANDLER_NAME = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*")
+
+    /**
+     * Resolve event handler from data map and invoke it.
+     * Supports () -> Unit, (String) -> Unit, (String, T) -> Unit signatures.
+     */
+    fun resolveEventHandler(
+        handler: String?,
+        data: Map<String, Any>,
+        viewId: String? = null,
+        valueExpr: Any? = null
+    ) {
+        if (handler == null) return
+        val methodName = if (isBinding(handler)) extractBindingProperty(handler) ?: handler else handler
+
+        val fn = data[methodName] ?: return
+        try {
+            when {
+                valueExpr != null && viewId != null -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val two = fn as? (String, Any) -> Unit
+                    @Suppress("UNCHECKED_CAST")
+                    val one = fn as? (Any) -> Unit
+                    when {
+                        two != null -> withValueAsDeclared(valueExpr) { two(viewId, it) }
+                        one != null -> withValueAsDeclared(valueExpr) { one(it) }
+                        else -> @Suppress("UNCHECKED_CAST") (fn as? () -> Unit)?.invoke()
+                    }
+                }
+                viewId != null -> {
+                    @Suppress("UNCHECKED_CAST")
+                    (fn as? (String) -> Unit)?.invoke(viewId)
+                        ?: (fn as? () -> Unit)?.invoke()
+                }
+                valueExpr != null -> {
+                    // Payload without an id (e.g. onPan/onPinch on an id-less
+                    // node): (T) -> Unit gets the payload, () -> Unit ignores it.
+                    @Suppress("UNCHECKED_CAST")
+                    val one = fn as? (Any) -> Unit
+                    if (one != null) withValueAsDeclared(valueExpr) { one(it) }
+                    else @Suppress("UNCHECKED_CAST") (fn as? () -> Unit)?.invoke()
+                }
+                else -> {
+                    @Suppress("UNCHECKED_CAST")
+                    (fn as? () -> Unit)?.invoke()
+                }
+            }
+        } catch (_: Exception) {
+            // Signature mismatch – silently skip
+        }
+    }
+
+    /**
+     * A Float value (a Slider's, a pinch's scale) for a handler declared
+     * `(Double)`: SwiftUI hands the same declaration a Double (or a CGFloat,
+     * which Swift passes to a Double), so a layout declares Double. The type
+     * is erased here; the handler's own bridge rejects the Float before its
+     * body runs (ClassCastException), and the value is handed again as a
+     * Double. Until 2.53.x the rejection was swallowed and the handler never
+     * called (ticket kjui-slider-on-value-change-passes-float-to-double-handler).
+     * Any other exception — the handler's own — is not retried.
+     */
+    private inline fun withValueAsDeclared(value: Any, call: (Any) -> Unit) {
+        try {
+            call(value)
+        } catch (e: ClassCastException) {
+            if (value is Float && e.message.orEmpty().contains("java.lang.Double")) call(value.toDouble()) else throw e
+        }
+    }
+
+    // ── Individual Modifier Builders ─────────────────────────────────
+
+    /**
+     * build_test_tag: id → testTag + semantics, then the control's
+     * screen-reader name and a node's live region ([ControlAccessibility]),
+     * as kjui's build_test_tag writes them beside it.
+     */
+    fun applyTestTag(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap(),
+        context: Context? = null
+    ): Modifier {
+        val id = json.get("id")?.takeIf { it.isJsonPrimitive }?.asString
+        val tagged = if (id == null) modifier else modifier
+            .testTag(id)
+            .semantics { testTagsAsResourceId = true }
+        return applyControlAccessibility(tagged, json, data, context)
+    }
+
+    /** accessibilityLabel → contentDescription; accessibilityLiveRegion → liveRegion; accessibilitySelected → selected. */
+    fun applyControlAccessibility(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>,
+        context: Context?
+    ): Modifier {
+        var result = modifier
+        ControlAccessibility.label(json, data, context)?.let { label ->
+            result = result.semantics { contentDescription = label }
+        }
+        ControlAccessibility.live(json)?.let { live ->
+            val mode = if (live == ControlAccessibility.Live.ASSERTIVE) LiveRegionMode.Assertive else LiveRegionMode.Polite
+            result = result.semantics { liveRegion = mode }
+        }
+        if (ControlAccessibility.selected(json, data)) {
+            result = result.semantics { selected = true }
+        }
+        return result
+    }
+
+    /** The margins a node draws as padding around its declared size, per edge (dp). */
+    data class MarginPaddings(val top: Float, val bottom: Float, val start: Float, val end: Float)
+
+    /**
+     * The padding [applyMargins] draws for this node's margins, per edge, or
+     * null when it draws none. One rule for both: a `margins` array of 1, 2
+     * or 4 values wins (any other length draws nothing); otherwise the first
+     * individual spelling per edge. A ConstraintLayout sibling aligned to this
+     * node reads it — the node's ref box includes this padding
+     * (DynamicConstraintLayoutComponent, ticket
+     * kjui-relative-align-view-measures-the-anchor-with-its-margin).
+     */
+    fun marginPaddings(json: JsonObject, data: Map<String, Any>): MarginPaddings? {
+        json.get("margins")?.let { element ->
+            if (element.isJsonArray) {
+                val arr = element.asJsonArray
+                return when (arr.size()) {
+                    1 -> (dimen(arr[0], data) ?: 0f).let { MarginPaddings(it, it, it, it) }
+                    2 -> {
+                        val v = dimen(arr[0], data) ?: 0f
+                        val h = dimen(arr[1], data) ?: 0f
+                        MarginPaddings(v, v, h, h)
+                    }
+                    4 -> MarginPaddings(
+                        top = dimen(arr[0], data) ?: 0f,
+                        bottom = dimen(arr[2], data) ?: 0f,
+                        start = dimen(arr[3], data) ?: 0f,
+                        end = dimen(arr[1], data) ?: 0f
+                    )
+                    else -> null
+                }
+            }
+        }
+
+        // Individual margin properties with binding support
+        val top = resolveMarginValue(json, "topMargin", data)
+            ?: resolveMarginValue(json, "marginTop", data) ?: 0f
+        val bottom = resolveMarginValue(json, "bottomMargin", data)
+            ?: resolveMarginValue(json, "marginBottom", data) ?: 0f
+        val start = resolveMarginValue(json, "leftMargin", data)
+            ?: resolveMarginValue(json, "marginLeft", data)
+            ?: resolveMarginValue(json, "startMargin", data)
+            ?: resolveMarginValue(json, "marginStart", data) ?: 0f
+        val end = resolveMarginValue(json, "rightMargin", data)
+            ?: resolveMarginValue(json, "marginRight", data)
+            ?: resolveMarginValue(json, "endMargin", data)
+            ?: resolveMarginValue(json, "marginEnd", data) ?: 0f
+
+        return if (top > 0 || bottom > 0 || start > 0 || end > 0) MarginPaddings(top, bottom, start, end) else null
+    }
+
+    /** build_margins: margins array / individual margin properties with binding support */
+    fun applyMargins(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        val p = marginPaddings(json, data) ?: return modifier
+        return modifier.padding(top = p.top.dp, bottom = p.bottom.dp, start = p.start.dp, end = p.end.dp)
+    }
+
+    private fun resolveMarginValue(json: JsonObject, key: String, data: Map<String, Any>): Float? {
+        val element = json.get(key) ?: return null
+        return when {
+            element.isJsonPrimitive -> {
+                val p = element.asJsonPrimitive
+                when {
+                    p.isNumber -> p.asFloat
+                    p.isString -> {
+                        val s = p.asString
+                        if (s.startsWith("@{") && s.endsWith("}")) {
+                            // Canonical number value context; unresolved →
+                            // attribute default (no margin).
+                            DataBindingContext.resolveNumber(s, data)?.toFloat() ?: 0f
+                        } else {
+                            s.toFloatOrNull()
+                        }
+                    }
+                    else -> null
+                }
+            }
+            else -> null
+        }
+    }
+
+    /** build_weight: weight > 0 within Row/Column only */
+    fun getWeight(
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap(),
+        parentOrientation: String? = null
+    ): Float? {
+        // `heightWeight` is the vertical spelling and reached no weight at all
+        // on either path: build_size consulted it to decide an explicit height
+        // was absent, and then nothing was ever distributed. C landed the
+        // codegen half (modifier_builder.rb:113) and run 4 measured the dynamic
+        // gap as `common_heightWeight__static` at distance 61 — the largest
+        // android parity deviation in the run. In a Column it is the
+        // axis-specific spelling and wins over the shorthand; everywhere else
+        // `weight` keeps its meaning, so no existing layout moves.
+        val element = if (parentOrientation == "Column" && json.has("heightWeight")) {
+            json.get("heightWeight")
+        } else {
+            json.get("weight")
+        }
+        return dimen(element, data)?.takeIf { it > 0 }
+    }
+
+    /** build_size: frame object, width/height, matchParent/wrapContent, min/max, aspectRatio */
+    fun applySize(
+        modifier: Modifier,
+        json: JsonObject,
+        defaultFillMaxWidth: Boolean = false,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        var result = modifier
+
+        // Handle 'frame' attribute – object with width/height
+        json.get("frame")?.let { frameElement ->
+            if (frameElement.isJsonObject) {
+                val frame = frameElement.asJsonObject
+                val frameBias = overflowBias(json)
+                result = applySingleDimension(result, frame, "width", isWidth = true, bias = frameBias)
+                result = applySingleDimension(result, frame, "height", isWidth = false, bias = frameBias)
+                return applyConstraints(result, json, data)
+            }
+        }
+
+        // Ordering per canonical size.maxBoundsClampFill (shared/core/
+        // attribute_semantics.json): a min/max bound must precede a FILL —
+        // fillMaxWidth() first pins the incoming constraints and a widthIn
+        // after it is a no-op, which is exactly the matchParent+maxWidth
+        // bug this ordering fixes. An EXPLICIT numeric size is the opposite
+        // case: the declared dimension wins and the bound stays inert, so
+        // the bound is applied after it (mirrors kjui codegen 847fb56).
+
+        val bias = overflowBias(json)
+
+        // Width
+        val hasWeight = json.has("weight")
+        val widthElement = json.get("width")
+        var widthBoundsApplied = false
+        if (widthElement != null) {
+            val skipWidth = hasWeight && widthElement.isJsonPrimitive &&
+                    widthElement.asJsonPrimitive.isNumber && widthElement.asFloat == 0f
+            if (!skipWidth) {
+                if (isFillDimension(widthElement)) {
+                    result = applyWidthConstraints(result, json, data)
+                    widthBoundsApplied = true
+                }
+                result = applySingleDimension(result, json, "width", isWidth = true, bias = bias)
+            }
+        } else if (defaultFillMaxWidth) {
+            result = applyWidthConstraints(result, json, data)
+            widthBoundsApplied = true
+            result = result.fillMaxWidth()
+        }
+        if (!widthBoundsApplied) {
+            result = applyWidthConstraints(result, json, data)
+        }
+
+        // Height
+        val hasHeightWeight = json.has("heightWeight")
+        val heightElement = json.get("height")
+        var heightBoundsApplied = false
+        if (heightElement != null) {
+            val skipHeight = hasHeightWeight && heightElement.isJsonPrimitive &&
+                    heightElement.asJsonPrimitive.isNumber && heightElement.asFloat == 0f
+            if (!skipHeight) {
+                if (isFillDimension(heightElement)) {
+                    result = applyHeightConstraints(result, json, data)
+                    heightBoundsApplied = true
+                }
+                result = applySingleDimension(result, json, "height", isWidth = false, bias = bias)
+            }
+        }
+        if (!heightBoundsApplied) {
+            result = applyHeightConstraints(result, json, data)
+        }
+
+        return applyAspectRatio(result, json, data)
+    }
+
+    /** matchParent (or a negative number, the legacy fill spelling)? */
+    private fun isFillDimension(element: com.google.gson.JsonElement): Boolean {
+        if (!element.isJsonPrimitive) return false
+        val p = element.asJsonPrimitive
+        return when {
+            p.isString -> p.asString == "matchParent" || p.asString == "match_parent" ||
+                    (p.asString.toFloatOrNull()?.let { it < 0 } ?: false)
+            p.isNumber -> p.asFloat < 0
+            else -> false
+        }
+    }
+
+    /**
+     * The key a View container injects into a child that declares a numeric
+     * size: where, per axis, the container places that child (bias −1 start /
+     * top, 0 centre, 1 end / bottom). See [declaredSize].
+     */
+    const val OVERFLOW_BIAS_KEY = "_overflowBias"
+
+    internal fun overflowBias(json: JsonObject): Pair<Float, Float>? {
+        val e = json.get(OVERFLOW_BIAS_KEY)
+        if (e == null || !e.isJsonArray || e.asJsonArray.size() != 2) return null
+        return e.asJsonArray[0].asFloat to e.asJsonArray[1].asFloat
+    }
+
+    /**
+     * A declared size wins over the parent's constraint: requiredWidth /
+     * requiredHeight (canonical size ruling; ios and web draw the declared
+     * box). Over-constrained, a required size is coerced and its content
+     * CENTRED in the coerced box, so a 300 child of a 200 Box drew at
+     * (−50, −50) whatever the container said (jsonui-cli ticket
+     * kjui-oversized-child-is-centred-and-cut-to-its-parent; web puts it at
+     * the container's corner, or overflows both sides when centred). With the
+     * container's placement injected ([OVERFLOW_BIAS_KEY]) an unbounded
+     * wrapContent in front places the declared box where the container puts
+     * the child; a child that fits reads the same size and place as before.
+     * The kjui codegen emits the same chain (modifier_builder.rb
+     * overflow_wrapper).
+     */
+    private fun declaredSize(modifier: Modifier, v: Float, isWidth: Boolean, bias: Pair<Float, Float>?): Modifier =
+        if (isWidth) {
+            (bias?.let { modifier.wrapContentWidth(align = BiasAlignment.Horizontal(it.first), unbounded = true) } ?: modifier)
+                .requiredWidth(v.dp)
+        } else {
+            (bias?.let { modifier.wrapContentHeight(align = BiasAlignment.Vertical(it.second), unbounded = true) } ?: modifier)
+                .requiredHeight(v.dp)
+        }
+
+    private fun applySingleDimension(
+        modifier: Modifier,
+        json: JsonObject,
+        key: String,
+        isWidth: Boolean,
+        bias: Pair<Float, Float>? = null
+    ): Modifier {
+        val element = json.get(key) ?: return modifier
+        return when {
+            element.isJsonPrimitive -> {
+                val p = element.asJsonPrimitive
+                when {
+                    p.isString -> when (p.asString) {
+                        "matchParent", "match_parent" ->
+                            if (isWidth) modifier.fillMaxWidth() else modifier.fillMaxHeight()
+                        "wrapContent", "wrap_content" ->
+                            if (isWidth) modifier.wrapContentWidth() else modifier.wrapContentHeight()
+                        else -> {
+                            val v = p.asString.toFloatOrNull()
+                            if (v != null) {
+                                if (v < 0) {
+                                    if (isWidth) modifier.fillMaxWidth() else modifier.fillMaxHeight()
+                                } else {
+                                    // requiredWidth/requiredHeight: a declared size WINS over the
+                                    // parent constraint (canonical size ruling; ios/web draw the
+                                    // declared box). Modifier.width coerced an over-constrained
+                                    // child to the parent size, so the clipToBounds overflow
+                                    // probes were byte-identical on android (2026-08-08).
+                                    declaredSize(modifier, v, isWidth, bias)
+                                }
+                            } else modifier
+                        }
+                    }
+                    p.isNumber -> {
+                        val v = p.asFloat
+                        if (v < 0) {
+                            if (isWidth) modifier.fillMaxWidth() else modifier.fillMaxHeight()
+                        } else {
+                            declaredSize(modifier, v, isWidth, bias)
+                        }
+                    }
+                    else -> modifier
+                }
+            }
+            else -> modifier
+        }
+    }
+
+    private fun applyConstraints(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        // Frame-object path: explicit sizes, bounds stay inert after them.
+        return applyAspectRatio(
+            applyHeightConstraints(applyWidthConstraints(modifier, json, data), json, data),
+            json, data
+        )
+    }
+
+    private fun applyWidthConstraints(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        var result = modifier
+        val hasWidth = json.has("width")
+        val maxWidth = parseOptionalDp(json.get("maxWidth"), data)
+        val minWidth = parseOptionalDp(json.get("minWidth"), data)
+        if (minWidth != null && maxWidth != null) {
+            result = result.widthIn(min = minWidth, max = maxWidth)
+        } else if (maxWidth != null) {
+            result = if (!hasWidth) result.wrapContentWidth().widthIn(max = maxWidth)
+            else result.widthIn(max = maxWidth)
+        } else if (minWidth != null) {
+            result = result.widthIn(min = minWidth)
+        }
+        return result
+    }
+
+    private fun applyHeightConstraints(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        var result = modifier
+        val hasHeight = json.has("height")
+        val maxHeight = parseOptionalDp(json.get("maxHeight"), data)
+        val minHeight = parseOptionalDp(json.get("minHeight"), data)
+        if (minHeight != null && maxHeight != null) {
+            result = result.heightIn(min = minHeight, max = maxHeight)
+        } else if (maxHeight != null) {
+            result = if (!hasHeight) result.wrapContentHeight().heightIn(max = maxHeight)
+            else result.heightIn(max = maxHeight)
+        } else if (minHeight != null) {
+            result = result.heightIn(min = minHeight)
+        }
+        return result
+    }
+
+    private fun applyAspectRatio(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        val aw = dimen(json.get("aspectWidth"), data)
+        val ah = dimen(json.get("aspectHeight"), data)
+        return if (aw != null && ah != null && ah > 0) {
+            modifier.aspectRatio(aw / ah)
+        } else modifier
+    }
+
+    /**
+     * A bound min/max used to be DROPPED here (the isNumber guard let the
+     * binding string through as null), so the bound bounds fixtures measured
+     * inert. Resolving first keeps the guard's safety — an unresolved binding
+     * is still null — while letting a resolvable one through.
+     */
+    private fun parseOptionalDp(element: com.google.gson.JsonElement?, data: Map<String, Any>): Dp? =
+        dimen(element, data)?.dp
+
+    /** build_alpha / build_visibility: alpha/opacity with binding support */
+    fun applyAlpha(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        val raw = json.get("opacity") ?: json.get("alpha") ?: return modifier
+        if (raw.isJsonPrimitive) {
+            val p = raw.asJsonPrimitive
+            if (p.isNumber) {
+                return modifier.alpha(p.asFloat.coerceIn(0f, 1f))
+            }
+            if (p.isString) {
+                val s = p.asString
+                if (s.startsWith("@{") && s.endsWith("}")) {
+                    // Canonical number value context (dot paths, `??`
+                    // default); unresolved → attribute default (opaque).
+                    val alphaVal = DataBindingContext.resolveNumber(s, data)?.toFloat() ?: 1f
+                    return modifier.alpha(alphaVal.coerceIn(0f, 1f))
+                }
+                p.asString.toFloatOrNull()?.let {
+                    return modifier.alpha(it.coerceIn(0f, 1f))
+                }
+            }
+        }
+        return modifier
+    }
+
+    /**
+     * build_shadow: shadow attribute → dropShadow.
+     *
+     * [ownShape] is the shape a component draws itself in when that is not
+     * the node's cornerRadius — a Button's default pill, a TextField's
+     * default radius, a circle. The shadow is cast in it, not in a rectangle
+     * under a rounded view.
+     */
+    /** The declared shadow defaults (attribute_definitions common.shadow). */
+    const val SHADOW_DEFAULT_RADIUS = 5f
+    /** No colour declared: black at 33%, SwiftUI's default shadow colour. */
+    val SHADOW_DEFAULT_COLOR = Color.Black.copy(alpha = 0.33f)
+
+    fun applyShadow(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap(),
+        ownShape: Shape? = null
+    ): Modifier {
+        val shadowElement = json.get("shadow") ?: return modifier
+        val cornerRadius = dimen(json.get("cornerRadius"), data)
+        val shape = ownShape
+            ?: if (cornerRadius != null) RoundedCornerShape(cornerRadius.dp) else RectangleShape
+
+        return when {
+            shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isString -> {
+                // The string form is the UIKit pipe contract
+                // 'color|offsetX|offsetY|opacity|radius' — exactly five
+                // fields; anything else draws nothing (the canonical guard
+                // all render paths share).
+                val parts = shadowElement.asString.split("|")
+                if (parts.size != 5) return modifier
+                val color = ColorParser.parseColorString(parts[0]) ?: return modifier
+                val x = parts[1].toFloatOrNull() ?: return modifier
+                val y = parts[2].toFloatOrNull() ?: return modifier
+                val alpha = parts[3].toFloatOrNull() ?: return modifier
+                val radius = parts[4].toFloatOrNull() ?: return modifier
+                modifier.dropShadow(
+                    shape = shape,
+                    shadow = Shadow(
+                        radius = radius.dp,
+                        color = color,
+                        offset = DpOffset(x.dp, y.dp),
+                        alpha = alpha.coerceIn(0f, 1f)
+                    )
+                )
+            }
+            shadowElement.isJsonObject -> {
+                val obj = shadowElement.asJsonObject
+                // A field left out takes its declared default
+                // (attribute_definitions common.shadow; iOS's, which the other
+                // platforms were aligned to): radius 5, offsets 0, opacity 1.
+                val radius = dimen(obj.get("radius"), data) ?: SHADOW_DEFAULT_RADIUS
+                // A bound colour is read from data, as the radius, offsets and
+                // opacity beside it are (dimen) and as codegen reads it
+                // (ColorManager.compose.color(data.x)): read as a literal, a
+                // "@{x}" parsed as no colour and the shadow fell to black.
+                val declared = obj.get("color")?.takeIf { it.isJsonPrimitive }?.asString
+                val color = declared?.let { ColorParser.parseColorStringWithBinding(it, data) }
+                // A bound colour that does not resolve casts no shadow (iOS's
+                // `?? Color.clear`); a written one that does not falls to black.
+                if (declared != null && color == null && declared.startsWith("@{")) return modifier
+                val offsetX = dimen(obj.get("offsetX"), data) ?: 0f
+                val offsetY = dimen(obj.get("offsetY"), data) ?: 0f
+                // No colour declared: black at 33% (SwiftUI's default shadow
+                // colour), and the opacity is not applied to it.
+                val alpha = if (declared == null) 1f else dimen(obj.get("opacity"), data) ?: 1f
+                modifier.dropShadow(
+                    shape = shape,
+                    shadow = Shadow(
+                        radius = radius.dp,
+                        color = color ?: if (declared == null) SHADOW_DEFAULT_COLOR else Color.Black,
+                        offset = DpOffset(offsetX.dp, offsetY.dp),
+                        alpha = alpha.coerceIn(0f, 1f)
+                    )
+                )
+            }
+            dimen(shadowElement, data) != null -> {
+                modifier.dropShadow(
+                    shape = shape,
+                    shadow = Shadow(radius = (dimen(shadowElement, data) ?: 4f).dp)
+                )
+            }
+            else -> modifier
+        }
+    }
+
+    /** build_background: cornerRadius → clip + border(solid/dashed/dotted) + background color */
+    fun applyBackground(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>,
+        context: Context?,
+        ownShape: Shape? = null
+    ): Modifier {
+        var result = modifier
+        val cornerRadius = dimen(json.get("cornerRadius"), data)
+        val bgColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+        val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
+        val borderWidth = dimen(json.get("borderWidth"), data)
+        val borderStyle = json.get("borderStyle")?.asString ?: "solid"
+
+        // Clip with corner radius — or with the component's own shape, which no cornerRadius
+        // changes (a Segment's capsule, [ownShape]).
+        if (ownShape != null) {
+            result = result.clip(ownShape)
+        } else if (cornerRadius != null) {
+            result = result.clip(RoundedCornerShape(cornerRadius.dp))
+        }
+
+        // Border
+        if (borderColor != null && borderWidth != null) {
+            val borderShape = ownShape ?: if (cornerRadius != null) RoundedCornerShape(cornerRadius.dp) else RectangleShape
+            result = when (borderStyle) {
+                "dashed" -> result.dashedBorder(borderWidth.dp, borderColor, borderShape)
+                "dotted" -> result.dottedBorder(borderWidth.dp, borderColor, borderShape)
+                else -> result.border(borderWidth.dp, borderColor, borderShape)
+            }
+        }
+
+        // Background color, with `highlighted` swapping it for
+        // `highlightBackground`: the background while `highlighted` (literal
+        // true or a bool binding) is true (4f ruling, 2026-09-26).
+        // `tapBackground` is the background while the node is PRESSED — the
+        // clickable stage draws it (pressedBackgroundClickable); it was read
+        // here, first, as the highlighted colour, so a highlighted node drew
+        // its tap colour and a pressed one drew nothing.
+        val highlightBg = if (resolveHighlighted(json, data) == true) {
+            ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
+        } else null
+        val effectiveBg = highlightBg ?: bgColor
+        if (effectiveBg != null) {
+            result = result.background(effectiveBg)
+        }
+
+        // effectStyle on a PLAIN node. The SSoT declares it on `common`, not
+        // just on Blur, and only DynamicBlurViewComponent read it — so a View
+        // declaring a material got nothing. Same position and same table as
+        // the codegen (modifier_builder.rb:606-617 via EffectStyleHelper):
+        // scrim first, blur over it, both before clipToBounds. Blur builds its
+        // own richer chain from the same table and is skipped here, exactly as
+        // the codegen skips it.
+        val effectType = json.get("type")?.takeIf { it.isJsonPrimitive }?.asString
+        if (effectType != "Blur" && effectType != "BlurView") {
+            val effectStyle = json.get("effectStyle")
+                ?.takeIf { it.isJsonPrimitive }?.asString
+            // read raw (no parse saw it): named as common.effectStyle's
+            val spellings = com.kotlinjsonui.dynamic.generated.CommonAttributes.EffectStyle.declaredSpellings
+            EffectStyleTable.scrim(effectStyle, spellings, "common.effectStyle")?.let { result = result.background(it) }
+            EffectStyleTable.blurDp(effectStyle, spellings, "common.effectStyle")?.let { result = result.blur(it.dp) }
+        }
+
+        // clipToBounds — last in the background group, exactly where
+        // build_background emits it in the kjui codegen (modifier_builder.rb).
+        // Compose does not clip a layout's children by default, so an
+        // overflowing row/column drew past its declared box on the dynamic
+        // path while the codegen path clipped (34: `common/clipToBounds`
+        // rendered pixel-identical to its control on android).
+        if (resolveClipToBounds(json, data) == true) {
+            result = result.clipToBounds()
+        }
+
+        return result
+    }
+
+    /**
+     * common.clipToBounds — literal boolean or `@{binding}` (the attribute is
+     * declared binding-capable). The codegen's Ruby `if json_data[...]` is
+     * truthy for the binding STRING itself; resolving it here keeps a bound
+     * `false` off instead of frozen on.
+     */
+    /**
+     * A dimension slot's value, with `@{binding}` resolved BEFORE any numeric
+     * parse. `element.asFloat` on a binding string throws
+     * NumberFormatException — on the dynamic path that is a crash, not a
+     * compile error, and it took the whole android conformance lane down
+     * (`@{boundCornerRadius}`, `@{boundPaddingTop}`, …).
+     *
+     * The attribute name stays a literal at the CALL SITE (`json.get("x")`)
+     * so the coverage scans that grep for spellings keep seeing it.
+     */
+    internal fun dimen(element: com.google.gson.JsonElement?, data: Map<String, Any>): Float? =
+        ResourceResolver.resolveFloatElement(element, data)
+
+    /**
+     * `common.offsetX` / `common.offsetY` — "Moves the view without changing
+     * the space it occupies or the position of its siblings".
+     *
+     * **`absoluteOffset`, not `offset`, and not `graphicsLayer`** — E ruled the
+     * primitive from the declarations (plan 51-E), overriding what C and this
+     * lane had agreed between ourselves:
+     *
+     *  - `graphicsLayer { translationX/Y }` leaves the HIT AREA behind, which
+     *    silently breaks the `onClick` / `canTap` that `common` declares on the
+     *    same node — the same argument that decided clipToBounds;
+     *  - plain `Modifier.offset` MIRRORS under RTL, but `offsetX` is an
+     *    absolute-axis spelling like the `leftMargin` family, not a
+     *    start/end one.
+     *
+     * Either spelling alone implies 0 for the other, as declared.
+     */
+    fun applyOffset(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        val x = dimen(json.get("offsetX"), data)
+        val y = dimen(json.get("offsetY"), data)
+        if (x == null && y == null) return modifier
+        return modifier.absoluteOffset(x = (x ?: 0f).dp, y = (y ?: 0f).dp)
+    }
+
+    /**
+     * common.highlighted — literal boolean or `@{binding}`. The codegen's
+     * `case json_data['highlighted']` matches `true` and `'true'` literally and
+     * resolves a binding through the data map; a bare non-binding string is
+     * NOT truthy there, so it is not truthy here either.
+     */
+    internal fun resolveHighlighted(json: JsonObject, data: Map<String, Any>): Boolean? {
+        if (!json.has("highlighted")) return null
+        return ResourceResolver.resolveBoolean(json, "highlighted", data)
+    }
+
+    internal fun resolveClipToBounds(json: JsonObject, data: Map<String, Any>): Boolean? {
+        val raw = json.get("clipToBounds") ?: return null
+        if (!raw.isJsonPrimitive) return null
+        val p = raw.asJsonPrimitive
+        if (p.isBoolean) return p.asBoolean
+        if (p.isString && isBinding(p.asString)) {
+            return DataBindingContext.resolveBoolean(p.asString, data)
+        }
+        if (p.isString) return p.asString.equals("true", ignoreCase = true)
+        return null
+    }
+
+    /** build_clickable: onClick/onclick → .clickable { handler }, onLongPress → long-press gesture */
+    fun applyClickable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>
+    ): Modifier {
+        // onLongPress first: the outer pointerInput sees the gesture before the
+        // inner .clickable, fires after the long-press timeout and consumes the
+        // remaining events, so a long press never also triggers onClick.
+        var result = applyLongPressable(modifier, json, data)
+        result = applyPannable(result, json, data)
+        result = applyPinchable(result, json, data)
+        val enabled = resolveEnabled(json, data)
+        // Only names (TapAccessibility.clickHandlers): an empty or blank
+        // handler is no click, a blank element of an `onclick` array is not
+        // called, and the array is read as one — `asString` on it threw
+        // "Array must have size 1" for [] and for two handlers, and took the
+        // whole screen down.
+        val handlers = TapAccessibility.clickHandlers(json)
+        // common.canTap is the Compose tap gate (attribute_definitions.json):
+        // absent, no gate; false (or a binding resolving false) and there is
+        // no click — nor Role.Button — while `enabled` alone decides whether
+        // the click is enabled. The two were one `clickable(enabled = enabled
+        // && canTap)`, and Compose's clickable marks a node `disabled()` while
+        // it is not enabled: a view whose tap was merely gated — a Switch still
+        // switching under it — read as disabled (measured on an API 35
+        // emulator, AccessibilityNodeInfo.isEnabled), where iOS reads it as
+        // enabled. kjui's codegen attaches the click the same way.
+        if (handlers.isNotEmpty() && tapGateOpen(json, data)) {
+            val viewId = LayoutPath.viewId(json)
+            // TalkBack is told it is a button where the shared rule says so
+            // (TapAccessibility): not where the tappable is a control already
+            // or holds one.
+            val role = if (TapAccessibility.isButton(json)) Role.Button else null
+            val onTap: () -> Unit = { handlers.forEach { resolveEventHandler(it, data, viewId) } }
+            // `tapBackground` is the background while the node is pressed —
+            // on every node with a tap (4f ruling, 2026-09-26).
+            val tapBg = ColorParser.parseColorWithBinding(json, "tapBackground", data)
+            result = if (tapBg != null) {
+                result.then(pressedBackgroundClickable(tapBg, enabled != false, role, onTap))
+            } else {
+                result.clickable(enabled = enabled != false, role = role, onClick = onTap)
+            }
+        }
+        // `common.enabled` must be readable from the a11y tree (that is what a
+        // UI test asserts), with or without a click handler — mirrors the
+        // static codegen's build_disabled_semantics. The kjui codegen got this
+        // in 2026-07; the dynamic path had been skipped, so the View-hosted
+        // enabled__false fixture failed here while passing on web.
+        if (enabled == false) {
+            result = result.semantics { disabled() }
+        }
+        return applyInteractionBlocker(result, json, data)
+    }
+
+    /**
+     * The click, with `color` as the background while it is pressed: under
+     * what the node holds, over its declared background, inside its clip —
+     * from the press state of this click's own interaction source.
+     */
+    internal fun pressedBackgroundClickable(
+        color: Color,
+        enabled: Boolean,
+        role: Role?,
+        onClick: () -> Unit
+    ): Modifier = Modifier.composed {
+        val source = remember { MutableInteractionSource() }
+        val pressed by source.collectIsPressedAsState()
+        Modifier
+            .then(if (pressed) Modifier.background(color) else Modifier)
+            .clickable(
+                interactionSource = source,
+                indication = LocalIndication.current,
+                enabled = enabled,
+                role = role,
+                onClick = onClick
+            )
+    }
+
+    /**
+     * How a control takes the clickable stage (applyControlClickable): the
+     * control's own `enabled` lands on the node that carries the tag
+     * (ENABLED_ON_NODE — a bare Switch, a Slider, a SelectBox, a text field),
+     * or a wrapper carries the tag and the control inside it the `enabled`
+     * (WRAPPER — a labelled Row, a Segment's TabRow, a Radio's Row / Column,
+     * a text field's margin Box), so the wrapper takes `disabled()` for a UI
+     * test to read.
+     */
+    enum class ControlTap { ENABLED_ON_NODE, WRAPPER }
+
+    /**
+     * The clickable stage of a control whose tap is its own operation —
+     * Switch / Toggle, CheckBox, Radio, Segment, Slider, SelectBox, TextField,
+     * TextView. The node's long press, pan and pinch and its
+     * userInteractionEnabled blocker, as applyClickable applies them; NO
+     * `.clickable`: on the control's node an outer clickable's OnClick action
+     * replaces the control's own (Compose applies a node's semantics
+     * innermost first and a later action replaces an earlier one), so
+     * TalkBack's double tap ran the handler and did not operate the control,
+     * while a touch operated it and never reached the handler. The control
+     * calls onClick from its own operation instead (onClickFromOperation) —
+     * kjui's codegen does the same (ModifierBuilder.operation_click_call,
+     * jsonui-cli 62e15706). `disabled()` only for a WRAPPER.
+     */
+    fun applyControlClickable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>,
+        control: ControlTap
+    ): Modifier {
+        var result = applyLongPressable(modifier, json, data)
+        result = applyPannable(result, json, data)
+        result = applyPinchable(result, json, data)
+        if (control == ControlTap.WRAPPER && resolveEnabled(json, data) == false) {
+            result = result.semantics { disabled() }
+        }
+        result = applyStoppedControl(result, json, data)
+        return applyInteractionBlocker(result, json, data)
+    }
+
+    /**
+     * A control a stop holds — its own `userInteractionEnabled` false (or a
+     * binding resolving false), or the mark of a stop around it
+     * (TapAccessibility.STOPPED_KEY) — reads `disabled()`: Compose's
+     * accessibility delegate performs no action on a disabled node (click,
+     * set text, set progress; AndroidComposeViewAccessibilityDelegateCompat
+     * .performActionHelper returns false after the focus actions, read in
+     * compose-ui 1.12.0), and TalkBack says it is disabled. The pointer
+     * blocker kept a touch out and nothing else: TalkBack's click is not a
+     * touch. Nothing drawn changes (the semantics draw nothing; `enabled =
+     * false` would grey the control). What the control writes is dropped
+     * too (InteractionMarking.dataAsDrawn), for a key press and a wrapped
+     * control's inner node.
+     */
+    fun applyStoppedControl(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        if (!TapAccessibility.isControl(json.get("type")?.takeIf { it.isJsonPrimitive }?.asString)) return modifier
+        if (!TapAccessibility.stoppedAround(json) && !interactionBlocked(json, data)) return modifier
+        return modifier.semantics { disabled() }
+    }
+
+    /**
+     * For a node inside a control that a user operates on its own — a
+     * Radio's rows and RadioButtons, a Segment's Tabs, a CheckBox's Checkbox:
+     * `disabled()` while the control is stopped (applyStoppedControl's
+     * condition), else nothing. The control's root reads disabled on its own
+     * node only; each of these is a node with its own click action, which a
+     * screen reader reached and read as enabled (the orchestrator's ruling, jsonui-cli
+     * 1.9.0: a stopped control does not say it is operable, down to its
+     * items). What it writes is already dropped (InteractionMarking
+     * .dataAsDrawn). Nothing drawn changes.
+     */
+    fun stoppedItem(json: JsonObject, data: Map<String, Any>): Modifier =
+        if (TapAccessibility.stoppedAround(json) || interactionBlocked(json, data)) Modifier.semantics { disabled() } else Modifier
+
+    /**
+     * The declared onClick / onclick of a CONTROL, to call from the control's
+     * own operation after its own update (a toggle, a selection, the end of a
+     * slide) — or null when there is no handler or canTap is shut. `enabled`
+     * is the control's own parameter, so a disabled control neither operates
+     * nor calls. The tap rule gives these types the shape `none`: a control
+     * already, left as it was.
+     */
+    fun onClickFromOperation(json: JsonObject, data: Map<String, Any>): (() -> Unit)? {
+        val handlers = TapAccessibility.clickHandlers(json)
+        if (handlers.isEmpty() || !tapGateOpen(json, data)) return null
+        val viewId = LayoutPath.viewId(json)
+        return { handlers.forEach { resolveEventHandler(it, data, viewId) } }
+    }
+
+    /**
+     * common.userInteractionEnabled: false (or a binding resolving false)
+     * stops the node and what is in it — its click, its children's, a
+     * control's own operation. Compose has no allowsHitTesting, so the
+     * events are consumed in the Initial pass, before any child or any
+     * Main-pass handler sees them: kjui's codegen emits the same
+     * (build_interaction_blocker). It was decoded and never read here.
+     */
+    fun applyInteractionBlocker(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        if (!interactionBlocked(json, data)) return modifier
+        return modifier.pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                }
+            }
+        }
+    }
+
+    /** `userInteractionEnabled` is false, or a binding resolving false. */
+    fun interactionBlocked(json: JsonObject, data: Map<String, Any>): Boolean =
+        resolveFlag(json, "userInteractionEnabled", data) == false
+
+    /**
+     * A node's own long press, pan and pinch are shut: `userInteractionEnabled`
+     * or `enabled` is false (or a binding resolving false). Either stops every
+     * handler of the node — the tap rule reads the same (a disabled long press
+     * does not operate) — and the three detectors read neither: they fired
+     * under both (measured, API 35 emulator, conformance-host
+     * InteractionGateProbeTest). kjui's codegen: gesture_gate.
+     *
+     * And the mark of a node around it that stops interaction
+     * (TapAccessibility.STOPPED_KEY): the detectors take their first down in
+     * the Initial pass without requiring it unconsumed, so the blocker of a
+     * node around them did not stop them (read, not measured on a device).
+     */
+    fun gesturesShut(json: JsonObject, data: Map<String, Any>): Boolean =
+        interactionBlocked(json, data) || resolveEnabled(json, data) == false ||
+            TapAccessibility.stoppedAround(json)
+
+    /**
+     * common.enabled — resolved value, or null when the attribute is absent.
+     * Accepts the literal boolean and the `@{binding}` form (canonical bool
+     * value context via DataBindingContext); an unresolved binding falls back
+     * to the attribute default (enabled).
+     */
+    private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? =
+        resolveFlag(json, "enabled", data)
+
+    /**
+     * common.canTap, the tap gate: open unless it is `false` or a binding
+     * resolving false. It stops the onClick / onclick handler's call and
+     * nothing else — a component that calls that handler itself (Button's
+     * action, Toggle's fallback) asks here; its own operation (a check, a
+     * selection) is `enabled`'s.
+     *
+     * `userInteractionEnabled` shuts it as canTap does (the tap rule,
+     * TapAccessibility): `false` or a binding resolving false on the node, or
+     * on a node around it (TapAccessibility.stoppedAround, which DynamicView
+     * marks). The pointer blocker stopped a touch there, while TalkBack's
+     * double tap called the click's action and announced it as a button.
+     */
+    fun tapGateOpen(json: JsonObject, data: Map<String, Any>): Boolean =
+        resolveFlag(json, "canTap", data) != false && !interactionBlocked(json, data) &&
+            !TapAccessibility.stoppedAround(json)
+
+    /** A boolean-or-binding flag, or null when absent or unresolved. */
+    private fun resolveFlag(json: JsonObject, key: String, data: Map<String, Any>): Boolean? {
+        val raw = json.get(key) ?: return null
+        if (!raw.isJsonPrimitive) return null
+        val p = raw.asJsonPrimitive
+        if (p.isBoolean) return p.asBoolean
+        if (p.isString && isBinding(p.asString)) {
+            return DataBindingContext.resolveBoolean(p.asString, data)
+        }
+        return null
+    }
+
+    /**
+     * onLongPress (common attribute, platform swift/kotlin) → long-press
+     * gesture. Kept separate from [applyClickable] so components with a
+     * native onClick parameter (e.g. Button) can add long-press support
+     * without a second click handler.
+     *
+     * Detection watches the Initial pointer pass: inner click handlers
+     * (Button's own `.clickable`, later modifiers in this chain) consume the
+     * down event in the Main pass, which would starve a `detectTapGestures`
+     * based detector. Watching Initial sees every gesture; when the press
+     * outlives the long-press timeout the handler fires and the remaining
+     * events are consumed so the inner onClick does not also fire.
+     *
+     * `data` participates in the pointerInput keys: when the handler map is
+     * replaced (state-driven hosts rebuild it per recomposition) the gesture
+     * coroutine restarts and captures the fresh closures.
+     */
+    fun applyLongPressable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>
+    ): Modifier {
+        val handler = json.get("onLongPress")?.asString ?: return modifier
+        // The detector watches the Initial pass from outside the blocker and
+        // the clickable, so neither stopped it: a node whose gestures are
+        // shut gets no long press (gesturesShut).
+        if (gesturesShut(json, data)) return modifier
+        val viewId = LayoutPath.viewId(json)
+        return modifier.pointerInput(handler, data) {
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                val longPressed = try {
+                    withTimeout(viewConfiguration.longPressTimeoutMillis) {
+                        var event: PointerEvent
+                        do {
+                            event = awaitPointerEvent(PointerEventPass.Initial)
+                        } while (event.changes.any { it.pressed })
+                    }
+                    false
+                } catch (_: PointerEventTimeoutCancellationException) {
+                    true
+                }
+                if (longPressed) {
+                    resolveEventHandler(handler, data, viewId)
+                    // Swallow the rest of the gesture (including the up) so
+                    // inner click handlers treat it as cancelled.
+                    var event: PointerEvent
+                    do {
+                        event = awaitPointerEvent(PointerEventPass.Initial)
+                        event.changes.forEach { it.consume() }
+                    } while (event.changes.any { it.pressed })
+                }
+            }
+        }
+    }
+
+    /**
+     * onPan (common attribute) → drag gesture. Fires on every drag event with
+     * the cumulative translation (Offset) since the gesture began —
+     * accumulated from per-event deltas so the payload matches SwiftUI's
+     * DragGesture.Value.translation. Declaring onPan means this node owns
+     * drags: detectDragGestures consumes them, so a surrounding scroll
+     * container will not also scroll from touches on this node.
+     *
+     * The host-contract () -> Unit closure is reached through
+     * [resolveEventHandler]'s cast ladder; an (Offset)-typed handler
+     * receives the payload.
+     */
+    /**
+     * The types jsonui-cli's SSoT declares onPan not to reach —
+     * `common.onPan.notApplicableTo` in shared/core/attribute_definitions.json
+     * (ruling 2026-10-03: the component's own drag takes the gesture; the
+     * build warns, in the same words on every face). A TextView's pan was
+     * wired here and called on Android alone (jsonui-cli runtime census: 33–34
+     * calls; 0 on iOS and web); it is not now, so the faces agree. A copy of
+     * the declaration, not read from it: this library ships no copy of the
+     * definitions. A synonym (EditText, Input) resolves through [TypeSynonyms].
+     */
+    internal val PAN_NOT_APPLICABLE: Set<String> = setOf("TextField", "TextView", "Slider")
+
+    internal fun panNotApplicable(json: JsonObject): Boolean {
+        val type = json.get("type")?.takeIf { it.isJsonPrimitive }?.asString ?: return false
+        return TypeSynonyms.drawnType(type) in PAN_NOT_APPLICABLE
+    }
+
+    fun applyPannable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>
+    ): Modifier {
+        val handler = json.get("onPan")?.asString ?: return modifier
+        if (gesturesShut(json, data)) return modifier
+        if (panNotApplicable(json)) return modifier
+        val viewId = LayoutPath.viewId(json)
+        return modifier.pointerInput(handler, data) {
+            var total = Offset.Zero
+            detectDragGestures(
+                onDragStart = { total = Offset.Zero },
+                onDrag = { change, dragAmount ->
+                    change.consume()
+                    total += dragAmount
+                    resolveEventHandler(handler, data, viewId, total)
+                }
+            )
+        }
+    }
+
+    /**
+     * onPinch (common attribute) → pinch/zoom gesture. Fires with the
+     * cumulative scale factor since the gesture began (Float, matching
+     * MagnifyGesture.Value.magnification on iOS). A raw awaitEachGesture
+     * loop rather than detectTransformGestures because the scale must reset
+     * per gesture and detectTransformGestures has no gesture-start hook.
+     * calculateZoom() is 1f for single-pointer events, so taps and
+     * one-finger drags pass through untouched (onPan and onClick on the
+     * same node keep working).
+     */
+    fun applyPinchable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>
+    ): Modifier {
+        val handler = json.get("onPinch")?.asString ?: return modifier
+        if (gesturesShut(json, data)) return modifier
+        val viewId = LayoutPath.viewId(json)
+        return modifier.pointerInput(handler, data) {
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false)
+                var scale = 1f
+                var event: PointerEvent
+                do {
+                    event = awaitPointerEvent()
+                    val zoom = event.calculateZoom()
+                    if (zoom != 1f) {
+                        scale *= zoom
+                        event.changes.forEach { it.consume() }
+                        resolveEventHandler(handler, data, viewId, scale)
+                    }
+                } while (event.changes.any { it.pressed })
+            }
+        }
+    }
+
+    /** build_padding: padding/paddings (array/single), individual padding properties */
+    fun applyPadding(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        // Handle paddings attribute first
+        json.get("paddings")?.let { element ->
+            // No isNumber gate: a bound value is a STRING primitive, so the
+            // guard dropped it before `dimen` ever saw it. Converting the
+            // parse without removing the gate is why the bound padding
+            // fixtures stayed inert after the crash was fixed.
+            dimen(element, data)?.let { return modifier.padding(it.dp) }
+            if (element.isJsonArray) {
+                val arr = element.asJsonArray
+                return when (arr.size()) {
+                    1 -> modifier.padding((dimen(arr[0], data) ?: 0f).dp)
+                    2 -> modifier.padding(
+                        vertical = (dimen(arr[0], data) ?: 0f).dp,
+                        horizontal = (dimen(arr[1], data) ?: 0f).dp
+                    )
+                    3 -> modifier.padding(
+                        start = (dimen(arr[1], data) ?: 0f).dp,
+                        top = (dimen(arr[0], data) ?: 0f).dp,
+                        end = (dimen(arr[1], data) ?: 0f).dp,
+                        bottom = (dimen(arr[2], data) ?: 0f).dp
+                    )
+                    4 -> modifier.padding(
+                        top = (dimen(arr[0], data) ?: 0f).dp,
+                        end = (dimen(arr[1], data) ?: 0f).dp,
+                        bottom = (dimen(arr[2], data) ?: 0f).dp,
+                        start = (dimen(arr[3], data) ?: 0f).dp
+                    )
+                    else -> modifier
+                }
+            }
+        }
+
+        // Handle single padding value
+        json.get("padding")?.let { element ->
+            when {
+                dimen(element, data) != null -> {
+                    return modifier.padding((dimen(element, data) ?: 0f).dp)
+                }
+                element.isJsonArray -> {
+                    val arr = element.asJsonArray
+                    return when (arr.size()) {
+                        1 -> modifier.padding((dimen(arr[0], data) ?: 0f).dp)
+                        2 -> modifier.padding(
+                            vertical = (dimen(arr[0], data) ?: 0f).dp,
+                            horizontal = (dimen(arr[1], data) ?: 0f).dp
+                        )
+                        3 -> modifier.padding(
+                            start = (dimen(arr[1], data) ?: 0f).dp,
+                            top = (dimen(arr[0], data) ?: 0f).dp,
+                            end = (dimen(arr[1], data) ?: 0f).dp,
+                            bottom = (dimen(arr[2], data) ?: 0f).dp
+                        )
+                        4 -> modifier.padding(
+                            top = (dimen(arr[0], data) ?: 0f).dp,
+                            end = (dimen(arr[1], data) ?: 0f).dp,
+                            bottom = (dimen(arr[2], data) ?: 0f).dp,
+                            start = (dimen(arr[3], data) ?: 0f).dp
+                        )
+                        else -> modifier
+                    }
+                }
+            }
+        }
+
+        // Individual padding properties. The undeclared `paddingVertical` /
+        // `paddingHorizontal` are not read: no codegen and no other platform
+        // draws them (UnreadAttributes.COMMON names them in a debuggable build).
+        val paddingTop = dimen(json.get("paddingTop"), data)
+            ?: dimen(json.get("topPadding"), data) ?: 0f
+        val paddingBottom = dimen(json.get("paddingBottom"), data)
+            ?: dimen(json.get("bottomPadding"), data) ?: 0f
+        val paddingStart = dimen(json.get("paddingStart"), data)
+            ?: dimen(json.get("startPadding"), data)
+            ?: dimen(json.get("paddingLeft"), data)
+            ?: dimen(json.get("leftPadding"), data) ?: 0f
+        val paddingEnd = dimen(json.get("paddingEnd"), data)
+            ?: dimen(json.get("endPadding"), data)
+            ?: dimen(json.get("paddingRight"), data)
+            ?: dimen(json.get("rightPadding"), data) ?: 0f
+
+        return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
+            modifier.padding(
+                top = paddingTop.dp,
+                bottom = paddingBottom.dp,
+                start = paddingStart.dp,
+                end = paddingEnd.dp
+            )
+        } else {
+            modifier
+        }
+    }
+
+    /**
+     * Parse `paddings`/`padding` into [PaddingValues] for composables that
+     * take content padding as a parameter instead of a modifier (SelectBox:
+     * selectbox_component.rb emits `contentPadding = PaddingValues(...)` and
+     * never a `.padding()` modifier there — a modifier padding would inset
+     * the component's self-drawn border/background instead of its content).
+     *
+     * The 4-element order is the JSON convention [top, right, bottom, left]
+     * (same as the padding modifier): right -> end, left -> start.
+     * Returns null when neither key is present.
+     */
+    fun parseContentPadding(
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): PaddingValues? {
+        val element = json.get("paddings") ?: json.get("padding") ?: return null
+        dimen(element, data)?.let { return PaddingValues(it.dp) }
+        if (element.isJsonArray) {
+            val arr = element.asJsonArray
+            return when (arr.size()) {
+                1 -> PaddingValues((dimen(arr[0], data) ?: 0f).dp)
+                2 -> PaddingValues(
+                    vertical = (dimen(arr[0], data) ?: 0f).dp,
+                    horizontal = (dimen(arr[1], data) ?: 0f).dp
+                )
+                4 -> PaddingValues(
+                    top = (dimen(arr[0], data) ?: 0f).dp,
+                    end = (dimen(arr[1], data) ?: 0f).dp,
+                    bottom = (dimen(arr[2], data) ?: 0f).dp,
+                    start = (dimen(arr[3], data) ?: 0f).dp
+                )
+                else -> null
+            }
+        }
+        return null
+    }
+
+    /** build_alignment: parent_type (Row/Column/Box) dependent alignment */
+    fun applyAlignment(
+        modifier: Modifier,
+        json: JsonObject,
+        parentType: String?,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        val alignment = getChildAlignment(json, parentType ?: return modifier, data)
+            ?: return modifier
+
+        // Alignment modifiers require scope context.
+        // In Dynamic mode we pass it via BoxScope / RowScope / ColumnScope extension.
+        // Here we store the alignment info; the container component will apply it.
+        return modifier
+    }
+
+    /**
+     * Normalized alignment flags derived from `gravity` plus individual
+     * `alignTop`/`centerHorizontal`/etc. booleans. The tool's emitter may
+     * write either form, so the runtime must honor both.
+     */
+    internal data class AlignFlags(
+        val alignTop: Boolean = false,
+        val alignBottom: Boolean = false,
+        val alignLeft: Boolean = false,
+        val alignRight: Boolean = false,
+        val centerH: Boolean = false,
+        val centerV: Boolean = false,
+        val centerInParent: Boolean = false
+    )
+
+    /**
+     * Parse the optional `gravity` attribute into [AlignFlags].
+     *
+     * Accepted forms:
+     *   - String: "top", "top|left", "top left" (pipe, whitespace or comma)
+     *   - JsonArray: ["top", "left"]
+     *
+     * Enum values follow `attribute_definitions.json`:
+     * top, bottom, centerVertical, left, right, centerHorizontal, center.
+     * `start`/`end` are also accepted as RTL-aware aliases for left/right.
+     */
+    internal fun parseGravity(json: JsonObject): AlignFlags? {
+        val element = json.get("gravity") ?: return null
+        val tokens: List<String> = when {
+            element.isJsonArray ->
+                element.asJsonArray.mapNotNull { if (it.isJsonPrimitive) it.asString else null }
+            element.isJsonPrimitive ->
+                element.asString.split(Regex("[|\\s,]+")).filter { it.isNotEmpty() }
+            else -> return null
+        }
+        if (tokens.isEmpty()) return null
+        return foldGravityTokens(tokens)
+    }
+
+    private fun foldGravityTokens(tokens: List<String>): AlignFlags {
+        var alignTop = false
+        var alignBottom = false
+        var alignLeft = false
+        var alignRight = false
+        var centerH = false
+        var centerV = false
+        var centerInParent = false
+
+        tokens.forEach { token ->
+            when (token) {
+                "top" -> alignTop = true
+                "bottom" -> alignBottom = true
+                "left", "start" -> alignLeft = true
+                "right", "end" -> alignRight = true
+                "centerVertical" -> centerV = true
+                "centerHorizontal" -> centerH = true
+                "center" -> centerInParent = true
+            }
+        }
+        return AlignFlags(alignTop, alignBottom, alignLeft, alignRight, centerH, centerV, centerInParent)
+    }
+
+    /**
+     * `alignment` is the SwiftUI-spelled string alternative to `gravity`
+     * (attribute_definitions.json) and resolves to the same child-positioning
+     * flags. The nine values follow the SwiftUI reading — `top` is
+     * top-and-horizontally-centred, `leading` is leading-and-vertically-
+     * centred — and the token table is the canon shared with the static
+     * converter (ALIGNMENT_GRAVITY in container_component.rb); change both
+     * together, never one alone. Case-insensitive like the static side.
+     */
+    private val ALIGNMENT_GRAVITY_TOKENS: Map<String, List<String>> = mapOf(
+        "topleading" to listOf("top", "left"),
+        "top" to listOf("top", "centerHorizontal"),
+        "toptrailing" to listOf("top", "right"),
+        "leading" to listOf("centerVertical", "left"),
+        "center" to listOf("center"),
+        "trailing" to listOf("centerVertical", "right"),
+        "bottomleading" to listOf("bottom", "left"),
+        "bottom" to listOf("bottom", "centerHorizontal"),
+        "bottomtrailing" to listOf("bottom", "right")
+    )
+
+    internal fun parseAlignmentString(json: JsonObject): AlignFlags? {
+        val element = json.get("alignment") ?: return null
+        if (!element.isJsonPrimitive || !element.asJsonPrimitive.isString) return null
+        // as declared, read raw (DeclaredSpelling names another case)
+        val declared = DeclaredSpelling.lowered(
+            element.asString, com.kotlinjsonui.dynamic.generated.CommonAttributes.Alignment.declaredSpellings, "common.alignment"
+        ) ?: return null
+        val tokens = ALIGNMENT_GRAVITY_TOKENS[declared] ?: return null
+        return foldGravityTokens(tokens)
+    }
+
+    /**
+     * INNER content-alignment flags: `gravity`, or the `alignment` string
+     * alternative when gravity is absent (gravity wins when both are set —
+     * same precedence as the static converter).
+     *
+     * Declaration-faithful (2026-08-02, parity family kjui-dynamic-alignment):
+     * the node's own outer placement booleans (`alignTop` / `centerInParent` /
+     * …) mean "align to PARENT" per attribute_definitions.json and must not
+     * leak into the node's children — they used to be folded in here, so a
+     * `centerInParent` container silently centered its own children too,
+     * while the declared `alignment` string was never read at all.
+     * For the node's placement inside its parent use [outerAlignFlags].
+     */
+    internal fun resolvedAlignFlags(json: JsonObject): AlignFlags {
+        return parseGravity(json) ?: parseAlignmentString(json) ?: AlignFlags()
+    }
+
+    /**
+     * OUTER placement flags: only the individual align/center booleans.
+     *
+     * Canonical semantics (matches build_alignment /
+     * build_relative_positioning in the static modifier_builder.rb):
+     * `alignTop`/`alignBottom`/`alignLeft`/`alignRight`/`center*` place the
+     * node inside its parent, while `gravity` places the node's own children
+     * and must NOT contribute here — otherwise a child like
+     * `{ gravity: "center", alignBottom: true, alignRight: true }` gets
+     * centered in the parent instead of bottom-end aligned.
+     */
+    internal fun outerAlignFlags(
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): AlignFlags = AlignFlags(
+        // gson's asBoolean on a STRING is Boolean.parseBoolean, so a binding
+        // form silently read as `false` and the placement was dropped without
+        // a word — the bound align/center fixtures measured inert for that
+        // reason, not because the flags did nothing. Resolving keeps a literal
+        // false false and lets a bound true through.
+        alignTop = ResourceResolver.resolveBoolean(json, "alignTop", data),
+        alignBottom = ResourceResolver.resolveBoolean(json, "alignBottom", data),
+        alignLeft = ResourceResolver.resolveBoolean(json, "alignLeft", data),
+        alignRight = ResourceResolver.resolveBoolean(json, "alignRight", data),
+        centerH = ResourceResolver.resolveBoolean(json, "centerHorizontal", data),
+        centerV = ResourceResolver.resolveBoolean(json, "centerVertical", data),
+        centerInParent = ResourceResolver.resolveBoolean(json, "centerInParent", data)
+    )
+
+    /**
+     * Get alignment for child element based on parent type.
+     * Returns Alignment value appropriate for the parent type.
+     * Reads the OUTER placement booleans only — the child's `gravity` is
+     * consumed by the child's own container path, not by its parent.
+     */
+    fun getChildAlignment(
+        json: JsonObject,
+        parentType: String,
+        data: Map<String, Any> = emptyMap()
+    ): Any? {
+        val flags = outerAlignFlags(json, data)
+        return when (parentType) {
+            "Row", "HStack" -> when {
+                flags.alignTop -> Alignment.Top
+                flags.alignBottom -> Alignment.Bottom
+                flags.centerV || flags.centerInParent -> Alignment.CenterVertically
+                else -> null
+            }
+            "Column", "VStack" -> when {
+                flags.alignLeft -> Alignment.Start
+                flags.alignRight -> Alignment.End
+                flags.centerH || flags.centerInParent -> Alignment.CenterHorizontally
+                else -> null
+            }
+            "Box", "ZStack" -> {
+                val hBoth = flags.alignLeft && flags.alignRight
+                val vBoth = flags.alignTop && flags.alignBottom
+
+                when {
+                    flags.centerInParent -> Alignment.Center
+                    hBoth && vBoth -> Alignment.Center
+                    hBoth && flags.alignTop -> BiasAlignment(0f, -1f)
+                    hBoth && flags.alignBottom -> BiasAlignment(0f, 1f)
+                    hBoth -> BiasAlignment(0f, 0f)
+                    vBoth && flags.alignLeft -> Alignment.CenterStart
+                    vBoth && flags.alignRight -> Alignment.CenterEnd
+                    vBoth -> BiasAlignment(0f, 0f)
+                    flags.alignTop && flags.alignLeft -> Alignment.TopStart
+                    flags.alignTop && flags.alignRight -> Alignment.TopEnd
+                    flags.alignTop && flags.centerH -> BiasAlignment(0f, -1f)
+                    flags.alignBottom && flags.alignLeft -> Alignment.BottomStart
+                    flags.alignBottom && flags.alignRight -> Alignment.BottomEnd
+                    flags.alignBottom && flags.centerH -> BiasAlignment(0f, 1f)
+                    flags.alignLeft && flags.centerV -> Alignment.CenterStart
+                    flags.alignRight && flags.centerV -> Alignment.CenterEnd
+                    flags.centerH && flags.centerV -> Alignment.Center
+                    flags.alignTop -> BiasAlignment(-1f, -1f)
+                    flags.alignBottom -> BiasAlignment(-1f, 1f)
+                    flags.alignLeft -> BiasAlignment(-1f, -1f)
+                    flags.alignRight -> BiasAlignment(1f, -1f)
+                    flags.centerH -> BiasAlignment(0f, -1f)
+                    flags.centerV -> BiasAlignment(-1f, 0f)
+                    else -> null
+                }
+            }
+            else -> null
+        }
+    }
+
+    /**
+     * build_relative_positioning: ConstraintLayout constraint references.
+     * Returns list of constraint strings for ConstraintSet DSL.
+     */
+    fun buildRelativePositioning(
+        json: JsonObject,
+        data: Map<String, Any>
+    ): List<String> {
+        val constraints = mutableListOf<String>()
+
+        val topMargin = constraintMarginValue(json, "topMargin", data)
+        val bottomMargin = constraintMarginValue(json, "bottomMargin", data)
+        var startMargin = constraintMarginValue(json, "leftMargin", data)
+            ?: constraintMarginValue(json, "startMargin", data)
+        var endMargin = constraintMarginValue(json, "rightMargin", data)
+            ?: constraintMarginValue(json, "endMargin", data)
+
+        // Override from margins array
+        json.get("margins")?.let { element ->
+            if (element.isJsonArray && element.asJsonArray.size() == 4) {
+                val arr = element.asJsonArray
+                if (startMargin == null) startMargin = "${dimen(arr[3], data) ?: 0f}.dp"
+                if (endMargin == null) endMargin = "${dimen(arr[1], data) ?: 0f}.dp"
+            }
+        }
+
+        fun marginSuffix(margin: String?) = if (margin != null) ", margin = $margin" else ""
+
+        // Relative to other views
+        json.get("alignTopOfView")?.asString?.let {
+            constraints += "bottom.linkTo($it.top${marginSuffix(bottomMargin)})"
+        }
+        json.get("alignBottomOfView")?.asString?.let {
+            constraints += "top.linkTo($it.bottom${marginSuffix(topMargin)})"
+        }
+        json.get("alignLeftOfView")?.asString?.let {
+            constraints += "end.linkTo($it.start${marginSuffix(endMargin)})"
+        }
+        json.get("alignRightOfView")?.asString?.let {
+            constraints += "start.linkTo($it.end${marginSuffix(startMargin)})"
+        }
+
+        // Align edges with other views
+        json.get("alignTopView")?.asString?.let {
+            val m = topMargin?.let { v -> ", margin = (-$v)" } ?: ""
+            constraints += "top.linkTo($it.top$m)"
+        }
+        json.get("alignBottomView")?.asString?.let {
+            val m = bottomMargin?.let { v -> ", margin = (-$v)" } ?: ""
+            constraints += "bottom.linkTo($it.bottom$m)"
+        }
+        json.get("alignLeftView")?.asString?.let {
+            val m = startMargin?.let { v -> ", margin = (-$v)" } ?: ""
+            constraints += "start.linkTo($it.start$m)"
+        }
+        json.get("alignRightView")?.asString?.let {
+            val m = endMargin?.let { v -> ", margin = (-$v)" } ?: ""
+            constraints += "end.linkTo($it.end$m)"
+        }
+
+        // Center with other views
+        json.get("alignCenterVerticalView")?.asString?.let {
+            constraints += "top.linkTo($it.top)"
+            constraints += "bottom.linkTo($it.bottom)"
+        }
+        json.get("alignCenterHorizontalView")?.asString?.let {
+            constraints += "start.linkTo($it.start)"
+            constraints += "end.linkTo($it.end)"
+        }
+
+        // Parent constraints (individual align booleans only — `gravity` is
+        // inner content alignment and never links the node to its parent,
+        // matching build_relative_positioning in the static tool)
+        val flags = outerAlignFlags(json, data)
+        if (flags.alignTop) {
+            constraints += "top.linkTo(parent.top${marginSuffix(topMargin)})"
+        }
+        if (flags.alignBottom) {
+            constraints += "bottom.linkTo(parent.bottom${marginSuffix(bottomMargin)})"
+        }
+        if (flags.alignLeft) {
+            constraints += "start.linkTo(parent.start${marginSuffix(startMargin)})"
+        }
+        if (flags.alignRight) {
+            constraints += "end.linkTo(parent.end${marginSuffix(endMargin)})"
+        }
+        if (flags.centerH) {
+            constraints += "start.linkTo(parent.start)"
+            constraints += "end.linkTo(parent.end)"
+        }
+        if (flags.centerV) {
+            constraints += "top.linkTo(parent.top)"
+            constraints += "bottom.linkTo(parent.bottom)"
+        }
+        if (flags.centerInParent) {
+            constraints += "top.linkTo(parent.top)"
+            constraints += "bottom.linkTo(parent.bottom)"
+            constraints += "start.linkTo(parent.start)"
+            constraints += "end.linkTo(parent.end)"
+        }
+
+        return constraints
+    }
+
+    private fun constraintMarginValue(json: JsonObject, key: String, data: Map<String, Any>): String? {
+        val element = json.get(key) ?: return null
+        return when {
+            element.isJsonPrimitive -> {
+                val p = element.asJsonPrimitive
+                when {
+                    p.isNumber && p.asFloat > 0 -> "${p.asFloat}.dp"
+                    p.isString -> {
+                        val s = p.asString
+                        if (isBinding(s)) {
+                            val prop = extractBindingProperty(s) ?: return null
+                            "data.$prop.dp"
+                        } else {
+                            val num = s.toFloatOrNull()
+                            if (num != null && num > 0) "${num}.dp" else null
+                        }
+                    }
+                    else -> null
+                }
+            }
+            else -> null
+        }
+    }
+
+    // ── Composite Builder ────────────────────────────────────────────
+
+    /**
+     * Build a complete modifier applying all attributes in the standard order.
+     * Matches the order of modifier_builder.rb build methods.
+     */
+    /**
+     * One stage of the standard modifier chain: a name and what it does.
+     *
+     * The chain is DRIVEN by [standardOrder] rather than being a hand-written
+     * sequence of calls, so the declaration and the application are the same
+     * object: a stage that leaves the list stops being applied, and a stage in
+     * the list is always applied. Measured 2026-09-01: deleting any single
+     * apply line from the old hand-written body left the unit suite green for
+     * 8 of its 9 stages (782 tests; the one catch, background, is a SelectBox
+     * guard asserting element names for its own reasons — not a wiring test).
+     */
+    class Stage(
+        val name: String,
+        val apply: (Modifier, JsonObject, Map<String, Any>, Context?, Boolean) -> Modifier
+    )
+
+    /**
+     * The standard chain, in application order. ORDER IS LOAD-BEARING — see
+     * the offset note: Compose applies modifiers left-to-right, so its slot is
+     * forced, not chosen.
+     *
+     * Two stages of the reference semantics are ABSENT on purpose, not lost:
+     * `weight` must be applied by the caller (it only exists in
+     * RowScope/ColumnScope), and `alignment` is handled by the container. An
+     * entry here would declare an application this function cannot perform.
+     */
+    val standardOrder: List<Stage> = listOf(
+        Stage("margins") { m, json, data, _, _ -> applyMargins(m, json, data) },
+        Stage("size") { m, json, data, _, fill -> applySize(m, json, fill, data) },
+        // offset — the slot is forced, not chosen: it must sit OUTSIDE
+        // background/shadow (Compose applies modifiers left-to-right, so an
+        // offset placed after them leaves the decoration behind and moves only
+        // the content) and INSIDE margins (siblings must not move). Between
+        // size and alpha is the only position satisfying both. Agreed with C
+        // so the two paths put `.absoluteOffset` in the same place.
+        Stage("offset") { m, json, data, _, _ -> applyOffset(m, json, data) },
+        // testTag inside the margins and the offset: the tagged box is the
+        // drawn box (see the order at the top of this file).
+        Stage("testTag") { m, json, data, ctx, _ -> applyTestTag(m, json, data, ctx) },
+        Stage("alpha") { m, json, data, _, _ -> applyAlpha(m, json, data) },
+        Stage("shadow") { m, json, data, _, _ -> applyShadow(m, json, data) },
+        // background folds clip + border + bg into one stage.
+        Stage("background") { m, json, data, ctx, _ -> applyBackground(m, json, data, ctx) },
+        Stage("clickable") { m, json, data, _, _ -> applyClickable(m, json, data) },
+        Stage("padding") { m, json, data, _, _ -> applyPadding(m, json, data) },
+    )
+
+    /**
+     * `control`: the node is a control whose tap is its own operation — its
+     * clickable stage is applyControlClickable (no `.clickable`), and the
+     * component calls onClickFromOperation from that operation.
+     *
+     * `handles`: node attributes the component applies itself — an `onClick`
+     * or `onLongPress` it passes to its own composable, an `alpha` it applies
+     * — read here as if the node did not set them, so they are not applied a
+     * second time. Empty (the default): every stage, as before. kjui's codegen
+     * leaves the same ones to an app's converter that calls them itself.
+     *
+     * `ownShape`: the shape the component draws itself in, whatever its
+     * cornerRadius says — the shadow is cast in it and the background stage
+     * clips to it and draws the border in it (a Segment's capsule, the ruling
+     * 2026-11-16). Null (the default): the node's cornerRadius, as before.
+     */
+    fun buildModifier(
+        json: JsonObject,
+        data: Map<String, Any>,
+        parentType: String? = null,
+        context: Context? = null,
+        defaultFillMaxWidth: Boolean = false,
+        control: ControlTap? = null,
+        handles: Set<String> = emptySet(),
+        ownShape: Shape? = null
+    ): Modifier {
+        // The node being drawn got its common stages (AppComponentStages).
+        AppComponentStages.markApplied()
+        val node = if (handles.isEmpty()) json else JsonObject().also { copy ->
+            for ((key, value) in json.entrySet()) if (key !in handles) copy.add(key, value)
+        }
+        val built = standardOrder.fold<Stage, Modifier>(Modifier) { modifier, stage ->
+            if (control != null && stage.name == "clickable") {
+                applyControlClickable(modifier, node, data, control)
+            } else if (ownShape != null && stage.name == "shadow") {
+                applyShadow(modifier, node, data, ownShape = ownShape)
+            } else if (ownShape != null && stage.name == "background") {
+                applyBackground(modifier, node, data, context, ownShape)
+            } else {
+                stage.apply(modifier, node, data, context, defaultFillMaxWidth)
+            }
+        }
+        // A reorderable row's cell (DynamicCollectionComponent.withReorderMarks): the accessibility moves on its
+        // root, the drag on its handle. Outside a reorderable row both do nothing.
+        return built
+            .then(if (json.has(REORDER_ROOT_MARK)) Modifier.collectionReorderActions() else Modifier)
+            .then(if (json.has(REORDER_HANDLE_MARK)) Modifier.collectionReorderHandle() else Modifier)
+    }
+
+    /** The marks DynamicCollectionComponent puts in a reorderable row's cell layout (never in a layout file). */
+    const val REORDER_ROOT_MARK = "__juiReorderRoot"
+    const val REORDER_HANDLE_MARK = "__juiReorderHandle"
+
+    // ── Lifecycle Effects ────────────────────────────────────────────
+
+    /** build_lifecycle_effects: onAppear → LaunchedEffect, onDisappear → DisposableEffect */
+    // Handlers arrive as Any in the data map; erasure makes the () -> Unit
+    // cast uncheckable, and a wrong-typed value degrades to a no-op via `as?`.
+    @Suppress("UNCHECKED_CAST")
+    @Composable
+    fun ApplyLifecycleEffects(json: JsonObject, data: Map<String, Any>) {
+        val viewId = LayoutPath.viewId(json)
+        lifecycleHandlerName(json.get("onAppear"))?.let { name ->
+            LaunchedEffect(Unit) { resolveEventHandler(name, data, viewId) }
+        }
+        lifecycleHandlerName(json.get("onDisappear"))?.let { name ->
+            DisposableEffect(Unit) {
+                onDispose { resolveEventHandler(name, data, viewId) }
+            }
+        }
+    }
+
+    /**
+     * A lifecycle handler's name: `x`, `@{x}` and `x:` are all `x`. Only the
+     * `:` was stripped, so `@{x}` looked up `data["@{x}"]` and was never
+     * called. The handler is then called as its closure is declared
+     * (resolveEventHandler): `()` with nothing, `(String)` with the viewId —
+     * it was only ever tried as `() -> Unit`.
+     */
+    internal fun lifecycleHandlerName(element: com.google.gson.JsonElement?): String? {
+        if (element == null || !element.isJsonPrimitive) return null
+        val raw = element.asString.trim()
+        val name = (extractBindingProperty(raw) ?: raw).replace(":", "").trim()
+        return name.ifEmpty { null }
+    }
+
+    fun hasLifecycleEvents(json: JsonObject): Boolean {
+        return json.has("onAppear") || json.has("onDisappear")
+    }
+}

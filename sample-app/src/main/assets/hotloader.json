@@ -1,0 +1,7 @@
+{
+  "ip": "10.0.2.2",
+  "port": 8081,
+  "enabled": true,
+  "websocket_endpoint": "ws://10.0.2.2:8081",
+  "http_endpoint": "http://10.0.2.2:8081"
+}

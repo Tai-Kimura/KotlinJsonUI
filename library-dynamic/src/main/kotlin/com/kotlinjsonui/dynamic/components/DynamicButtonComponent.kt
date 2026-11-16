@@ -1,0 +1,548 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.kotlinjsonui.core.DeclaredSpelling
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.google.gson.JsonObject
+import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.generated.AttrValue
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.UnreadAttributes
+import com.kotlinjsonui.dynamic.generated.ButtonAttributes
+import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+
+/**
+ * Button component → Button composable.
+ * Reference: button_component.rb in kjui_tools.
+ *
+ * Click event handling:
+ *   onclick (lowercase) → selector format (string only)
+ *   onClick (camelCase) → binding format only (@{functionName})
+ */
+class DynamicButtonComponent {
+    companion object {
+        @Composable
+        fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
+            val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                ButtonAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Button", json,
+                declared = ButtonAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
+            UnreadAttributes.check("Button", json, NOT_READ, context)
+
+            // `image` is binding-capable, so the typed value is an AttrValue;
+            // rawString gives back the layout spelling — the static name or
+            // "@{expr}" — which resolveDrawable then resolves.
+            val imageName = TypedAttrs.rawString(a.image)
+            val hasImage = !imageName.isNullOrEmpty()
+
+            // Resolve button text with binding + resource support.
+            // "Button" is the placeholder for a button with nothing in it, so
+            // it only applies when there is no icon either — otherwise an
+            // icon-only button renders the word "Button" beside its icon
+            // (button_component.rb makes the same call).
+            val text = (TypedAttrs.rawString(a.text)
+                ?.let { ResourceResolver.resolveTextValue(it, data, context) } ?: "")
+                .ifEmpty { if (hasImage) "" else "Button" }
+
+            // Enabled state (supports @{binding}). The declared `enabled`
+            // only: the undeclared `disabled` is not read (see NOT_READ).
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+
+            // Click handler
+            val viewId = LayoutPath.viewId(json)
+            val onClick: () -> Unit = buildClickHandler(json, a, data, viewId)
+
+            // Text style
+            val fontSize = a.fontSize?.toFloat()
+                ?: Configuration.Button.defaultFontSize.toFloat()
+            // 'font' carries the weight spelling too (ios/web read it — 33
+            // cross-effect: android rendered default weight for font: bold).
+            // `fontWeight` is declared string|number — the number is the css
+            // column of the shared weight table (600 IS semibold; run 6:
+            // android inert / ios active). One table answers both spellings
+            // (ResourceResolver), not a per-component when.
+            // Binding-aware weight read (the static-only read dropped
+            // Button/fontWeight__binding to the default weight — run
+            // 31243724782 cross-effect), and the declared fontFamily was not
+            // read at ALL on this component while ios/web honoured it
+            // (fontFamily__static/binding). Same resolution chain as the
+            // shared Text path: generic families, then res/font.
+            val fontWeightRaw: Any? = when (val fw = a.fontWeight) {
+                is AttrValue.Value -> fw.value
+                is AttrValue.Binding -> DataBindingContext.resolveStringInner(fw.expression, data)
+                null -> null
+            }
+            val fontWeight = ResourceResolver.fontWeightOf(fontWeightRaw)
+                ?: ResourceResolver.fontWeightFor(a.font)
+                ?: FontWeight.Normal
+            val fontFamily = ResourceResolver.resolveFontResource(
+                TypedAttrs.string(a.fontFamily, data), context
+            )
+            // Through the app's fontProvider whatever the button declares (P1, as the generated Button does):
+            // FontSpec carries the family name, weight and size it declares; the family the provider leaves null is
+            // the res/font lookup above, the other null slots the button's own.
+            val providedFont = ResourceResolver.providerFont(
+                family = TypedAttrs.string(a.fontFamily, data),
+                // The weight the button draws (its default when none is declared): the provider returns that file.
+                weight = fontWeight,
+                size = a.fontSize?.toFloat()?.sp,
+                fallbackFamily = fontFamily,
+            )
+
+            // Colors (supports @{binding})
+            val textColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.fontColor), data, context
+            ) ?: Configuration.Button.defaultTextColor
+            val backgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            ) ?: Configuration.Button.defaultBackgroundColor
+            val disabledBgColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.disabledBackground), data, context
+            ) ?: backgroundColor.copy(alpha = 0.5f)
+            val disabledTextColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.disabledFontColor), data, context
+            ) ?: textColor.copy(alpha = 0.5f)
+            // The container while the button is pressed (4f ruling,
+            // 2026-09-26): `tapBackground`, else `highlightBackground` —
+            // Button declares no `highlighted` (View does), and its
+            // highlightBackground is UIButton's highlighted, which IS the
+            // pressed state; tapBackground wins when both are set.
+            val pressedBgColor = pressedColorOf(a, data, context)
+            // Pressed-state CONTENT colour. The container already swapped on
+            // press while `highlightColor` — the declared label colour for the
+            // same state, which the kjui codegen swaps
+            // (button_component.rb:48 + the contentColor ternary) — was never
+            // read here. `hilightColor` is its declared alias spelling and the
+            // generated parser folds it onto this row.
+            val pressedTextColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.highlightColor), data, context
+            )
+
+            // Shape
+            // No cornerRadius: square, as on iOS and the web (the requester's ruling 2026-11-15,
+            // jsonui-cli ticket jui-button-default-corner-radius-differs; it was 8).
+            val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data) ?: 0f
+            val shape = RoundedCornerShape(cornerRadius.dp)
+
+            // Pressed-state container swap via interactionSource.
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+            val containerColor = containerColorOf(backgroundColor, pressedBgColor, isPressed)
+            val contentColorNow =
+                if (pressedTextColor != null && isPressed) pressedTextColor else textColor
+
+            // Button colors
+            val colors = ButtonDefaults.buttonColors(
+                containerColor = containerColor,
+                contentColor = contentColorNow,
+                disabledContainerColor = disabledBgColor,
+                disabledContentColor = disabledTextColor
+            )
+
+            // Border
+            val borderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.borderColor), data, context
+            )
+            val borderWidth = TypedAttrs.float(a.common.borderWidth, data) ?: 1f
+            val border = borderColor?.let { BorderStroke(borderWidth.dp, it) }
+
+            // Content padding (padding/paddings accept edge-inset arrays —
+            // wider than the declared type, so read raw; see TypedAttrs.rawKey)
+            val contentPadding = buildContentPadding(json, data)
+
+            // Elevation
+            val elevation = resolveElevation(a.common.shadow)
+
+            // Optional icon, before the text. Button declares no position and
+            // no size for it (see NOT_READ), so it is always leading and
+            // ICON_SIZE dp, as the codegen draws it.
+            val imageResId = imageName?.let {
+                ResourceResolver.resolveDrawable(it, data, context).takeIf { id -> id != 0 }
+            }
+            val iconSize = ICON_SIZE
+            // Tint only when the layout asked for one. Icon() forces a single
+            // colour, which flattens a multi-colour asset; the untinted case
+            // draws the drawable as authored. Same rule as button_component.rb
+            // and the web converter.
+            val iconTint = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor) ?: TypedAttrs.rawString(a.fontColor),
+                data, context
+            )
+            // An icon-only button has no accessible name unless the icon
+            // carries one; beside a label the icon is decorative.
+            val iconDescription = if (text.isEmpty()) imageName?.humanizedIconName() else null
+
+            // Text alignment (Button-level). Compose default is center; tool allows override.
+            // As Button declares it (Left / Center / Right): the undeclared
+            // "start" / "end" the legacy reader also honoured, and another
+            // case, are no alignment and keep the default — the generated
+            // parse names them (DeclaredSpelling, jsonui-cli 1.9.0).
+            val textAlign = DeclaredSpelling.lowered(TypedAttrs.enumString(a.textAlign) { it.json }, ButtonAttributes.TextAlign.declaredSpellings)?.let { align ->
+                when (align) {
+                    "left" -> TextAlign.Start
+                    "right" -> TextAlign.End
+                    "center" -> TextAlign.Center
+                    else -> null
+                }
+            }
+
+            // Modifier: testTag, margins, size, offset, alpha, shadow (not padding – handled by contentPadding)
+            var modifier: Modifier = Modifier
+            modifier = ModifierBuilder.applyMargins(modifier, json, data)
+            modifier = ModifierBuilder.applySize(modifier, json, data = data)
+            // offset sits after size and before alpha, the same slot
+            // buildModifier uses — outside background/shadow so the
+            // decoration moves with the view, inside margins so siblings
+            // do not. This chain does not call buildModifier, which is why
+            // it needed the line of its own (51-C's warning, measured).
+            modifier = ModifierBuilder.applyOffset(modifier, json, data)
+            // testTag after offset, before alpha: the tagged box is the drawn box
+            // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+            modifier = ModifierBuilder.applyTestTag(modifier, json, data, context)
+            modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            // shadow, which the SSoT declares on every type (`common`) and
+            // this chain did not apply — cast in the button's own shape.
+            modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = shape)
+            // onLongPress: Button's native onClick handles taps; the outer
+            // long-press gesture fires the handler and consumes the events so
+            // a long press never also triggers onClick.
+            modifier = ModifierBuilder.applyLongPressable(modifier, json, data)
+            // onPan / onPinch, declared on every type (`common`), in the
+            // order the shared stages apply them (after the long press). This
+            // chain did not apply them, so a Button's drag or pinch called
+            // nothing; kjui codegen calls both (jsonui-cli ticket
+            // kjui-dynamic-button-never-calls-onpan-or-onpinch, measured).
+            modifier = ModifierBuilder.applyPannable(modifier, json, data)
+            modifier = ModifierBuilder.applyPinchable(modifier, json, data)
+            // userInteractionEnabled stops the button (this chain runs no
+            // buildModifier, whose clickable stage applies it elsewhere)
+            modifier = ModifierBuilder.applyStoppedControl(modifier, json, data)
+            modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
+
+            // The icon and the text move together, placed across the
+            // button by textAlign as the text-only text is (4f ruling
+            // 2026-09-27, round 18; measured on iOS: the icon + text group at
+            // the start / end / middle of a 200pt button): the Row takes the
+            // button's width and arranges the pair. They sat in the middle
+            // whatever textAlign said.
+            val placesRow = textAlign != null && ownsWidth(json)
+            val rowModifier = if (placesRow) Modifier.fillMaxWidth() else Modifier
+            val rowArrangement = when {
+                !placesRow -> Arrangement.Start
+                textAlign == TextAlign.Start -> Arrangement.Start
+                textAlign == TextAlign.End -> Arrangement.End
+                else -> Arrangement.Center
+            }
+
+            Button(
+                onClick = onClick,
+                modifier = modifier,
+                enabled = isEnabled,
+                shape = shape,
+                colors = colors,
+                elevation = elevation,
+                border = border,
+                contentPadding = contentPadding,
+                interactionSource = interactionSource
+            ) {
+                if (imageResId != null && text.isEmpty()) {
+                    ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
+                } else if (imageResId != null) {
+                    Row(modifier = rowModifier, horizontalArrangement = rowArrangement, verticalAlignment = Alignment.CenterVertically) {
+                        ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = text,
+                            fontSize = json.fontSized(providedFont.size ?: fontSize.sp),
+                            letterSpacing = json.letterSpaced(),
+                            lineHeight = json.lineHeighted(json.fontSized(providedFont.size ?: fontSize.sp)),
+                            fontWeight = providedFont.weight ?: fontWeight,
+                            fontFamily = providedFont.family,
+                            fontStyle = providedFont.style,
+                            textAlign = textAlign
+                        )
+                    }
+                } else {
+                    // The text is placed across the button by textAlign (4f
+                    // ruling 2026-09-27, round 17; centre by default): the
+                    // Text takes the button's width, which the button's
+                    // content Row centred a wrap-width Text in, so Start / End
+                    // drew it in the middle. Only a button of a width of its
+                    // own (ownsWidth): a wrap-width one is its text's width,
+                    // and filling would stretch it to its parent.
+                    Text(
+                        text = text,
+                        fontSize = json.fontSized(providedFont.size ?: fontSize.sp),
+                        letterSpacing = json.letterSpaced(),
+                        lineHeight = json.lineHeighted(json.fontSized(providedFont.size ?: fontSize.sp)),
+                        fontWeight = providedFont.weight ?: fontWeight,
+                        fontFamily = providedFont.family,
+                        fontStyle = providedFont.style,
+                        textAlign = textAlign,
+                        modifier = if (textAlign != null && ownsWidth(json)) Modifier.fillMaxWidth() else Modifier
+                    )
+                }
+            }
+        }
+
+        /**
+         * Whether the button has a width of its own: a declared width that
+         * is not wrapContent, or a weight. kjui's codegen reads the same
+         * (ButtonComponent.bounded_width?).
+         */
+        internal fun ownsWidth(json: JsonObject): Boolean {
+            if (TypedAttrs.rawKey(json, "weight") != null || TypedAttrs.rawKey(json, "widthWeight") != null) return true
+            val width = TypedAttrs.rawKey(json, "width") ?: return false
+            return !(width.isJsonPrimitive && width.asString in setOf("wrapContent", "wrap_content"))
+        }
+
+        // ── Icon ──
+
+        /**
+         * The container while pressed: `tapBackground`, else
+         * `highlightBackground`. The legacy `hilightBackground` is declared
+         * nowhere (only `hilightColor`, Button.highlightColor's alias) and no
+         * layout writes it (2026-09-26): it is not read, and the validator
+         * names it as an unknown attribute.
+         */
+        internal fun pressedColorOf(
+            a: ButtonAttributes,
+            data: Map<String, Any>,
+            context: android.content.Context?
+        ): Color? = ColorParser.parseColorStringWithBinding(
+            a.tapBackground ?: a.highlightBackground, data, context
+        )
+
+        /** The container: the pressed colour while pressed, else the background. */
+        internal fun containerColorOf(background: Color, pressedColor: Color?, pressed: Boolean): Color =
+            if (pressed && pressedColor != null) pressedColor else background
+
+        /**
+         * Button icon. [tint] null means the drawable is drawn as authored —
+         * `Icon` would flatten a multi-colour asset to a single colour, so the
+         * tint is only applied when the layout asked for one via `tintColor`
+         * or `fontColor`.
+         */
+        @Composable
+        private fun ButtonIcon(resId: Int, size: Float, tint: Color?, description: String?) {
+            if (tint != null) {
+                Icon(
+                    painter = painterResource(id = resId),
+                    contentDescription = description,
+                    modifier = Modifier.size(size.dp),
+                    tint = tint
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = resId),
+                    contentDescription = description,
+                    modifier = Modifier.size(size.dp)
+                )
+            }
+        }
+
+        /** "menu_open" -> "menu open": a readable accessible name. */
+        private fun String.humanizedIconName(): String =
+            substringBeforeLast('.').replace('_', ' ').replace('-', ' ')
+
+        // ── Click Handler ──
+
+        private fun buildClickHandler(
+            json: JsonObject,
+            a: ButtonAttributes,
+            data: Map<String, Any>,
+            viewId: String
+        ): () -> Unit = {
+            // common.canTap gates the handler's call; the button stays a
+            // button and is not disabled (that is `enabled`'s).
+            if (ModifierBuilder.tapGateOpen(json, data)) {
+                val methodName = resolveClickMethodName(a)
+                methodName?.let { name ->
+                    val handler = data[name]
+                    if (handler is Function<*>) {
+                        ModifierBuilder.resolveEventHandler(
+                            a.common.onclick as? String
+                                ?: TypedAttrs.raw(a.common.onClick) as? String,
+                            data, viewId
+                        )
+                    }
+                }
+            }
+        }
+
+        /**
+         * Resolve click method name from onclick/onClick attributes.
+         * onclick → selector format (string only)
+         * onClick → binding format only (@{functionName})
+         */
+        private fun resolveClickMethodName(a: ButtonAttributes): String? {
+            (a.common.onclick as? String)?.let { value ->
+                if (!value.contains("@{")) return value
+            }
+            (TypedAttrs.raw(a.common.onClick) as? String)?.let { value ->
+                return ModifierBuilder.extractBindingProperty(value)
+            }
+            return null
+        }
+
+        // ── Content Padding ──
+
+        private fun buildContentPadding(
+            json: JsonObject,
+            data: Map<String, Any>
+        ): PaddingValues {
+            // paddings (array or single number)
+            TypedAttrs.rawKey(json, "paddings")?.let { element ->
+                if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
+                    return PaddingValues((ModifierBuilder.dimen(element, data) ?: 0f).dp)
+                }
+                if (element.isJsonArray) {
+                    return parsePaddingArray(element.asJsonArray, data)
+                }
+            }
+
+            // padding (single value or array)
+            TypedAttrs.rawKey(json, "padding")?.let { element ->
+                if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
+                    return PaddingValues((ModifierBuilder.dimen(element, data) ?: 0f).dp)
+                }
+                if (element.isJsonArray) {
+                    return parsePaddingArray(element.asJsonArray, data)
+                }
+            }
+
+            // Individual padding values. The undeclared 'paddingVertical' /
+            // 'paddingHorizontal' are not read (UnreadAttributes.COMMON).
+            val paddingTop = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingTop"), data) ?: 0f
+            val paddingBottom = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingBottom"), data) ?: 0f
+            val paddingStart = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingStart"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingLeft"), data) ?: 0f
+            val paddingEnd = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingEnd"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingRight"), data) ?: 0f
+
+            return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
+                PaddingValues(
+                    top = paddingTop.dp,
+                    bottom = paddingBottom.dp,
+                    start = paddingStart.dp,
+                    end = paddingEnd.dp
+                )
+            } else {
+                // Canonical no-padding face is ZERO, not the M3 default:
+                // button_component.rb emits PaddingValues(0.dp) whenever the
+                // layout declares no padding ("use zero padding to avoid
+                // Material default (24dp horizontal)"). Falling back to
+                // ButtonDefaults.ContentPadding centered the text inside a
+                // button 48dp wider than its glyphs, so a right-aligned
+                // wrapContent button showed a phantom end gap on the dynamic
+                // face only (a downstream trailing link button, 2026-08-10).
+                PaddingValues(0.dp)
+            }
+        }
+
+        private fun parsePaddingArray(
+            arr: com.google.gson.JsonArray,
+            data: Map<String, Any>
+        ): PaddingValues {
+            return when (arr.size()) {
+                1 -> PaddingValues((ModifierBuilder.dimen(arr[0], data) ?: 0f).dp)
+                2 -> PaddingValues(
+                    vertical = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                    horizontal = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp
+                )
+                3 -> PaddingValues(
+                    start = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp,
+                    top = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                    end = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp,
+                    bottom = (ModifierBuilder.dimen(arr[2], data) ?: 0f).dp
+                )
+                4 -> PaddingValues(
+                    start = (ModifierBuilder.dimen(arr[3], data) ?: 0f).dp,
+                    top = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                    end = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp,
+                    bottom = (ModifierBuilder.dimen(arr[2], data) ?: 0f).dp
+                )
+                else -> ButtonDefaults.ContentPadding
+            }
+        }
+
+        // ── Elevation ──
+
+        @Composable
+        private fun resolveElevation(shadow: Any?): androidx.compose.material3.ButtonElevation? {
+            return when (shadow) {
+                true -> ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+                is Number -> ButtonDefaults.buttonElevation(defaultElevation = shadow.toFloat().dp)
+                else -> null
+            }
+        }
+
+        /** The icon's edge, in dp: Button declares no icon size. */
+        internal const val ICON_SIZE: Float = 18f
+
+        /**
+         * Keys Button does not declare that this component used to read as
+         * runtime extras: a loading state (`isLoading`, its `loadingText`, and
+         * `async`, which set it around the handler), the icon's
+         * `imagePosition` and `iconSize`, and `disabled`. No codegen path
+         * and no other platform drew them, so a layout that wrote them
+         * rendered differently on this path alone. They are not read; a
+         * debuggable build names each one that a layout still writes
+         * (UnreadAttributes), as the jui validator does ("Unknown
+         * attribute"). The declared ways: `enabled` for the disabled state,
+         * a bound `text` / `enabled` for a busy state, `image` for the icon.
+         */
+        internal val NOT_READ: List<String> = listOf(
+            "isLoading", "loadingText", "async", "imagePosition", "iconSize", "disabled"
+        )
+
+        /** Button-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "text", "enabled", "fontSize", "fontWeight", "fontColor",
+            "disabledFontColor", "tapBackground", "highlightBackground",
+            "highlightColor",
+            "image", "textAlign", "disabledBackground",
+            // Common attribute, but the shared pipeline does not apply it —
+            // Button consumes it as the icon tint.
+            "tintColor"
+        )
+    }
+}

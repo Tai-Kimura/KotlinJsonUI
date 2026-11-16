@@ -1,0 +1,476 @@
+package com.kotlinjsonui.dynamic
+
+import android.content.pm.ApplicationInfo
+import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.generated.AttrEnum
+import com.kotlinjsonui.dynamic.generated.AttrValue
+import com.kotlinjsonui.dynamic.helpers.TintHandDown
+
+/**
+ * Bridge between the generated typed attribute extraction
+ * (`com.kotlinjsonui.dynamic.generated.<Component>Attributes.parse`) and
+ * the dynamic components. This is the ONE place that absorbs the shape
+ * differences between the generated model and what components consume:
+ *
+ * - gson [JsonObject] nodes are adapted to the plain `Map<String, Any?>`
+ *   the generated parsers take ([toAttrMap]; numbers become [Double],
+ *   objects become `Map`, arrays become `List`).
+ * - [AttrValue] (static value | `@{binding}` expression) and [AttrEnum]
+ *   (declared | unknown-passthrough enum) wrappers are unwrapped HERE.
+ *   Components never pattern-match the wrappers themselves; they either
+ *   take the [raw] layout representation (to feed the existing
+ *   binding/resource-aware helpers such as
+ *   `ResourceResolver.resolveTextValue` / `ColorParser
+ *   .parseColorStringWithBinding`) or use the data-resolving accessors
+ *   below, which mirror the legacy `resolveFloat` / `resolveBoolean` /
+ *   `resolveString` semantics.
+ * - L1-normalized layouts (`$jui` marker → [LocalLayoutCanonicalized])
+ *   parse with `canonicalOnly = true`: alias spellings are ignored
+ *   (the `jui build` normalizer already rewrote them).
+ *
+ * Structural keys (`type`, `child`/`children`, `data`, `include`,
+ * `style`, `sections`/`cell`/`header`/`footer`, `tabs`, `items`) are NOT
+ * attributes: components keep reading those from the node directly, and
+ * whole-node passes to the shared helpers (ModifierBuilder etc.) stay
+ * as-is.
+ */
+object TypedAttrs {
+
+    // ------------------------------------------------------------------
+    // gson adapter
+
+    /**
+     * Deep-convert a gson node to the plain map shape the generated
+     * `parse(json: Map<String, Any?>)` implementations expect.
+     */
+    fun toAttrMap(json: JsonObject): Map<String, Any?> {
+        val out = LinkedHashMap<String, Any?>(json.size())
+        for ((key, value) in json.entrySet()) {
+            out[key] = fromElement(value)
+        }
+        return out
+    }
+
+    private fun fromElement(element: JsonElement?): Any? = when {
+        element == null || element.isJsonNull -> null
+        element.isJsonObject -> toAttrMap(element.asJsonObject)
+        element.isJsonArray -> fromArray(element.asJsonArray)
+        else -> {
+            val p = element.asJsonPrimitive
+            when {
+                p.isBoolean -> p.asBoolean
+                p.isNumber -> p.asDouble
+                else -> p.asString
+            }
+        }
+    }
+
+    private fun fromArray(array: JsonArray): List<Any?> = array.map { fromElement(it) }
+
+    // ------------------------------------------------------------------
+    // AttrValue accessors
+
+    /**
+     * The original layout representation: `"@{expr}"` for a binding, the
+     * static value otherwise. Feed this to the existing binding-aware
+     * helpers (resolveTextValue / parseColorStringWithBinding / ...).
+     */
+    fun raw(v: AttrValue<*>?): Any? = v?.rawRepresentation()
+
+    /** [raw] narrowed to String (binding representation included). */
+    fun rawString(v: AttrValue<String>?): String? = v?.rawRepresentation() as? String
+
+    /** Static value only — a binding yields null. */
+    fun <T> static(v: AttrValue<T>?): T? = v?.valueOrNull()
+
+    /**
+     * Static value or the canonically resolved bound value, as String
+     * (dot paths, `?? default`, canonical scalar stringification;
+     * objects/arrays stay unresolved → null).
+     */
+    fun string(v: AttrValue<String>?, data: Map<String, Any>): String? = when (v) {
+        null -> null
+        is AttrValue.Binding -> DataBindingContext.resolveStringInner(v.expression, data)
+        is AttrValue.Value -> v.value
+    }
+
+    /** Static value or the canonically resolved bound value, as Float. */
+    fun float(v: AttrValue<Double>?, data: Map<String, Any>): Float? = when (v) {
+        null -> null
+        is AttrValue.Binding -> DataBindingContext.resolveNumberInner(v.expression, data)?.toFloat()
+        is AttrValue.Value -> v.value.toFloat()
+    }
+
+    /** Static value or the canonically resolved bound value, as Int. */
+    fun int(v: AttrValue<Double>?, data: Map<String, Any>): Int? = when (v) {
+        null -> null
+        is AttrValue.Binding -> DataBindingContext.resolveNumberInner(v.expression, data)?.toInt()
+        is AttrValue.Value -> v.value.toInt()
+    }
+
+    /**
+     * Static value or the canonically resolved bound value, as Boolean
+     * (dot paths, `?? default`, negation `@{!prop}`, canonical bool
+     * coercion: bool / integral number / "true"/"1"/"false"/"0").
+     */
+    fun boolean(v: AttrValue<Boolean>?, data: Map<String, Any>): Boolean? = when (v) {
+        null -> null
+        is AttrValue.Binding -> DataBindingContext.resolveBooleanInner(v.expression, data)
+        is AttrValue.Value -> v.value
+    }
+
+    /** Binding expression (`@{expr}` → `expr`), null for static values. */
+    fun binding(v: AttrValue<*>?): String? = v?.bindingExpressionOrNull()
+
+    // ------------------------------------------------------------------
+    // AttrEnum accessors
+
+    /** Declared enum constant, or null for unknown pass-through values. */
+    fun <T> enum(v: AttrEnum<T>?): T? = v?.knownOrNull()
+
+    /**
+     * Binding-capable enum: static declared value directly; a binding
+     * resolves through the data map and is matched with [parse]
+     * (case handling is up to the generated `from()` passed in).
+     */
+    fun <T> enum(
+        v: AttrValue<AttrEnum<T>>?,
+        data: Map<String, Any>,
+        parse: (String) -> T?
+    ): T? = when (v) {
+        null -> null
+        is AttrValue.Binding ->
+            DataBindingContext.resolveStringInner(v.expression, data)?.let(parse)
+        is AttrValue.Value -> v.value.knownOrNull()
+    }
+
+    /**
+     * The enum's declared JSON spelling for known values, or the unknown
+     * pass-through raw value (as String). For components whose legacy
+     * `when(lowercase())` switches also matched undeclared spellings.
+     */
+    fun <T> enumString(v: AttrEnum<T>?, json: (T) -> String): String? = when (v) {
+        null -> null
+        is AttrEnum.Known -> json(v.value)
+        is AttrEnum.Unknown -> v.value as? String
+    }
+
+    /**
+     * [enumString] over a binding-capable enum attribute with data-map
+     * resolution: a static value yields its declared spelling (or the
+     * unknown pass-through), a binding resolves to the bound String —
+     * matches the legacy `resolveString(json, key, data)` + lowercase
+     * matching pattern.
+     */
+    fun <T> enumStringResolved(
+        v: AttrValue<AttrEnum<T>>?,
+        data: Map<String, Any>,
+        json: (T) -> String
+    ): String? = when (v) {
+        null -> null
+        is AttrValue.Binding -> DataBindingContext.resolveStringInner(v.expression, data)
+        is AttrValue.Value -> enumString(v.value, json)
+    }
+
+    /**
+     * [enumString] over a binding-capable enum attribute, static values
+     * only (a binding yields null — matches legacy static-only reads).
+     */
+    fun <T> staticEnumString(v: AttrValue<AttrEnum<T>>?, json: (T) -> String): String? =
+        when (v) {
+            null -> null
+            is AttrValue.Binding -> null
+            is AttrValue.Value -> enumString(v.value, json)
+        }
+
+    // ------------------------------------------------------------------
+    // Documented raw escape hatches (grep-gate friendly: components use
+    // these named entry points instead of json.get("attr")).
+
+    /**
+     * Raw read of a DECLARED key whose accepted value space is wider
+     * than its declared type (e.g. `padding`/`paddings` edge-inset
+     * arrays, `shadow` objects) — the generated coercion would drop the
+     * extra shapes. Mirrors the rjui bridge RAW_LOOKUP_KEYS.
+     */
+    fun rawKey(json: JsonObject, key: String): JsonElement? = json.get(key)
+
+    /**
+     * Raw read of a key NOT declared in attribute_definitions.json
+     * (legacy runtime extras). Every call site is to be settled one way
+     * or the other: declare the key in the SSoT (so every path draws it
+     * or records that it does not), or stop reading it and name it in a
+     * debuggable build through [UnreadAttributes] — as Button's
+     * `isLoading`, `loadingText`, `async`, `imagePosition`, `iconSize`
+     * and `disabled` were, and SelectBox's `disabled`. Keeping the remaining reads on this single
+     * entry point makes them mechanically greppable.
+     */
+    fun undeclared(json: JsonObject, key: String): JsonElement? = json.get(key)
+}
+
+/**
+ * Parse a node's typed attributes once per composition, honoring the
+ * layout's normalization state ([LocalLayoutCanonicalized]).
+ *
+ * ```kotlin
+ * val attrs = rememberTypedAttrs(json) { m, canonicalOnly ->
+ *     LabelAttributes.parse(m, canonicalOnly)
+ * }
+ * ```
+ */
+@Composable
+fun <A> rememberTypedAttrs(
+    json: JsonObject,
+    parse: (Map<String, Any?>, Boolean) -> A
+): A {
+    val canonicalOnly = LocalLayoutCanonicalized.current
+    return remember(json, canonicalOnly) { parse(TypedAttrs.toAttrMap(json), canonicalOnly) }
+}
+
+/**
+ * Debug-build detection of "parsed but unapplied" attributes: a declared
+ * attribute present on a node that the rendering component does not
+ * apply. This is the machine check that surfaces application gaps when a
+ * new attribute lands in attribute_definitions.json before the component
+ * grows support for it.
+ *
+ * Only active when the host app is debuggable ([ApplicationInfo
+ * .FLAG_DEBUGGABLE]); warnings are logged once per (component, attribute)
+ * pair per process to keep logcat usable.
+ */
+object UnappliedAttributes {
+    private const val TAG = "JsonUIUnapplied"
+
+    /** Overridable for tests; null = derive from the app's debuggable flag. */
+    var enabledOverride: Boolean? = null
+
+    /** Test hook: receives every emitted warning message. */
+    var warningSink: ((String) -> Unit)? = null
+
+    private val warned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /** Keys that are structure / build metadata, never component-applied. */
+    val STRUCTURAL_KEYS: Set<String> = setOf(
+        Normalization.MARKER_KEY, "_generated",
+        "type", "id", "child", "children", "data", "shared_data", "variables",
+        "include", "style", "sections", "cell", "header", "footer",
+        "responsive", "platform", "platforms", "mode"
+    )
+
+    /**
+     * Common attributes applied for every component through the shared
+     * pipeline: DynamicView (visibility / hidden) and
+     * ModifierBuilder.buildModifier (size, margins, paddings, background,
+     * border, corner radius, shadow, opacity, alignment / relative
+     * constraints, gesture handlers, weight, frame, testTag from id).
+     * Components pass `COMMON_APPLIED + <their own applied set>` to
+     * [check].
+     */
+    val COMMON_APPLIED: Set<String> = setOf(
+        "alignBottom", "alignBottomOfView", "alignBottomView",
+        "alignCenterHorizontalView", "alignCenterVerticalView",
+        "alignLeft", "alignLeftOfView", "alignLeftView",
+        "alignRight", "alignRightOfView", "alignRightView",
+        "alignTop", "alignTopOfView", "alignTopView",
+        "alpha", "aspectHeight", "aspectWidth",
+        "background", "borderColor", "borderStyle", "borderWidth",
+        "bottomMargin", "bottomPadding",
+        "centerHorizontal", "centerInParent", "centerVertical",
+        "clipToBounds", "cornerRadius", "endMargin", "frame", "gravity",
+        "height", "heightWeight",
+        "leftMargin", "leftPadding", "margins",
+        "maxHeight", "maxWidth", "minHeight", "minWidth",
+        "offsetX", "offsetY",
+        "onAppear", "onClick", "onDisappear", "onLongPress", "onclick",
+        "opacity", "padding", "paddingBottom", "paddingEnd",
+        "paddingLeft", "paddingRight",
+        "paddingStart", "paddingTop", "paddings",
+        "rightMargin", "rightPadding", "shadow",
+        "startMargin", "startPadding",
+        "topMargin", "topPadding",
+        "weight", "width",
+        "visibility", "hidden", "testId"
+    )
+
+    fun check(
+        componentType: String,
+        json: JsonObject,
+        declared: Set<String>,
+        applied: Set<String>,
+        context: android.content.Context? = null
+    ) {
+        // Every component calls this gate, so the keys no component reads
+        // (UnreadAttributes.COMMON) are named here once for all of them.
+        UnreadAttributes.check(componentType, json, UnreadAttributes.COMMON, context)
+
+        val enabled = enabledOverride ?: isAppDebuggable(context)
+        if (!enabled) return
+
+        for (key in json.keySet()) {
+            if (key in STRUCTURAL_KEYS) continue
+            if (key !in declared) continue // undeclared keys are the validator's business
+            if (key in applied) continue
+            // A container's tintColor is applied by DynamicView, which hands it
+            // down to the controls inside (TintHandDown), not by the component.
+            if (key == "tintColor" && TintHandDown.handsDown(json)) continue
+            val dedupeKey = "$componentType:$key"
+            if (!warned.add(dedupeKey)) continue
+            val message =
+                "$componentType: declared attribute '$key' is present but not applied by the dynamic component"
+            warningSink?.invoke(message)
+            Log.w(TAG, message)
+        }
+    }
+
+    private fun isAppDebuggable(context: android.content.Context?): Boolean =
+        DebugDiagnostics.isAppDebuggable(context)
+}
+
+/**
+ * The debug-build gate the diagnostic warnings share.
+ *
+ * Both diagnostics answer the same question — "the layout declared something
+ * that never reached the screen" — and both must stay silent in a consumer's
+ * release build. Keeping the gate in one place is the same rule the attribute
+ * vocabularies follow: a second copy drifts.
+ */
+object DebugDiagnostics {
+    /** Overridable for tests; null = derive from the app's debuggable flag. */
+    var enabledOverride: Boolean? = null
+
+    private var debuggable: Boolean? = null
+
+    internal fun isAppDebuggable(context: android.content.Context?): Boolean {
+        enabledOverride?.let { return it }
+        debuggable?.let { return it }
+        if (context == null) return false
+        val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        debuggable = isDebug
+        return isDebug
+    }
+}
+
+/**
+ * Where an enum value that is not one of its declared spellings is named: the
+ * generated parse (AttrWarnings — "Label.lineBreakMode: unknown enum value
+ * 'X'", with " — did you mean 'x'?" for a case-only miss) and the hand-written
+ * comparisons over values no parse saw (DeclaredSpelling, the same sentence).
+ * Neither had a destination: AttrWarnings.handler was set by tests only, so a
+ * near miss the parse named went nowhere. In a debuggable build both go to
+ * logcat, unless the app installed its own; a release build names nothing.
+ */
+object EnumSpellingWarnings {
+    private const val TAG = "JsonUIEnum"
+
+    /**
+     * A value read raw can be named by the helper and by the node's own parse
+     * in the same words (ModifierBuilder's `alignment` / `effectStyle`); the
+     * log carries each sentence once.
+     */
+    private val logged = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val logOnce: (String) -> Unit = { if (logged.add(it)) Log.w(TAG, it) }
+
+    fun install(context: android.content.Context?) {
+        if (!DebugDiagnostics.isAppDebuggable(context)) return
+        if (com.kotlinjsonui.dynamic.generated.AttrWarnings.handler == null) {
+            com.kotlinjsonui.dynamic.generated.AttrWarnings.handler = logOnce
+        }
+        if (com.kotlinjsonui.core.DeclaredSpelling.warningSink == null) {
+            com.kotlinjsonui.core.DeclaredSpelling.warningSink = logOnce
+        }
+    }
+}
+
+/**
+ * A resource NAME that resolved to nothing.
+ *
+ * `getIdentifier` returns 0 for a name the app does not ship, and every caller
+ * treats 0 as "draw nothing" — so a misspelled drawable is a blank area and no
+ * more. The codegen path spells the same name as `R.drawable.<name>` and fails
+ * to BUILD, which is how plan 49-G found `__control/Image__no-src`: the two
+ * paths disagreed about the same missing resource and only one of them said so.
+ *
+ * This does not change what `resolveDrawable` returns — a consumer's rendering
+ * is unaffected. It only makes the dynamic path say the thing the codegen path
+ * already says, and only in a debuggable build.
+ */
+object UnresolvedResource {
+    private const val TAG = "JsonUIUnresolved"
+
+    /** Test hook: receives every emitted warning message. */
+    var warningSink: ((String) -> Unit)? = null
+
+    private val warned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /** Report a name that `getIdentifier` could not resolve. */
+    fun report(kind: String, name: String, context: android.content.Context?) {
+        if (!DebugDiagnostics.isAppDebuggable(context)) return
+        val dedupeKey = "$kind:$name"
+        if (!warned.add(dedupeKey)) return
+        val message =
+            "$kind resource '$name' does not resolve — the layout names it but the app " +
+                "ships no such resource, so nothing is drawn there"
+        warningSink?.invoke(message)
+        Log.w(TAG, message)
+    }
+}
+
+/**
+ * Keys a component USED to read as undeclared runtime extras and no longer
+ * reads: the SSoT declares none of them for that type, no codegen draws them,
+ * so reading them here made this path render a layout differently from every
+ * other. [UnappliedAttributes] leaves undeclared keys to the jui validator
+ * ("Unknown attribute"); a layout loaded at runtime may never pass through it,
+ * so a debuggable build names each such key the layout still writes — once per
+ * (component, key) pair per process. A release build names nothing.
+ */
+object UnreadAttributes {
+    private const val TAG = "JsonUIUnread"
+
+    /** Test hook: receives every emitted warning message. */
+    var warningSink: ((String) -> Unit)? = null
+
+    private val warned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /** Test hook: forget which pairs were named. */
+    fun resetForTest() = warned.clear()
+
+    /**
+     * Keys NO component reads any more, named for every component through
+     * [UnappliedAttributes.check]: `paddingHorizontal` / `paddingVertical`.
+     * The SSoT declares neither, the jsonui-cli normalizer does not fold
+     * them, and neither sjui, rjui nor SwiftJsonUI Dynamic draws them (the
+     * kjui codegen read them on Button alone; it no longer does). The
+     * shared padding pipeline read them for every component, so a layout
+     * that wrote them drew padding on this path only. The declared ways:
+     * `paddings: [vertical, horizontal]`, or the per-edge padding keys.
+     */
+    val COMMON: List<String> = listOf("paddingHorizontal", "paddingVertical")
+
+    /** The sentence for [key] on [componentType]. */
+    fun message(componentType: String, key: String): String =
+        "$componentType: '$key' is not a declared attribute of $componentType and is not read " +
+            "— it draws nothing on any path; remove it from the layout"
+
+    fun check(
+        componentType: String,
+        json: JsonObject,
+        keys: Collection<String>,
+        context: android.content.Context? = null
+    ) {
+        if (keys.none { json.has(it) }) return
+        if (!DebugDiagnostics.isAppDebuggable(context)) return
+        for (key in keys) {
+            if (!json.has(key)) continue
+            if (!warned.add("$componentType:$key")) continue
+            val message = message(componentType, key)
+            warningSink?.invoke(message)
+            Log.w(TAG, message)
+        }
+    }
+}

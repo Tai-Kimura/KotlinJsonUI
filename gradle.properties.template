@@ -1,0 +1,19 @@
+# Maven Central Publishing Configuration Template
+# IMPORTANT: Copy this file to ~/.gradle/gradle.properties and fill in your ACTUAL credentials
+# DO NOT commit the actual gradle.properties file with real credentials!
+
+# Central Portal Credentials (New system - recommended)
+centralPortalUsername=your-username-or-token
+centralPortalPassword=your-api-token
+
+# GPG Signing (Required for Maven Central)
+# Option 1: ASCII armor format (recommended)
+signing.key=-----BEGIN PGP PRIVATE KEY BLOCK-----\n\
+YOUR_PRIVATE_KEY_HERE\n\
+-----END PGP PRIVATE KEY BLOCK-----
+signing.password=your-gpg-passphrase
+
+# Option 2: Key file reference
+# signing.keyId=YOUR_KEY_ID
+# signing.secretKeyRingFile=/Users/your-username/.gnupg/secring.gpg
+# signing.password=your-gpg-passphrase

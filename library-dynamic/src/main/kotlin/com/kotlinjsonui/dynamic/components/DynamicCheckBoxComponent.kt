@@ -1,0 +1,517 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.kotlinjsonui.core.jsonUITintOrNull
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CheckBoxAttributes
+import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
+
+/**
+ * Dynamic CheckBox Component Converter
+ * Converts JSON to CheckBox composable at runtime.
+ *
+ * Reference: checkbox_component.rb in kjui_tools.
+ *
+ * CheckBox is the primary component name. Check is supported as an alias
+ * for backward compatibility (both spellings parse with the generated
+ * [CheckBoxAttributes] — the Check section is a stub alias).
+ *
+ * State binding priority: isOn > checked
+ *
+ * Attribute access goes through the generated [CheckBoxAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; the node itself is only passed wholesale to the shared
+ * ModifierBuilder pipeline.
+ *
+ * Supported JSON attributes:
+ * - isOn/checked: Boolean or @{variable} for checked state
+ * - bind: folded by DynamicView into isOn (BindFold)
+ * - onValueChange: @{functionName} for change handler (binding format only)
+ * - enabled: Boolean or @{variable} to enable/disable
+ * - label/text: String label text to display next to checkbox
+ * - icon/selectedIcon: String drawable names for IconToggleButton variant
+ * - checkColor: Hex color for checked state
+ * - uncheckedColor: Hex color for unchecked state
+ * - fontColor: Hex color for icon tint (icon variant)
+ * - fontSize/font: Label text styling
+ * - spacing: Number dp between checkbox and label (default 8)
+ * - padding/paddings/margins: Layout modifiers
+ */
+class DynamicCheckBoxComponent {
+    companion object {
+        /** CheckBox-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "isOn", "checked", "enabled", "onValueChange",
+            "label", "text", "icon", "selectedIcon",
+            "spacing", "fontSize", "fontColor", "font", "uncheckedColor"
+        )
+
+        @Composable
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap(),
+            parentType: String? = null
+        ) {
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                CheckBoxAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "CheckBox", json,
+                declared = CheckBoxAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = LocalContext.current
+            )
+
+            val hasLabel = a.label != null || a.text != null
+            // 'src' is the common-attribute spelling of the unchecked icon
+            // (ios renders it — 33 cross-effect measured android dropping it).
+            val hasCustomIcon = a.icon != null || a.selectedIcon != null ||
+                a.src != null
+
+            when {
+                hasCustomIcon -> createIconCheckbox(json, a, data, parentType)
+                hasLabel -> createWithLabel(json, a, data, parentType)
+                else -> createCheckboxOnly(json, a, data, parentType)
+            }
+        }
+
+        // ── Checkbox without label ──
+
+        @Composable
+        private fun createCheckboxOnly(
+            json: JsonObject,
+            a: CheckBoxAttributes,
+            data: Map<String, Any>,
+            parentType: String?
+        ) {
+            val context = LocalContext.current
+
+            // Parse binding variable (priority: isOn > checked)
+            val bindingVariable = resolveBindingVariable(a)
+
+            // Get checked state
+            val checked = resolveCheckedState(a, data, bindingVariable)
+
+            // State for the checkbox
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var checkedState by remember(checked, bindingVariable) {
+                mutableStateOf(checked)
+            }
+
+            // Enabled state (supports @{binding}; CheckBox declares its own row)
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
+
+            // Build onCheckedChange handler
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
+                checkedState = newValue
+            }
+
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (no outer click — onClick is called from
+            // onCheckedChange), and `enabled` is the Checkbox's own, on this node.
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
+
+            // Colors: checkColor -> checkedColor, uncheckedColor -> uncheckedColor
+            val colors = buildCheckboxColors(json, a, data, context)
+
+            Checkbox(
+                checked = checkedState,
+                onCheckedChange = onCheckedChange,
+                modifier = modifier,
+                enabled = isEnabled,
+                colors = colors
+            )
+        }
+
+        // ── Checkbox with label (Row layout) ──
+
+        @Composable
+        private fun createWithLabel(
+            json: JsonObject,
+            a: CheckBoxAttributes,
+            data: Map<String, Any>,
+            parentType: String?
+        ) {
+            val context = LocalContext.current
+
+            // Parse binding variable (priority: isOn > checked)
+            val bindingVariable = resolveBindingVariable(a)
+
+            // Get checked state
+            val checked = resolveCheckedState(a, data, bindingVariable)
+
+            // State for the checkbox
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var checkedState by remember(checked, bindingVariable) {
+                mutableStateOf(checked)
+            }
+
+            // Enabled state (supports @{binding}; CheckBox declares its own row)
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
+
+            // Build onCheckedChange handler
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
+                checkedState = newValue
+            }
+
+            // Build modifier for Row container: testTag, margins, alpha, padding.
+            // The Row carries the component's id, so mirror the disabled state
+            // in its semantics for accessibility / UI tests. The whole labeled
+            // row is toggleable (standard labeled-checkbox pattern): a tap
+            // anywhere on the row — including the label, which is where the
+            // row's center lands for UI-test drivers — toggles the value.
+            // The clickable stage is a control's: the Row's own toggleable
+            // carries the operation and `enabled` on the tagged node, and
+            // onClick is called from onCheckedChange — no outer click above the
+            // toggleable to take its action (ControlTap.ENABLED_ON_NODE).
+            val rowModifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
+                .toggleable(
+                    value = checkedState,
+                    enabled = isEnabled,
+                    role = Role.Checkbox,
+                    onValueChange = onCheckedChange
+                )
+                .let { if (!isEnabled) it.semantics { disabled() } else it }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = rowModifier
+            ) {
+                // Checkbox keeps its own handler (and with it the Material
+                // minimumInteractiveComponentSize wrapper, so labeled-checkbox
+                // visuals stay identical to static codegen). A tap on the box
+                // is consumed here; taps elsewhere on the row hit the row-level
+                // toggleable. No double-fire: inner consumption wins.
+                Checkbox(
+                    checked = checkedState,
+                    onCheckedChange = onCheckedChange,
+                    enabled = isEnabled,
+                    // iconSize scales the default glyph via the size modifier
+                    // (mirrors checkbox_component.rb — no separate glyph to
+                    // size on a Material Checkbox).
+                    // The box is a node of its own: it reads the stop too
+                    // (stoppedItem).
+                    modifier = (a.iconSize?.let {
+                        Modifier.size(it.toInt().dp)
+                    } ?: Modifier).then(ModifierBuilder.stoppedItem(json, data)),
+                    // The labeled path dropped the color skin entirely —
+                    // uncheckedColor/checkedColor never reached the box
+                    // every text-bearing fixture renders (33 cross-effect).
+                    colors = buildCheckboxColors(json, a, data, context)
+                )
+
+                // Spacer with configurable spacing
+                val spacing = TypedAttrs.float(a.spacing, data)?.dp ?: 8.dp
+                Spacer(modifier = Modifier.width(spacing))
+
+                // Label text. The raw representation is the LAYOUT spelling,
+                // so a bound label drew the characters `@{expr}` on screen
+                // (smoke run: CheckBox/text__binding rendered "@{boundText}").
+                // Every other component routes the same rows through
+                // ResourceResolver.resolveTextValue, which resolves the
+                // binding and the string-resource name alike.
+                val labelText = (TypedAttrs.rawString(a.label)
+                    ?: TypedAttrs.rawString(a.text))
+                    ?.let { ResourceResolver.resolveTextValue(it, data, context) } ?: ""
+                val fontSize = TypedAttrs.float(a.fontSize, data)
+                val fontColor = ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.fontColor), data, context
+                )
+                // `font` is declared `["string","binding"]`. `rawString` hands
+                // back `"@{expr}"` verbatim (it exists to feed the
+                // binding-AWARE helpers), so matching it against weight names
+                // could only ever hit the static face — CheckBox/font__static
+                // was active on android while CheckBox/font__binding rendered
+                // the default weight. Resolve first, then look the name up in
+                // the shared weight table rather than a local one-entry copy.
+                // `fontWeight` (string|number, declared 51-E) outranks the
+                // legacy `font` weight spelling — the codegen reads the same
+                // cascade. Only `font` was read here, so a declared
+                // fontWeight was inert on this face (codegen_effect
+                // CheckBox.fontWeight android).
+                val fontWeightValue =
+                    ResourceResolver.fontWeightOf(a.fontWeight)
+                        ?: ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data))
+
+                // fontScaling / maxFontScale alone take the styled branch too: the plain Text(label) followed the
+                // system's text size whatever the CheckBox declared (conformance CheckBox/fontScaling__false).
+                // Through the app's fontProvider whatever the label declares (P1); a null slot draws as before.
+                // The weight handed over is the one the label draws when it declares none (P1: the provider then
+                // returns the font file it drew before).
+                val styled = fontSize != null || fontColor != null || fontWeightValue != null ||
+                    json.fontScalingAttr() != null || json.maxFontScaleAttr() != null
+                val labelFont = ResourceResolver.providerFont(
+                    weight = fontWeightValue ?: if (styled) FontWeight.Normal else androidx.compose.material3.LocalTextStyle.current.fontWeight,
+                    size = fontSize?.sp,
+                )
+                if (styled) {
+                    Text(
+                        text = labelText,
+                        fontSize = json.fontSized(labelFont.size ?: fontSize?.sp ?: 16.sp),
+                        letterSpacing = json.letterSpaced(),
+                        lineHeight = json.lineHeighted(json.fontSized(fontSize?.sp ?: 16.sp)),
+                        color = fontColor ?: Color.Unspecified,
+                        fontWeight = labelFont.weight ?: fontWeightValue ?: FontWeight.Normal,
+                        fontFamily = labelFont.family,
+                        fontStyle = labelFont.style
+                    )
+                } else {
+                    Text(
+                        text = labelText,
+                        fontSize = labelFont.size ?: TextUnit.Unspecified,
+                        fontWeight = labelFont.weight,
+                        fontFamily = labelFont.family,
+                        fontStyle = labelFont.style
+                    )
+                }
+            }
+        }
+
+        // ── Checkbox with custom icon/selectedIcon (IconToggleButton) ──
+
+        @Composable
+        private fun createIconCheckbox(
+            json: JsonObject,
+            a: CheckBoxAttributes,
+            data: Map<String, Any>,
+            parentType: String?
+        ) {
+            val context = LocalContext.current
+
+            // Parse binding variable (priority: isOn > checked)
+            val bindingVariable = resolveBindingVariable(a)
+
+            // Get checked state
+            val checked = resolveCheckedState(a, data, bindingVariable)
+
+            // State for the checkbox
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var checkedState by remember(checked, bindingVariable) {
+                mutableStateOf(checked)
+            }
+
+            // Enabled state (supports @{binding}; CheckBox declares its own row)
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
+
+            // Build onCheckedChange handler
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
+                checkedState = newValue
+            }
+
+            // Resolve icon drawable resources — each state falls back to the
+            // OTHER supplied asset, not to a Material drawable name that the
+            // app does not ship (kjui codegen and iOS share this contract;
+            // "check_box_outline_blank" resolved to 0 and drew NOTHING for a
+            // selectedIcon-only declaration).
+            val srcIcon = a.src
+            val iconName = a.icon ?: srcIcon ?: a.selectedIcon ?: "check_box_outline_blank"
+            val selectedIconName = a.selectedIcon ?: a.icon ?: srcIcon ?: "check_box"
+            val iconRes = ResourceResolver.resolveDrawable(iconName, data, context)
+            val selectedIconRes = ResourceResolver.resolveDrawable(selectedIconName, data, context)
+
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from onCheckedChange), and `enabled` is the
+            // IconToggleButton's own, on this node.
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
+
+            IconToggleButton(
+                checked = checkedState,
+                onCheckedChange = onCheckedChange,
+                modifier = modifier,
+                enabled = isEnabled
+            ) {
+                // Icon tint color
+                val tintColor = ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.fontColor), data, context
+                )
+
+                val activeRes = if (checkedState) selectedIconRes else iconRes
+                if (activeRes != 0) {
+                    Icon(
+                        painter = painterResource(id = activeRes),
+                        contentDescription = null,
+                        tint = tintColor ?: Color.Unspecified
+                    )
+                }
+            }
+        }
+
+        // ── Helper Functions ──
+
+        /**
+         * Build checkbox colors from JSON attributes.
+         * checkColor -> checkedColor, uncheckedColor -> uncheckedColor
+         */
+        @Composable
+        private fun buildCheckboxColors(
+            json: JsonObject,
+            a: CheckBoxAttributes,
+            data: Map<String, Any>,
+            context: android.content.Context
+        ): androidx.compose.material3.CheckboxColors {
+            // Declared spelling first; 'checkColor' is the undeclared
+            // legacy runtime extra. Then tintColor, the control's accent (4f
+            // ruling, 2026-09-26): "on a CheckBox the common tint IS the
+            // checked colour" (attribute_definitions CheckBox.checkedColor),
+            // as kjui's codegen reads it (checkColor || checkedColor ||
+            // tintColor) — this path did not.
+            val checkedColor = ColorParser.parseColorStringWithBinding(
+                a.checkedColor, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
+                TypedAttrs.undeclared(json, "checkColor")?.asString, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor), data, context
+            ) ?: jsonUITintOrNull() // none of its own: the tint a container handed down
+            val uncheckedColor = ColorParser.parseColorStringWithBinding(
+                a.uncheckedColor, data, context
+            )
+            // `iconColor` ("Icon tint color") had NO reference on this path at
+            // all, so a declared one rendered the default tick
+            // (CheckBox/iconColor__static, redistributed by E2). On a Material
+            // Checkbox the "icon" is the tick, not the box — the kjui codegen
+            // maps it to `checkmarkColor` and says so in as many words
+            // (checkbox_component.rb:227-231); this is the same mapping, not a
+            // second opinion about what the icon is.
+            val iconColor = ColorParser.parseColorStringWithBinding(
+                a.iconColor, data, context
+            )
+
+            // `Color.Unspecified` is Material's own "leave this slot alone":
+            // every parameter defaults to it, and the copy() underneath resolves
+            // each one with `takeOrElse { existing }`. So one call covers all
+            // eight combinations, and an undeclared colour keeps the THEME
+            // value rather than a value we reconstructed.
+            //
+            // Reading the defaults back out and passing them in would have been
+            // wrong, not merely verbose: `uncheckedColor` lands on
+            // `uncheckedBorderColor`, while `uncheckedBoxColor` is pinned to
+            // Transparent — so feeding the box colour into that parameter would
+            // have erased the unchecked border.
+            return CheckboxDefaults.colors(
+                checkedColor = checkedColor ?: Color.Unspecified,
+                uncheckedColor = uncheckedColor ?: Color.Unspecified,
+                checkmarkColor = iconColor ?: Color.Unspecified
+            )
+        }
+
+        /**
+         * The data key the state is bound to: the first of isOn, checked that is
+         * bound. `bind` never reaches here: DynamicView folds it into the attribute
+         * it stands for (BindFold, SSoT common.bind primaryValue).
+         */
+        internal fun resolveBindingVariable(a: CheckBoxAttributes): String? {
+            val stateAttr = a.isOn ?: a.checked
+            return TypedAttrs.binding(stateAttr)
+        }
+
+        /**
+         * Resolve the current checked state from JSON and data.
+         */
+        internal fun resolveCheckedState(
+            a: CheckBoxAttributes,
+            data: Map<String, Any>,
+            bindingVariable: String?
+        ): Boolean {
+            if (bindingVariable != null) {
+                return (data[bindingVariable] as? Boolean) ?: false
+            }
+
+            // Direct value from isOn/checked
+            val stateAttr = a.isOn ?: a.checked
+            return TypedAttrs.static(stateAttr) ?: false
+        }
+
+        /**
+         * Build the onCheckedChange callback.
+         * Updates bound variable via data["updateData"] and calls onValueChange handler.
+         */
+        private fun buildOnCheckedChange(
+            json: JsonObject,
+            a: CheckBoxAttributes,
+            data: Map<String, Any>,
+            bindingVariable: String?,
+            updateState: (Boolean) -> Unit
+        ): (Boolean) -> Unit {
+            // The declared onClick, called last — after the state, the bound
+            // value and onValueChange: the check is the CheckBox's own
+            // operation and calls it; no outer `.clickable` does
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+            return { newValue ->
+                updateState(newValue)
+
+                // Update bound variable via data["updateData"]
+                if (bindingVariable != null) {
+                    val updateData = data["updateData"]
+                    if (updateData is Function<*>) {
+                        try {
+                            @Suppress("UNCHECKED_CAST")
+                            (updateData as (Map<String, Any>) -> Unit)(
+                                mapOf(bindingVariable to newValue)
+                            )
+                        } catch (_: Exception) {
+                            // Update function doesn't match expected signature
+                        }
+                    }
+                }
+
+                // Call onValueChange handler (binding format only)
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    val viewId = LayoutPath.viewId(json)
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                }
+                onClick?.invoke()
+            }
+        }
+    }
+}

@@ -1,0 +1,118 @@
+package com.kotlinjsonui.dynamic
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import com.kotlinjsonui.data.CollectionDataSection
+import com.kotlinjsonui.data.CollectionDataSource
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/**
+ * A paging Collection draws one page per cell, every drawn section's cells in
+ * order (4f ruling, 2026-09-26, round 6). A page is found by `currentPage`,
+ * which counts across the sections. Pinned here:
+ * - the page count is the pages drawn — with more data sections than
+ *   declared ones the pager counted every data section's cells while it drew
+ *   the declared ones', and a page past them read past the end of its list;
+ * - the class-list shape (cellClasses, no `sections`) is one section — the
+ *   first data section — as on the other one-section routes; it drew no page.
+ *
+ * Each case shows the pager at a bound `currentPage` and reads the cell
+ * drawn there (`collection_probe_title_cell`: a Label of the item's title).
+ * The Label is narrower than the page, so it sits in the middle of the page
+ * (the requester's ruling 2026-11-15, jsonui-cli ticket
+ * collection-cellwidth-cellheight-unread-on-some-routes): the page shown is
+ * the one whose cell's centre is the pager's centre.
+ */
+@RunWith(AndroidJUnit4::class)
+class DynamicPagingSectionsTest {
+
+    @get:Rule
+    val rule = createComposeRule()
+
+    private val cell = "collection_probe_title_cell"
+
+    private fun source(vararg sections: List<String>) = CollectionDataSource(
+        sections = sections.map { titles ->
+            CollectionDataSection(cells = CollectionDataSection.CellData(cell, titles.map { mapOf("title" to it) }))
+        }
+    )
+
+    private var shown by mutableStateOf<Pair<JsonObject, Map<String, Any>>?>(null)
+    private var composed = false
+
+    /** The titles drawn with the pager at [page]. */
+    private fun drawnAt(attrs: String, items: CollectionDataSource, page: Int): List<String> {
+        val json = JsonParser.parseString(
+            """{"type": "Collection", "id": "pager", "layout": "horizontal", "paging": true,
+               "width": 300, "height": 120, "items": "@{items}", "currentPage": "@{page}" $attrs}"""
+        ).asJsonObject
+        if (!composed) {
+            rule.setContent { shown?.let { (j, d) -> key(j, d) { DynamicView(json = j, data = d) } } }
+            composed = true
+        }
+        rule.runOnIdle { shown = json to mapOf("items" to items, "page" to page) }
+        rule.waitForIdle()
+        val middle = pagerMiddle()
+        return listOf("a0", "a1", "b0", "b1", "c0").filter {
+            rule.onAllNodesWithText(it).fetchSemanticsNodes().any { node -> node.boundsInRoot.center.x in middle - 1f..middle + 1f }
+        }
+    }
+
+    private fun pagerMiddle(): Float = rule.onNodeWithTag("pager", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot.center.x
+
+    @Test
+    fun moreDataSectionsThanDeclaredPagesTheDeclaredOnes() {
+        // One declared section, two data sections: pages a0, a1. Page 1 is a1;
+        // the pager's page count is 2, so a bound 3 lands on the last page.
+        val items = source(listOf("a0", "a1"), listOf("b0", "b1"))
+        val one = """, "sections": [{"cell": "$cell"}]"""
+        assertEquals(listOf("a1"), drawnAt(one, items, 1))
+        assertEquals(listOf("a1"), drawnAt(one, items, 3))
+    }
+
+    @Test
+    fun everyDeclaredSectionInOrder() {
+        val items = source(listOf("a0", "a1"), listOf("b0", "b1"))
+        val two = """, "sections": [{"cell": "$cell"}, {"cell": "$cell"}]"""
+        assertEquals(listOf("a1"), drawnAt(two, items, 1))
+        assertEquals(listOf("b0"), drawnAt(two, items, 2))
+        assertEquals(listOf("b1"), drawnAt(two, items, 3))
+    }
+
+    /**
+     * A page's address, `<id>_item_<n>`, counts across the sections as the
+     * page does (4f ruling 2026-09-26, round 7): section 2's first page is
+     * `pager_item_2`. It was `pager_item_0` — its index in its section — and
+     * the first section's first page answered the same address.
+     */
+    @Test
+    fun aPageIsAddressedByItsPlaceAmongAllThePages() {
+        val items = source(listOf("a0", "a1"), listOf("b0", "b1"))
+        val two = """, "sections": [{"cell": "$cell"}, {"cell": "$cell"}]"""
+        assertEquals(listOf("b0"), drawnAt(two, items, 2))
+        val tagged = rule.onAllNodesWithTag("pager_item_2", useUnmergedTree = true).fetchSemanticsNodes()
+        assertEquals("one node answers pager_item_2", 1, tagged.size)
+        assertEquals(pagerMiddle(), tagged.single().boundsInRoot.center.x, 1f)
+    }
+
+    @Test
+    fun theClassListShapeIsOneSection() {
+        val items = source(listOf("a0", "a1"), listOf("b0"))
+        val classList = """, "cellClasses": ["$cell"]"""
+        assertEquals(listOf("a0"), drawnAt(classList, items, 0))
+        assertEquals(listOf("a1"), drawnAt(classList, items, 1))
+        assertEquals(listOf("a1"), drawnAt(classList, items, 2))
+    }
+}

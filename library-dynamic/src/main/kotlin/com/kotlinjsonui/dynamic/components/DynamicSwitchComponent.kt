@@ -1,0 +1,393 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.kotlinjsonui.core.jsonUITintOrNull
+import com.kotlinjsonui.core.DeclaredSpelling
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.SwitchAttributes
+import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
+
+/**
+ * Dynamic Switch Component Converter
+ * Converts JSON to Switch composable at runtime.
+ *
+ * Reference: switch_component.rb in kjui_tools.
+ *
+ * Switch is the primary component name. Toggle is supported as an alias
+ * for backward compatibility.
+ *
+ * State binding priority: isOn > value > checked
+ *
+ * Supported JSON attributes:
+ * - isOn/value/checked: Boolean or @{variable} for checked state
+ * - bind: folded by DynamicView into isOn (BindFold)
+ * - onValueChange/onToggle: @{functionName} for change handler (binding format only)
+ * - enabled: Boolean or @{variable} to enable/disable
+ * - onTintColor/tint/tintColor: String hex color for checked track
+ * - thumbTintColor: String hex color for checked thumb
+ * - labelAttributes: Object with text/fontSize/fontColor/font for labeled switch
+ * - padding/paddings: Number or Array for padding
+ * - margins: Array or individual margin properties
+ */
+class DynamicSwitchComponent {
+    companion object {
+        /** Switch-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "isOn", "value", "checked", "enabled",
+            "onValueChange", "onToggle",
+            "onTintColor", "tint", "tintColor", "thumbTintColor",
+            "trackTintColor", "offTintColor",
+            "labelAttributes", "label", "labelPosition"
+        )
+
+        @Composable
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap(),
+            parentType: String? = null
+        ) {
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                SwitchAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Switch", json,
+                declared = SwitchAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = LocalContext.current
+            )
+            // Same gate as the codegen (switch_component.rb:37): a bag OR a
+            // flat label/text spelling makes a labelled switch. Only the bag
+            // was consulted, so a flat `label` — the declared row the
+            // fixtures use — rendered no label at all on this path (the
+            // android Switch_label parity family, distance 22 ×3).
+            val hasLabel = a.labelAttributes != null ||
+                TypedAttrs.rawString(a.label) != null ||
+                TypedAttrs.undeclared(json, "text") != null
+            if (hasLabel) {
+                createWithLabel(json, a, data, parentType)
+            } else {
+                createSwitchOnly(json, a, data, parentType)
+            }
+        }
+
+        @Composable
+        private fun createSwitchOnly(
+            json: JsonObject,
+            a: SwitchAttributes,
+            data: Map<String, Any>,
+            parentType: String?
+        ) {
+            val context = LocalContext.current
+
+            // Parse binding variable (priority: isOn > value > checked)
+            val bindingVariable = resolveBindingVariable(a)
+
+            // Get checked state from binding or direct value
+            val checked = resolveCheckedState(a, data, bindingVariable)
+
+            // State for the switch
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var checkedState by remember(checked, bindingVariable) {
+                mutableStateOf(checked)
+            }
+
+            // Enabled state (supports @{binding}; Switch declares its own row)
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
+
+            // Build onCheckedChange handler
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
+                checkedState = newValue
+            }
+
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (no outer click — onClick is called from
+            // onCheckedChange), and `enabled` is the Switch's own, on this node.
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
+
+            // Colors: onTintColor/tint/tintColor -> checkedTrackColor, thumbTintColor -> checkedThumbColor.
+            // `trackTintColor` is the declared spelling for the track itself
+            // and skins the OFF state, which onTintColor overrides when on
+            // (switch.trackColors in shared/core/attribute_semantics.json);
+            // offTintColor is the UIKit legacy behind it.
+            val checkedTrackColor = ColorParser.parseColorStringWithBinding(a.onTintColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.tint), data, context)
+                ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+                // none of its own: the tint a container handed down
+                ?: jsonUITintOrNull()
+            val uncheckedTrackColor = ColorParser.parseColorStringWithBinding(a.trackTintColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.offTintColor), data, context)
+            val checkedThumbColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.thumbTintColor), data, context
+            )
+
+            val colors = if (checkedTrackColor != null || uncheckedTrackColor != null || checkedThumbColor != null) {
+                SwitchDefaults.colors(
+                    checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
+                    checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor,
+                    uncheckedTrackColor = uncheckedTrackColor ?: SwitchDefaults.colors().uncheckedTrackColor,
+                    // thumbTintColor skins the thumb in BOTH states (UIKit
+                    // heritage; ios renders it on an off switch — 33
+                    // cross-effect measured the android thumb inert).
+                    uncheckedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().uncheckedThumbColor
+                )
+            } else {
+                SwitchDefaults.colors()
+            }
+
+            Switch(
+                checked = checkedState,
+                onCheckedChange = onCheckedChange,
+                modifier = modifier,
+                enabled = isEnabled,
+                colors = colors
+            )
+        }
+
+        /**
+         * Whether a labelled Switch's label takes the rest of the row
+         * (`weight(1f)`). Only when the Switch's own width is decided — a
+         * declared width other than wrapContent, or a weight. A weighted child
+         * makes Compose's Row take its whole max width, so under wrapContent a
+         * labelled Switch drew as wide as its parent (1280 where web wraps to
+         * the label and the switch; jsonui-cli ticket
+         * kjui-labelled-switch-fills-the-parent-width-under-wrapcontent).
+         * The rule a Button's own width is read by (ownsWidth); the codegen's
+         * SwitchComponent.label_fills_row? reads it the same way.
+         */
+        internal fun labelFillsRow(json: JsonObject): Boolean = DynamicButtonComponent.ownsWidth(json)
+
+        @Composable
+        private fun createWithLabel(
+            json: JsonObject,
+            a: SwitchAttributes,
+            data: Map<String, Any>,
+            parentType: String?
+        ) {
+            val context = LocalContext.current
+            val labelAttrs = a.labelAttributes
+
+            // Parse binding variable (priority: isOn > value > checked)
+            val bindingVariable = resolveBindingVariable(a)
+
+            // Get checked state from binding or direct value
+            val checked = resolveCheckedState(a, data, bindingVariable)
+
+            // State for the switch
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var checkedState by remember(checked, bindingVariable) {
+                mutableStateOf(checked)
+            }
+
+            // Build onCheckedChange handler
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
+                checkedState = newValue
+            }
+
+            // Build modifier for the Row container: the standard stages; the
+            // clickable stage is a control's (onClick from onCheckedChange),
+            // and the Row carries the tag while the Switch inside it carries
+            // `enabled`, so the Row takes `disabled()` (WRAPPER).
+            val rowModifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = rowModifier
+            ) {
+                // Label Text with weight(1f). One styling row, same cascade
+                // as the codegen (switch_component.rb#label_style_of): the
+                // labelAttributes BAG wins where it declares, the flat
+                // fontSize / fontColor — declared on Switch itself since 51-E
+                // — answer where it does not. Only the bag was ever read
+                // here, so the flat spellings were inert on the dynamic path
+                // (codegen_effect Switch.fontColor / Switch.fontSize).
+                val labelText = (labelAttrs?.get("text") as? String)
+                    ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                    ?: (TypedAttrs.rawString(a.label)
+                        ?: TypedAttrs.undeclared(json, "text")?.takeIf { it.isJsonPrimitive }?.asString)
+                        ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                    ?: ""
+                val fontSize = (labelAttrs?.get("fontSize") as? Number)?.toFloat()
+                    ?: TypedAttrs.float(a.fontSize, data)
+                val fontColor = ((labelAttrs?.get("fontColor") as? String)
+                    ?: TypedAttrs.rawString(a.fontColor))?.let {
+                    ColorParser.parseColorStringWithBinding(it, data, context)
+                }
+                val fontWeightValue = when ((labelAttrs?.get("font") as? String)?.lowercase()) {
+                    "bold" -> FontWeight.Bold
+                    else -> FontWeight.Normal
+                }
+
+                // `labelPosition` — which side of the Switch the label sits on.
+                // It was read by the former Toggle renderer and by nobody here, so
+                // a Switch always drew its label LEADING; with `trailing` the
+                // codegen emits the Switch first and then the weighted label,
+                // which is what put the two paths 27 apart in run 4's parity.
+                //
+                // The label's `weight(1f)` pushes the Switch to the far edge of
+                // a Row whose width is decided — on either side, and the codegen
+                // says the same thing in the same words. Under a wrapContent
+                // width there is no far edge: a weight makes a Row take its
+                // whole max width, so it is left off (labelFillsRow).
+                val labelPosition = DeclaredSpelling.lowered(
+                    TypedAttrs.enumString(a.labelPosition) { it.json }, SwitchAttributes.LabelPosition.declaredSpellings
+                ) ?: "leading"
+
+                val labelModifier = if (labelFillsRow(json)) Modifier.weight(1f) else Modifier
+                // Through the app's fontProvider whatever the label declares (P1); a null slot draws as before.
+                val labelFont = ResourceResolver.providerFont(weight = fontWeightValue, size = fontSize?.sp)
+                val label: @Composable RowScope.() -> Unit = {
+                    Text(
+                        text = labelText,
+                        modifier = labelModifier,
+                        fontSize = json.fontSized(labelFont.size ?: fontSize?.sp ?: 16.sp),
+                        letterSpacing = json.letterSpaced(),
+                        lineHeight = json.lineHeighted(json.fontSized(fontSize?.sp ?: 16.sp)),
+                        color = fontColor ?: androidx.compose.ui.graphics.Color.Unspecified,
+                        fontWeight = labelFont.weight ?: fontWeightValue,
+                        fontFamily = labelFont.family,
+                        fontStyle = labelFont.style
+                    )
+                }
+                if (labelPosition != "trailing") label()
+
+                // Colors for switch — same canonical/legacy pair as createSwitchOnly.
+                val checkedTrackColor = ColorParser.parseColorStringWithBinding(a.onTintColor, data, context)
+                    ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.tint), data, context)
+                    ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+                    // none of its own: the tint a container handed down
+                    ?: jsonUITintOrNull()
+                val uncheckedTrackColor = ColorParser.parseColorStringWithBinding(a.trackTintColor, data, context)
+                    ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.offTintColor), data, context)
+                val checkedThumbColor = ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.thumbTintColor), data, context
+                )
+
+                val colors = if (checkedTrackColor != null || uncheckedTrackColor != null || checkedThumbColor != null) {
+                    SwitchDefaults.colors(
+                        checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
+                        checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor,
+                        uncheckedTrackColor = uncheckedTrackColor ?: SwitchDefaults.colors().uncheckedTrackColor
+                    )
+                } else {
+                    SwitchDefaults.colors()
+                }
+
+                // Enabled state (supports @{binding}; Switch declares its own row)
+                val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                    ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
+
+                Switch(
+                    checked = checkedState,
+                    onCheckedChange = onCheckedChange,
+                    enabled = isEnabled,
+                    colors = colors
+                )
+
+                if (labelPosition == "trailing") label()
+            }
+        }
+
+        // ── Helper Functions ──
+
+        /**
+         * The data key the state is bound to: the first of isOn, value, checked that is
+         * bound. `bind` never reaches here: DynamicView folds it into the attribute
+         * it stands for (BindFold, SSoT common.bind primaryValue).
+         */
+        internal fun resolveBindingVariable(a: SwitchAttributes): String? {
+            val stateAttr = a.isOn ?: a.value ?: a.checked
+            return TypedAttrs.binding(stateAttr)
+        }
+
+        /**
+         * Resolve the current checked state from JSON and data.
+         */
+        internal fun resolveCheckedState(
+            a: SwitchAttributes,
+            data: Map<String, Any>,
+            bindingVariable: String?
+        ): Boolean {
+            if (bindingVariable != null) {
+                return (data[bindingVariable] as? Boolean) ?: false
+            }
+
+            // Direct value from isOn/value/checked
+            val stateAttr = a.isOn ?: a.value ?: a.checked
+            return TypedAttrs.static(stateAttr) ?: false
+        }
+
+        /**
+         * Build the onCheckedChange callback.
+         * Updates bound variable via data["updateData"] and calls onValueChange/onToggle handler.
+         */
+        private fun buildOnCheckedChange(
+            json: JsonObject,
+            a: SwitchAttributes,
+            data: Map<String, Any>,
+            bindingVariable: String?,
+            updateState: (Boolean) -> Unit
+        ): (Boolean) -> Unit {
+            // The declared onClick, called last — after the state, the bound
+            // value and onValueChange: the Switch's own operation calls it, no
+            // outer `.clickable` does (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+            return { newValue ->
+                updateState(newValue)
+
+                // Update bound variable via data["updateData"]
+                if (bindingVariable != null) {
+                    val updateData = data["updateData"]
+                    if (updateData is Function<*>) {
+                        try {
+                            @Suppress("UNCHECKED_CAST")
+                            (updateData as (Map<String, Any>) -> Unit)(
+                                mapOf(bindingVariable to newValue)
+                            )
+                        } catch (_: Exception) {
+                            // Update function doesn't match expected signature
+                        }
+                    }
+                }
+
+                // Call the change handler (binding format only). `onToggle` is an
+                // alias spelling of `onValueChange` (49-E), folded onto the
+                // canonical row by the generated parser — one read.
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    val viewId = LayoutPath.viewId(json)
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                }
+                onClick?.invoke()
+            }
+        }
+    }
+}

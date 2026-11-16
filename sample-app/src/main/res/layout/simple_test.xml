@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from simple_test.json -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+    <com.kotlinjsonui.views.KjuiTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/simple_test_simple_test"
+        android:textSize="24sp"
+        android:textColor="@color/black"/>
+    <com.kotlinjsonui.views.KjuiTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/simple_test_testing_basic_components"
+        android:textSize="16sp"
+        android:textColor="@color/medium_gray_4"
+        android:layout_marginTop="8dp"/>
+    <com.kotlinjsonui.views.KjuiButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/simple_test_test_button"
+        android:background="@drawable/ripple_3e3f55d4"
+        android:textColor="@color/white"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>

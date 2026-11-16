@@ -1,0 +1,1001 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.kotlinjsonui.core.jsonUIFontSize
+import com.kotlinjsonui.core.DeclaredSpelling
+import android.content.Context
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.google.gson.JsonObject
+import com.kotlinjsonui.components.PartialAttribute
+import com.kotlinjsonui.components.LabelLineHeight
+import com.kotlinjsonui.components.StyledLineState
+import com.kotlinjsonui.components.lineSpacingBetween
+import com.kotlinjsonui.components.styledTextLines
+import androidx.compose.ui.graphics.graphicsLayer
+import com.kotlinjsonui.components.PartialAttributesText
+import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CommonAttributes
+import com.kotlinjsonui.dynamic.generated.LabelAttributes
+import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.TapAccessibility
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
+
+/**
+ * Text/Label component → Text / PartialAttributesText.
+ * Reference: text_component.rb in kjui_tools.
+ *
+ * NOTE: Label is the primary component name in JsonUI.
+ * Text is supported as an alias for backward compatibility.
+ * Both "type": "Label" and "type": "Text" work identically.
+ *
+ * Attribute access goes through the generated [LabelAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; the node itself is only passed wholesale to the shared
+ * ModifierBuilder pipeline.
+ */
+class DynamicTextComponent {
+    companion object {
+        @Composable
+        fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
+            val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                LabelAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Label", json,
+                declared = LabelAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
+
+            // Resolve text with binding + resource support
+            val declaredText = TypedAttrs.rawString(a.text)
+                ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                ?: ""
+
+            // `hint` — a Label's placeholder, shown while the text is empty,
+            // styled by hintAttributes when it has them. A hint with no
+            // hintAttributes is shown too, in the default placeholder colour
+            // (user ruling, 2026-10-05; through 2.43.4 every face required both
+            // and drew nothing). The kjui codegen states the same rule
+            // (text_component.rb#hint_overrides). `placeholder` is the
+            // declared alias of `hint`.
+            val hintText = (a.hint ?: a.placeholder)
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+            val showHint = declaredText.isEmpty() && hintText != null
+            val text = if (showHint) hintText else declaredText
+            // The hint branch is OUTERMOST: an empty label is a hint first and
+            // a selected label second (the codegen orders them the same way).
+            // `hintColor` is the colour-only fallback when the bag carries no
+            // fontColor, exactly as hint_overrides reads it.
+            val hintStyle: Map<String, Any?>? = if (showHint) {
+                a.hintAttributes.orEmpty() + mapOf(
+                    "fontColor" to (
+                        (a.hintAttributes?.get("fontColor") as? String)
+                            ?: TypedAttrs.rawString(a.hintColor)
+                        )
+                )
+            } else null
+
+            // Check for partialAttributes or linkable
+            val partialAttributes = a.partialAttributes.orEmpty().filterIsInstance<Map<*, *>>()
+            // `linkable` is declared `["boolean","binding"]`; a STATIC-only
+            // read dropped the bound form, so `Label/linkable__binding` drew
+            // plain text where the codegen and web both drew a link (android
+            // parity distance 29). The bound-dropped family.
+            val isLinkable = TypedAttrs.boolean(a.linkable, data) == true
+
+            when {
+                partialAttributes.isNotEmpty() ->
+                    createPartialAttributesText(json, a, partialAttributes, text, data, context)
+                isLinkable -> createLinkableText(json, a, text, data, context)
+                else -> createStandardText(json, a, text, data, context, hintStyle)
+            }
+        }
+
+        // ── Standard Text ──
+
+        @Composable
+        private fun createStandardText(
+            json: JsonObject,
+            a: LabelAttributes,
+            text: String,
+            data: Map<String, Any>,
+            context: Context,
+            hintStyle: Map<String, Any?>? = null
+        ) {
+            // highlightAttributes / highlightColor take over while `selected`
+            // is true (SSoT: "Decides which attribute set is in force").
+            // Mirrors text_component.rb highlight_overrides: the highlight's
+            // `font` replaces the base `font` wholesale, and a bare
+            // `highlightColor` is the color-only fallback when the
+            // highlightAttributes object contributes nothing.
+            val isSelected = TypedAttrs.boolean(a.selected, data) == true
+            val hl: Map<String, Any?>? = hintStyle
+                ?: if (isSelected) a.highlightAttributes?.takeIf { it.isNotEmpty() } else null
+            val hlFallbackColor: String? =
+                if (hintStyle == null && isSelected && hl == null) {
+                    TypedAttrs.rawString(a.highlightColor)
+                } else null
+            val hlFont = hl?.get("font") as? String
+
+            // Font size
+            val fontSize = (hl?.get("fontSize") as? Number)?.toFloat()
+                ?: TypedAttrs.float(a.fontSize, data)
+
+            // Font color. The value can arrive from three places and only one
+            // of them is static: the `highlightAttributes` / `hintAttributes`
+            // BAG is a literal object, but the flat `highlightColor` and
+            // `hintColor` that feed `hlFallbackColor` / the hint bag are
+            // declared `["string","binding"]`. Parsing that branch with the
+            // binding-BLIND parser dropped both bound forms — `__static` was
+            // active on android while `Label/highlightColor__binding` and
+            // `Label/hintColor__binding` rendered the default colour. The
+            // binding-aware parser degrades to the same static parse for the
+            // bag's literals, so one call serves all three.
+            val enabledColor = ((hl?.get("fontColor") as? String) ?: hlFallbackColor)
+                ?.let { ColorParser.parseColorStringWithBinding(it, data, context) }
+                // A hint with neither a fontColor in its bag nor a hintColor:
+                // the default placeholder colour, as a TextField's.
+                ?: hintStyle?.let { com.kotlinjsonui.core.Configuration.TextField.defaultPlaceholderColor }
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.fontColor), data, context
+                )
+            // `disabledFontColor` replaces the font colour while the label is
+            // statically disabled — the same gate the codegen face emits
+            // (text_component.rb: enabled == false && disabledFontColor).
+            // Nothing here read it, so the android dynamic face was inert
+            // while ios and web coloured the disabled label
+            // (Label/disabledFontColor__static/binding, run 31243724782
+            // cross-effect).
+            val fontColor = if (TypedAttrs.boolean(a.common.enabled, data) == false) {
+                ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.disabledFontColor), data, context
+                ) ?: enabledColor
+            } else enabledColor
+
+            // Font weight – handle both 'font' and 'fontWeight' attributes
+            val fontWeight = when {
+                hlFont != null && WEIGHT_NAMES.containsKey(hlFont.lowercase()) ->
+                    WEIGHT_NAMES[hlFont.lowercase()]
+                hlFont != null ->
+                    fontWeightRaw(a, data)?.let { ResourceResolver.fontWeightOf(it) ?: FontWeight.Normal }
+                else -> resolveFontWeight(a, data)
+            }
+
+            // Font family – custom font from 'font' attribute (if not a weight name)
+            val fontFamily = when {
+                hlFont != null && !WEIGHT_NAMES.containsKey(hlFont.lowercase()) ->
+                    resolveFontResource(hlFont, context) ?: resolveFontFamilyAttr(a, context, data)
+                hlFont != null -> resolveFontFamilyAttr(a, context, data)
+                else -> resolveFontFamily(a, context, data)
+            }
+            // Through the app's fontProvider whatever the label declares (P1, as the generated Label always did):
+            // FontSpec carries the family name, weight and size it declares; the family the provider leaves null is
+            // the res/font lookup above, the other null slots the label's own.
+            val providedFont = ResourceResolver.providerFont(
+                family = declaredFamilyName(a, hlFont, data),
+                weight = fontWeight,
+                size = fontSize?.sp,
+                fallbackFamily = fontFamily,
+            )
+
+            // Text decoration
+            // The object face's colour/offset (the drawBehind seam): a face
+            // with a declared colour leaves the native decoration and is
+            // drawn by styledTextLines in that colour instead; lineOffset is
+            // UIKit's baselineOffset — the text shifts, the layout box stays.
+            val effectiveTextColor = fontColor
+                ?: androidx.compose.material3.LocalContentColor.current
+            val underlineLine = decorationLineSpec(a.underline, data, context, effectiveTextColor)
+            val strikethroughLine = decorationLineSpec(a.strikethrough, data, context, effectiveTextColor)
+            val underlineOffset = decorationLineOffset(a.underline)
+            val textDecoration = resolveTextDecoration(
+                a,
+                suppressUnderline = underlineLine != null,
+                suppressStrikethrough = strikethroughLine != null
+            )
+            val lineState = if (underlineLine != null || strikethroughLine != null) {
+                androidx.compose.runtime.remember { StyledLineState() }
+            } else null
+
+            // Text alignment
+            val textAlign = (hl?.get("textAlign") as? String)?.let { align ->
+                when (align.lowercase()) {
+                    "center" -> TextAlign.Center
+                    "right" -> TextAlign.End
+                    "left" -> TextAlign.Start
+                    else -> null
+                }
+            } ?: resolveTextAlign(a, json)
+
+            // Auto size (text shrinking)
+            val useAutoSize = a.autoShrink == true || a.minimumScaleFactor != null
+
+            // Max lines. Auto size does not imply one line: the text wraps as
+            // any Label does and shrinks only when it overflows a bounded box,
+            // so under a wrapContent height nothing shrinks
+            // (attribute_semantics autoShrink.requiresBoundedAxis, ruling
+            // 51-E, web is canon; jsonui-cli ticket kjui-label-autoshrink-
+            // shrinks-when-the-height-can-grow — a 200-wide Label drew one
+            // shrunk, cut line 24 high where web wraps to 120).
+            val lines = TypedAttrs.int(a.lines, data)
+            val maxLines = when {
+                lines == 0 -> Int.MAX_VALUE
+                lines != null -> lines
+                else -> Int.MAX_VALUE
+            }
+
+            // Overflow
+            val overflow = when {
+                lines != null && lines > 0 -> TextOverflow.Ellipsis
+                else -> when (
+                    DeclaredSpelling.lowered(TypedAttrs.enumString(a.lineBreakMode) { it.json }, LabelAttributes.LineBreakMode.declaredSpellings)
+                ) {
+                    "clip" -> TextOverflow.Clip
+                    "tail", "word", "truncatetail" -> TextOverflow.Ellipsis
+                    else -> TextOverflow.Clip
+                }
+            }
+
+            // Build style (shadow, lineHeight)
+            val overrideLineHeightMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
+            val style = buildTextStyle(
+                a, data, fontSize,
+                overrideLineHeightMultiple = overrideLineHeightMultiple,
+                json = json
+            )
+            // lineSpacing goes between lines only; a lineHeightMultiple wins
+            // over it, as in buildTextStyle.
+            val betweenLines = if ((overrideLineHeightMultiple ?: TypedAttrs.float(a.lineHeightMultiple, data)) == null)
+                TypedAttrs.float(a.lineSpacing, data) else null
+
+            // Build modifier using composite builder
+            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
+            // Handle edgeInset for text-specific padding (overrides regular padding)
+            modifier = applyEdgeInset(modifier, a.edgeInset)
+            // The text sits in a taller frame by its gravity, inside the
+            // background and the padding (labelVerticalAlignment, round 17).
+            labelVerticalAlignment(json)?.let { modifier = modifier.wrapContentHeight(align = it) }
+            // Innermost but outside the drawn line faces, which read the
+            // Text's own layout coordinates.
+            betweenLines?.let { modifier = modifier.lineSpacingBetween(it) }
+
+            if (lineState != null) {
+                modifier = modifier.styledTextLines(
+                    lineState,
+                    underline = underlineLine,
+                    strikethrough = strikethroughLine
+                )
+            }
+            if (underlineOffset != null && underlineOffset != 0f) {
+                val shift = underlineOffset
+                modifier = modifier.graphicsLayer { translationY = -shift.dp.toPx() }
+            }
+
+            Text(
+                text = text,
+                onTextLayout = { lineState?.layout = it },
+                // No declared size inherits LocalTextStyle (the codegen emit
+                // is `resolved.size ?: TextUnit.Unspecified` — same rule).
+                fontSize = json.fontSized(providedFont.size ?: fontSize?.sp ?: TextUnit.Unspecified),
+                letterSpacing = json.letterSpaced(),
+                color = fontColor ?: Color.Unspecified,
+                fontWeight = providedFont.weight ?: fontWeight,
+                fontFamily = providedFont.family,
+                fontStyle = providedFont.style,
+                textAlign = textAlign,
+                textDecoration = textDecoration,
+                maxLines = maxLines,
+                overflow = overflow,
+                // Shrink only: fontSize is the ceiling, as iOS's
+                // .minimumScaleFactor. With no maxFontSize StepBased took its
+                // default 112.sp and a short text grew to fill the box
+                // (jsonui-cli ticket kjui-minimum-scale-factor-grows-text-
+                // past-its-font-size; measured: a line 264px tall beside 32px
+                // at 12sp).
+                autoSize = if (useAutoSize) TextAutoSize.StepBased(
+                    minFontSize = ((fontSize ?: 14f) *
+                        (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
+                    maxFontSize = json.fontSized((fontSize ?: 14f).sp)
+                ) else null,
+                style = style ?: LocalTextStyle.current,
+                modifier = modifier
+            )
+        }
+
+        // ── Linkable Text ──
+
+        @Composable
+        private fun createLinkableText(
+            json: JsonObject,
+            a: LabelAttributes,
+            text: String,
+            data: Map<String, Any>,
+            context: Context
+        ) {
+            val style = buildFullTextStyle(a, data, context, json)
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+                .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
+
+            PartialAttributesText(
+                text = text,
+                linkable = true,
+                modifier = modifier,
+                style = style,
+                linksEnabled = linksEnabled(json, data),
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr(),
+                // tintColor is the links' colour — the accent of what can be
+                // operated, not the text's (4f ruling, 2026-09-26); without
+                // one, Configuration.Colors.linkColor as before
+                linkColor = linkColor(a, data, context)
+            )
+        }
+
+        /** A linkable Label's link colour: its tintColor, or Unspecified (the configured link colour). */
+        internal fun linkColor(a: LabelAttributes, data: Map<String, Any>, context: Context?): Color =
+            ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.common.tintColor), data, context)
+                ?: Color.Unspecified
+
+        // ── Partial Attributes Text ──
+
+        @Composable
+        private fun createPartialAttributesText(
+            json: JsonObject,
+            a: LabelAttributes,
+            partialAttrMaps: List<Map<*, *>>,
+            text: String,
+            data: Map<String, Any>,
+            context: Context
+        ) {
+            val partialAttributes = mutableListOf<PartialAttribute>()
+
+            partialAttrMaps.forEach { attr ->
+                val range = resolvePartialRange(attr, text, data, context)
+
+                range?.let {
+                    val partialAttr = PartialAttribute.fromJsonRange(
+                        range = it,
+                        text = text,
+                        // EVERY value slot resolves `@{...}` first: the fields
+                        // inside a partial are declared binding-capable like
+                        // their Label counterparts, but this map is raw JSON —
+                        // `as? String` handed the SPELLING to the colour
+                        // parser, so a bound fontColor styled nothing while
+                        // the codegen (which interpolates `${data.x}` at
+                        // compose time) styled the resolved value
+                        // (a downstream hour-row cell, 2026-08-08).
+                        fontColor = resolvePartialString(attr["fontColor"], data),
+                        fontSize = resolvePartialInt(attr["fontSize"], data),
+                        // Declared string|number; PartialAttribute's boundary
+                        // is a String, and PartialAttributesText maps names
+                        // AND the css numbers in one place — so a numeric 600
+                        // travels as "600", not as a silent null.
+                        fontWeight = resolvePartialString(attr["fontWeight"], data)
+                            ?: (attr["fontWeight"] as? Number)?.toInt()?.toString()
+                            ?: resolvePartialString(attr["font"], data),
+                        background = resolvePartialString(attr["background"], data),
+                        // `partialAttributes[].underline` is declared OBJECT-ONLY
+                        // (the boolean face is not in that schema), so `as?
+                        // Boolean` forced the one declared face to false and no
+                        // partial ever drew a line. Same `textDecoration` ruling
+                        // as the Label body, so the same reader.
+                        underline = drawsLine(attr["underline"]),
+                        strikethrough = drawsLine(attr["strikethrough"]),
+                        onClick = resolvePartialClickHandler(attr, data)
+                    )
+                    partialAttr?.let { pa -> partialAttributes.add(pa) }
+                }
+            }
+
+            val style = buildFullTextStyle(a, data, context, json)
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+                .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
+
+            PartialAttributesText(
+                text = text,
+                partialAttributes = partialAttributes,
+                modifier = modifier,
+                style = style,
+                linksEnabled = linksEnabled(json, data),
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr()
+            )
+        }
+
+        // ── Helpers ──
+
+        /**
+         * Whether the Label's links — its tappable ranges and the links
+         * `linkable` detects — are operable: not when its own
+         * `userInteractionEnabled` is false or a binding resolving false, nor
+         * inside a view whose flag is (DynamicView marks what it composes
+         * there, TapAccessibility.STOPPED_KEY). The tap rule stops a node and
+         * everything in it, link spans included, and the pointer blocker alone
+         * left each link's own semantics action to TalkBack (measured, API 35
+         * emulator, LinkSpanUnderOuterClickableProbe). kjui's codegen passes
+         * the same flag (jsonui-cli 1.9.0).
+         */
+        internal fun linksEnabled(json: JsonObject, data: Map<String, Any>): Boolean =
+            !ModifierBuilder.interactionBlocked(json, data) && !TapAccessibility.stoppedAround(json)
+
+        /** Label-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "text", "partialAttributes", "linkable",
+            "fontSize", "fontColor", "font", "fontWeight", "fontFamily",
+            "autoShrink", "minimumScaleFactor", "lines", "lineBreakMode",
+            "textAlign", "underline", "strikethrough", "textShadow",
+            "lineHeight", "lineHeightMultiple", "lineSpacing", "edgeInset",
+            "onclick", "selected", "highlightAttributes", "highlightColor",
+            "hint", "placeholder", "hintAttributes", "hintColor", "tintColor"
+        )
+
+        private val WEIGHT_NAMES = mapOf(
+            "thin" to FontWeight.Thin,
+            "extralight" to FontWeight.ExtraLight,
+            "light" to FontWeight.Light,
+            "normal" to FontWeight.Normal,
+            "medium" to FontWeight.Medium,
+            "semibold" to FontWeight.SemiBold,
+            "bold" to FontWeight.Bold,
+            "extrabold" to FontWeight.ExtraBold,
+            "heavy" to FontWeight.ExtraBold,
+            "black" to FontWeight.Black
+        )
+
+        private fun resolveFontWeight(a: LabelAttributes, data: Map<String, Any>): FontWeight? {
+            // 'font' attribute: check binding first, then static value
+            val fontValue = TypedAttrs.string(a.font, data)
+            fontValue?.let { font ->
+                val lower = font.lowercase()
+                if (WEIGHT_NAMES.containsKey(lower)) {
+                    return WEIGHT_NAMES[lower]
+                }
+            }
+            // 'fontWeight' attribute — declared string|number, and the number
+            // is the css column of the same table the names come from (600 IS
+            // semibold). The legacy reader stringified 600 and missed
+            // WEIGHT_NAMES, landing on Normal — run 6 measured android inert
+            // where ios drew it. Unknown values still fall back to Normal, as
+            // the mapping's own comment prescribes.
+            fontWeightRaw(a, data)?.let { fw ->
+                return ResourceResolver.fontWeightOf(fw) ?: FontWeight.Normal
+            }
+            return null
+        }
+
+        /**
+         * `fontWeight` is declared string|number → typed as Any?. The number
+         * arrives as a gson Double, and stringifying it minted "600.0" — a
+         * spelling no table has, which is how the numeric path stayed dropped
+         * even after the css-column lookup existed (smoke: Button active,
+         * Label still inert). Numbers go through as numbers.
+         */
+        private fun fontWeightRaw(a: LabelAttributes, data: Map<String, Any>): Any? {
+            val raw = a.fontWeight ?: return null
+            val s = raw as? String ?: return raw
+            if (s.startsWith("@{") && s.endsWith("}")) {
+                // Canonical string value context (flat-first, dot paths,
+                // `?? default`).
+                return DataBindingContext.resolveString(s, data)
+            }
+            return s
+        }
+
+        /** The family name the label declares (fontFamily, else a `font` that is not a weight), for FontSpec. */
+        private fun declaredFamilyName(a: LabelAttributes, hlFont: String?, data: Map<String, Any>): String? {
+            TypedAttrs.string(a.fontFamily, data)?.let { return it }
+            val font = hlFont ?: TypedAttrs.string(a.font, data) ?: return null
+            // The same weight-name test resolveFontFamily makes below.
+            if (!WEIGHT_NAMES.containsKey(font.lowercase())) {
+                return font
+            }
+            return null
+        }
+
+        private fun resolveFontFamily(
+            a: LabelAttributes,
+            context: Context,
+            data: Map<String, Any>
+        ): FontFamily? {
+            // fontFamily attribute takes priority over font attribute for family resolution
+            resolveFontFamilyAttr(a, context, data)?.let { return it }
+
+            // Fall back to font attribute (custom font family if not a weight name)
+            val fontValue = TypedAttrs.string(a.font, data)
+            fontValue?.let { font ->
+                if (!WEIGHT_NAMES.containsKey(font.lowercase())) {
+                    resolveFontResource(font, context)?.let { return it }
+                }
+            }
+            return null
+        }
+
+        /**
+         * The `fontFamily` attribute alone (no `font` fallback).
+         *
+         * Resolution goes through the SHARED [ResourceResolver.resolveFontResource],
+         * which tries the generic families (serif / sans-serif / monospace /
+         * cursive) before `res/font`. This component used to carry its own
+         * private copy that only did the `res/font` lookup, so a declared
+         * `serif` found no font file and rendered identically to no
+         * declaration at all — `Label/fontFamily` was inert on android in BOTH
+         * faces while TextView and TextField, which already called the shared
+         * helper, were active. The binding was never the problem here; the
+         * duplicated helper was.
+         */
+        private fun resolveFontFamilyAttr(
+            a: LabelAttributes,
+            context: Context,
+            data: Map<String, Any>
+        ): FontFamily? =
+            ResourceResolver.resolveFontResource(TypedAttrs.string(a.fontFamily, data), context)
+
+        /** Resolve a family name against the generic families, then `res/font`. */
+        private fun resolveFontResource(name: String, context: Context): FontFamily? =
+            ResourceResolver.resolveFontResource(name, context)
+
+        /**
+         * Whether a declared `underline` / `strikethrough` draws a line.
+         *
+         * The rows declare `boolean|object` and the contract is the SSoT's
+         * `textDecoration` ruling (attribute_semantics.json, 51-E §3):
+         *
+         *  - the boolean face: `true` draws, `false` does not;
+         *  - the OBJECT face draws the line it describes and **must never
+         *    render less than the boolean face** — a platform that cannot
+         *    honour `lineStyle` or `color` still draws the plain Single line
+         *    in the text colour;
+         *  - `lineStyle: "None"` is the single object value that draws
+         *    nothing, exactly equivalent to `false`.
+         *
+         * Testing the row with `== true` saw only the boolean face, so every
+         * styled object rendered no line at all — the violation the ruling
+         * names and assigns to this lane (cross_effect Label/underline__styled
+         * and Label/strikethrough__styled: android inert, ios and web active).
+         *
+         * Compose's `TextDecoration` carries neither colour nor thickness, so
+         * the plain line IS the faithful output here; `Double` and `Thick`
+         * stay undistinguished on purpose (the ruling keeps that gap in the
+         * coverage ledger rather than deleting the enum values).
+         */
+        internal fun drawsLine(declared: Any?): Boolean = when (declared) {
+            null -> false
+            is Boolean -> declared
+            is Map<*, *> -> !"none".equals(declared["lineStyle"] as? String, ignoreCase = true)
+            // A non-empty array face is a presence statement like `true`.
+            is List<*> -> declared.isNotEmpty()
+            else -> false
+        }
+
+        /**
+         * The object face as a drawn [com.kotlinjsonui.components.StyledLine]
+         * — non-null when the face needs the drawing seam: a declared
+         * `color`, or a `lineStyle` (Double/Thick) the native decoration
+         * cannot express. `fallbackColor` is the effective text colour, used
+         * when the face styles the line but not its colour. A face with a
+         * spec must be SUPPRESSED from the native decoration.
+         */
+        internal fun decorationLineSpec(
+            face: Any?,
+            data: Map<String, Any>,
+            context: Context,
+            fallbackColor: Color
+        ): com.kotlinjsonui.components.StyledLine? {
+            if (!drawsLine(face)) return null
+            val map = face as? Map<*, *> ?: return null
+            val style = (map["lineStyle"] as? String)?.lowercase() ?: "single"
+            val declared = (map["color"] as? String)
+                ?.let { ColorParser.parseColorStringWithBinding(it, data, context) }
+            if (declared == null && style != "double" && style != "thick") return null
+            return com.kotlinjsonui.components.StyledLine(
+                color = declared ?: fallbackColor,
+                style = style
+            )
+        }
+
+        /** The object face's underline-only `lineOffset` (UIKit baselineOffset). */
+        internal fun decorationLineOffset(face: Any?): Float? =
+            ((face as? Map<*, *>)?.takeIf { drawsLine(it) }?.get("lineOffset") as? Number)?.toFloat()
+
+        private fun resolveTextDecoration(
+            a: LabelAttributes,
+            suppressUnderline: Boolean = false,
+            suppressStrikethrough: Boolean = false
+        ): TextDecoration? {
+            val hasUnderline = drawsLine(a.underline) && !suppressUnderline
+            val hasStrikethrough = drawsLine(a.strikethrough) && !suppressStrikethrough
+
+            return when {
+                hasUnderline && hasStrikethrough -> TextDecoration.combine(
+                    listOf(TextDecoration.Underline, TextDecoration.LineThrough)
+                )
+                hasUnderline -> TextDecoration.Underline
+                hasStrikethrough -> TextDecoration.LineThrough
+                else -> null
+            }
+        }
+
+        // A written textAlign decides, as written (Left / Right / Center — a
+        // spelling not declared places nothing); only a Label with none is
+        // placed by its gravity. kjui's codegen reads it so
+        // (text_component.rb: compose_text_align, then gravity_text_align).
+        private fun resolveTextAlign(a: LabelAttributes, json: JsonObject? = null): TextAlign? {
+            TypedAttrs.staticEnumString(a.textAlign) { it.json }?.let { written ->
+                return when (DeclaredSpelling.lowered(written, LabelAttributes.TextAlign.declaredSpellings)) {
+                    "center" -> TextAlign.Center
+                    "right" -> TextAlign.End
+                    "left" -> TextAlign.Start
+                    else -> null
+                }
+            }
+            json?.let { gravityTextAlign(it) }?.let { return it }
+            if (TypedAttrs.static(a.common.centerHorizontal) == true) {
+                return TextAlign.Center
+            }
+            return null
+        }
+
+        /**
+         * Build TextStyle for shadow and lineHeight.
+         * Matches text_component.rb style generation.
+         */
+        /**
+         * Returns null when neither lineHeight nor shadow applies — the
+         * caller then falls back to LocalTextStyle, matching the codegen
+         * emit which only passes a `style =` argument when it has style
+         * parts (an empty TextStyle would DISCARD the Material theme's
+         * bodyLarge defaults and change the effective font size).
+         */
+        @Composable
+        private fun buildTextStyle(
+            a: LabelAttributes,
+            data: Map<String, Any>,
+            fontSize: Float?,
+            overrideLineHeightMultiple: Float? = null,
+            json: JsonObject? = null
+        ): TextStyle? {
+            // Derive from the CURRENT text style, never a bare TextStyle():
+            // the bare one discards the Material defaults — letterSpacing
+            // 0.5sp among them — so a style-carrying Label measured ~8dp
+            // narrower than the codegen face's LocalTextStyle-inheriting
+            // emit and wrapped one line later at the fixture's 200dp
+            // boundary (Label_hintAttributes__static android parity d=19,
+            // runs 31234163967/31243724782).
+            val base = androidx.compose.material3.LocalTextStyle.current
+            val density = androidx.compose.ui.platform.LocalDensity.current
+            var style: TextStyle? = null
+
+            // Line height, matching the codegen emit (text_component.rb).
+            // lineHeightMultiple and lineSpacing start from L, one line of a
+            // Label that declares no lineHeight (LabelLineHeight.base;
+            // attribute_semantics lineHeightMultipleBase / lineSpacingBetween):
+            // not from the font size with 14 when none was declared. The
+            // highlight override resolves against the highlight's own font
+            // size, which is what the caller passes as fontSize. lineSpacing's
+            // L + spacing is cut back to "between lines only" by
+            // lineSpacingBetween at the call site.
+            val lineHeightMultiple = overrideLineHeightMultiple
+                ?: TypedAttrs.float(a.lineHeightMultiple, data)
+            val lineSpacing = TypedAttrs.float(a.lineSpacing, data)
+            // The line height follows the text size as the font size does (fontScaling / maxFontScale).
+            val ownLineHeight = when {
+                lineHeightMultiple != null -> LabelLineHeight.multiple(fontSize, lineHeightMultiple, base, density)
+                lineSpacing != null -> LabelLineHeight.spaced(fontSize, lineSpacing, base, density)
+                fontSize != null -> (fontSize * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp
+                else -> null
+            }
+            // Its own line height or, with none, the theme's — as the line box the rule gives, relative to the drawn
+            // size (jsonUILineHeight; ticket kjui-theme-line-height-scales-under-font-scaling-false).
+            val lineHeight = if (json != null) {
+                json.lineHeighted(
+                    fontSize?.let { json.fontSized(it.sp) } ?: TextUnit.Unspecified,
+                    ownLineHeight ?: TextUnit.Unspecified
+                ).takeIf { ownLineHeight != null || it != base.lineHeight }
+            } else ownLineHeight?.let { jsonUIFontSize(it) }
+            lineHeight?.let { style = (style ?: base).copy(lineHeight = it) }
+
+            // Text shadow
+            if (a.textShadow != null) {
+                style = (style ?: base).copy(
+                    shadow = androidx.compose.ui.graphics.Shadow(
+                        color = Color.Black,
+                        offset = androidx.compose.ui.geometry.Offset(2f, 2f),
+                        blurRadius = 4f
+                    )
+                )
+            }
+
+            return style
+        }
+
+        /**
+         * Build full TextStyle for PartialAttributesText (includes fontSize, color, textAlign).
+         */
+        @Composable
+        private fun buildFullTextStyle(
+            a: LabelAttributes,
+            data: Map<String, Any>,
+            context: Context,
+            json: JsonObject? = null
+        ): TextStyle {
+            val fontSize = TypedAttrs.float(a.fontSize, data)
+            // LocalTextStyle base, not a bare TextStyle(): an unstyled
+            // linkable label built its full style from the bare base and
+            // dropped the Material defaults the plain-Text path keeps —
+            // tighter letterSpacing and leading than the codegen face
+            // (Label_linkable__true/binding parity d=33, run 31283456670).
+            //
+            // And ONLY the base: the codegen face's PartialAttributesText
+            // style carries color/font/textAlign fragments and NEVER a
+            // lineHeight (text_component.rb partial style_parts — even a
+            // declared lineHeightMultiple emits nothing there), so the
+            // ambient theme's line height survives. Routing this through
+            // buildTextStyle injected the plain-path fontSize*1.3 default,
+            // and a partial-attributed label rendered a different line
+            // height than its codegen twin wherever the app theme sets one
+            // (downstream hour rows, 2026-08-10).
+            var style = androidx.compose.material3.LocalTextStyle.current
+            // Through the app's fontProvider (P1): a slot it gives wins over the declared one below.
+            val provided = ResourceResolver.providerFont(
+                family = declaredFamilyName(a, null, data),
+                weight = resolveFontWeight(a, data),
+                size = fontSize?.sp,
+                fallbackFamily = resolveFontFamily(a, context, data),
+            )
+
+            fontSize?.let {
+                style = style.copy(
+                    fontSize = json?.fontSized(it.sp) ?: jsonUIFontSize(it.sp),
+                    letterSpacing = json?.letterSpaced() ?: com.kotlinjsonui.core.jsonUILetterSpacing()
+                )
+            }
+            val drawnSize = fontSize?.let { json?.fontSized(it.sp) ?: jsonUIFontSize(it.sp) } ?: TextUnit.Unspecified
+            style = style.copy(lineHeight = json?.lineHeighted(drawnSize) ?: com.kotlinjsonui.core.jsonUILineHeight(drawnSize))
+
+            ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.fontColor), data, context
+            )?.let {
+                style = style.copy(color = it)
+            }
+
+            resolveFontWeight(a, data)?.let {
+                style = style.copy(fontWeight = it)
+            }
+
+            resolveFontFamily(a, context, data)?.let {
+                style = style.copy(fontFamily = it)
+            }
+            provided.family?.let { style = style.copy(fontFamily = it) }
+            provided.weight?.let { style = style.copy(fontWeight = it) }
+            provided.style?.let { if (it != style.fontStyle) style = style.copy(fontStyle = it) }
+            provided.size?.takeIf { it != fontSize?.sp }?.let { size ->
+                style = style.copy(
+                    fontSize = json?.fontSized(size) ?: jsonUIFontSize(size),
+                    letterSpacing = json?.letterSpaced() ?: com.kotlinjsonui.core.jsonUILetterSpacing()
+                )
+            }
+
+            resolveTextAlign(a, json)?.let {
+                style = style.copy(textAlign = it)
+            }
+
+            return style
+        }
+
+        /**
+         * Apply edgeInset (text-specific padding) to modifier.
+         * edgeInset takes priority over regular padding for Text components.
+         */
+        /**
+         * A gravity word as its declared spelling, lowercased — null for one
+         * the SSoT does not declare (`Right`, `CENTER`), which places nothing.
+         * kjui's codegen reads the parts so (EnumSpelling.lowered, common /
+         * gravity) in gravity_text_align and label_vertical_alignment; these
+         * two lowercased any case.
+         */
+        private fun gravitySpelling(part: String): String? =
+            DeclaredSpelling.lowered(part.trim(), CommonAttributes.Gravity.declaredSpellings)
+
+        /**
+         * Where a Label's text sits across a frame wider than it when it
+         * declares no textAlign: by its gravity's horizontal part — the middle
+         * for center / centerHorizontal, the end for right. Null otherwise
+         * (the start). Center is tested before right, so a gravity naming both
+         * centres, as on iOS and the web (the SSoT Label.textAlign order).
+         * Returned whatever the width: a single-line wrapContent Label is as
+         * wide as its text, so the alignment is a no-op there, but one whose
+         * text wraps inside a narrower parent takes the parent's width, and
+         * its lines must follow the rule too. kjui's codegen places it the
+         * same (TextComponent.gravity_text_align).
+         */
+        internal fun gravityTextAlign(json: JsonObject): TextAlign? {
+            val gravity = TypedAttrs.rawKey(json, "gravity")
+            val parts = when {
+                gravity == null || gravity.isJsonNull -> emptyList()
+                gravity.isJsonArray -> gravity.asJsonArray.map { it.asString }
+                gravity.isJsonPrimitive -> gravity.asString.split("|")
+                else -> emptyList()
+            }.mapNotNull { gravitySpelling(it) }
+            return when {
+                parts.any { it in setOf("center", "centerhorizontal", "center_horizontal", "centerinparent", "center_in_parent") } -> TextAlign.Center
+                "right" in parts -> TextAlign.End
+                else -> null
+            }
+        }
+
+        /**
+         * Where a Label's text sits in a frame taller than it (4f ruling
+         * 2026-09-27, round 17; attribute_semantics.json gravityDefaults ->
+         * leafOwnFrameChannel): its gravity's vertical part — top, bottom, or
+         * the middle for center / centerVertical — and the middle when the
+         * gravity names none, as iOS places it. Null: top, or no frame of its
+         * own along the height (a height that wraps its text). kjui's codegen
+         * places it the same (label_vertical_alignment). Until jsonui-cli 1.9.0
+         * the text sat at the top whatever the gravity.
+         */
+        internal fun labelVerticalAlignment(json: JsonObject): Alignment.Vertical? {
+            val height = TypedAttrs.rawKey(json, "height")
+            val wraps = height == null ||
+                (height.isJsonPrimitive && height.asString in setOf("wrapContent", "wrap_content"))
+            val ownFrame = !wraps || TypedAttrs.rawKey(json, "minHeight") != null ||
+                TypedAttrs.rawKey(json, "heightWeight") != null || TypedAttrs.rawKey(json, "weight") != null
+            if (!ownFrame) return null
+            val gravity = TypedAttrs.rawKey(json, "gravity")
+            val parts = when {
+                gravity == null || gravity.isJsonNull -> emptyList()
+                gravity.isJsonArray -> gravity.asJsonArray.map { it.asString }
+                gravity.isJsonPrimitive -> gravity.asString.split("|")
+                else -> emptyList()
+            }.mapNotNull { gravitySpelling(it) }
+            val centered = setOf("center", "centervertical", "center_vertical", "centerinparent", "center_in_parent")
+            return when {
+                "bottom" in parts -> Alignment.Bottom
+                "top" in parts && parts.none { it in centered } -> null
+                else -> Alignment.CenterVertically
+            }
+        }
+
+        private fun applyEdgeInset(modifier: Modifier, edgeInset: Any?): Modifier {
+            return when {
+                edgeInset is List<*> && edgeInset.size == 4 &&
+                    edgeInset.all { it is Number } -> {
+                    modifier.then(
+                        Modifier.padding(
+                            top = (edgeInset[0] as Number).toFloat().dp,
+                            end = (edgeInset[1] as Number).toFloat().dp,
+                            bottom = (edgeInset[2] as Number).toFloat().dp,
+                            start = (edgeInset[3] as Number).toFloat().dp
+                        )
+                    )
+                }
+                edgeInset is Number -> modifier.then(Modifier.padding(edgeInset.toFloat().dp))
+                else -> modifier
+            }
+        }
+
+        /**
+         * Resolve partial attribute range: supports numeric array [start, end] or string pattern.
+         */
+        internal fun resolvePartialRange(
+            attr: Map<*, *>,
+            text: String,
+            data: Map<String, Any>,
+            context: Context? = null
+        ): Any? {
+            return when (val rangeValue = attr["range"]) {
+                is List<*> -> {
+                    if (rangeValue.size == 2 && rangeValue.all { it is Number }) {
+                        // Numeric range – extract substring for localization support
+                        val start = (rangeValue[0] as Number).toInt()
+                        val end = (rangeValue[1] as Number).toInt()
+                        if (start in 0..text.length && end in start..text.length) {
+                            text.substring(start, end)
+                        } else {
+                            listOf(start, end)
+                        }
+                    } else null
+                }
+                // A string range is a text pattern AND binding-capable AND a
+                // string-resource key: the codegen face resolves it through
+                // process_text (stringResource(R.string.key) at compose
+                // time), so `range: "terms_of_service"` means the LOCALIZED
+                // substring, matched against the equally-localized text. This
+                // path resolved only the binding face and handed the raw key
+                // to text.indexOf — every key-form range silently vanished on
+                // the dynamic face (downstream report) while numeric and literal patterns matched.
+                // Chain: binding → string resource → literal, the same order
+                // the text itself resolves (ResourceResolver.resolveTextValue).
+                is String -> {
+                    val bound = resolvePartialString(rangeValue, data)
+                    val resolved = bound?.let { b ->
+                        if (context != null) ResourceResolver.resolveTextValue(b, data, context) else b
+                    }
+                    resolved?.takeIf { it.isNotEmpty() }
+                }
+                else -> null
+            }
+        }
+
+        /**
+         * A partial-map value slot: `@{expr}` resolves against the data map
+         * through the same canonical resolver every Label-level binding uses
+         * (dot paths, `?? default`); a plain string passes through; an
+         * unresolvable binding yields null (slot absent), never the spelling.
+         */
+        internal fun resolvePartialString(raw: Any?, data: Map<String, Any>): String? {
+            val s = raw as? String ?: return null
+            val expr = com.kotlinjsonui.dynamic.generated.AttrCoerce.bindingExpression(s) ?: return s
+            return DataBindingContext.resolveStringInner(expr, data)
+        }
+
+        /** Numeric partial slot: literal number, or a binding resolved as number. */
+        internal fun resolvePartialInt(raw: Any?, data: Map<String, Any>): Int? = when (raw) {
+            is Number -> raw.toInt()
+            is String -> com.kotlinjsonui.dynamic.generated.AttrCoerce.bindingExpression(raw)
+                ?.let { DataBindingContext.resolveNumberInner(it, data)?.toInt() }
+            else -> null
+        }
+
+        /**
+         * Resolve click handler for partial attributes.
+         * `onClick` is the canonical spelling and `onclick` its alias; each
+         * holds a binding (`@{functionName}`) or the method's name. From
+         * jsonui-cli 1.9.0 the normalizer folds `onclick` into `onClick`, and
+         * `jui build` distributes the folded (L1) layouts, so this reads a
+         * name in onClick too — a raw layout's `onclick` the same way.
+         * onClick first; a value that names no method, or is neither a
+         * binding nor a name (`"@{a} b"`), passes to the next spelling
+         * (jsonui-cli shared/core/tap_accessibility.rb `range_handler`).
+         */
+        internal fun partialHandlerName(attr: Map<*, *>): String? {
+            for (key in listOf("onClick", "onclick")) {
+                val value = (attr[key] as? String)?.takeIf { TapAccessibility.namesAMethod(it) } ?: continue
+                ModifierBuilder.extractBindingProperty(value)?.let { return it }
+                if (!value.startsWith("@{")) return value
+            }
+            return null
+        }
+
+        private fun resolvePartialClickHandler(
+            attr: Map<*, *>,
+            data: Map<String, Any>
+        ): (() -> Unit)? {
+            val methodName = partialHandlerName(attr) ?: return null
+
+            val handler = data[methodName] ?: return null
+            return if (handler is Function<*>) {
+                {
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        (handler as () -> Unit)()
+                    } catch (_: Exception) {}
+                }
+            } else null
+        }
+    }
+}

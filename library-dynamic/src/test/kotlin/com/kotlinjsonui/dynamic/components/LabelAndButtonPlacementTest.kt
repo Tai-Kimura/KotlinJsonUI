@@ -1,0 +1,63 @@
+package com.kotlinjsonui.dynamic.components
+
+import androidx.compose.ui.Alignment
+import com.google.gson.JsonParser
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+/**
+ * The mapping behind DynamicLabelAndButtonPlacementTest (4f rulings
+ * 2026-09-27, round 17): a Label's text in a frame of its own sits by its
+ * gravity's vertical part, the middle when none is named; a Button's text
+ * takes the button's width for textAlign only when the button has a width of
+ * its own.
+ */
+class LabelAndButtonPlacementTest {
+    private fun obj(json: String) = JsonParser.parseString(json).asJsonObject
+
+    @Test
+    fun aLabelsVerticalPlace() {
+        val cases = listOf(
+            """{"height":56,"gravity":"center"}""" to Alignment.CenterVertically,
+            """{"height":56,"gravity":"centerVertical"}""" to Alignment.CenterVertically,
+            """{"height":56,"gravity":"bottom"}""" to Alignment.Bottom,
+            """{"height":56,"gravity":"top"}""" to null,
+            """{"height":56,"gravity":["top","center"]}""" to Alignment.CenterVertically,
+            """{"height":56,"gravity":"left"}""" to Alignment.CenterVertically,
+            """{"height":56}""" to Alignment.CenterVertically,
+            """{"height":"matchParent","gravity":"center"}""" to Alignment.CenterVertically,
+            """{"minHeight":36,"gravity":"center"}""" to Alignment.CenterVertically,
+            """{"height":"wrapContent","gravity":"center"}""" to null,
+            """{"gravity":"center"}""" to null,
+            // A gravity word is read as declared (the codegen's EnumSpelling):
+            // `Bottom` is none, so the middle, as with no gravity.
+            """{"height":56,"gravity":"Bottom"}""" to Alignment.CenterVertically,
+        )
+        assertEquals(cases.map { it.second }, cases.map { DynamicTextComponent.labelVerticalAlignment(obj(it.first)) })
+    }
+
+    @Test
+    fun aButtonOwnsItsWidth() {
+        val cases = listOf("""{"width":200}""" to true, """{"width":"matchParent"}""" to true, """{"weight":1}""" to true,
+            """{"width":"wrapContent"}""" to false, """{}""" to false)
+        assertEquals(cases.map { it.second }, cases.map { DynamicButtonComponent.ownsWidth(obj(it.first)) })
+    }
+
+    @Test
+    fun aLabelsHorizontalPlaceWithoutTextAlign() {
+        val cases = listOf(
+            """{"width":32,"gravity":"right"}""" to androidx.compose.ui.text.style.TextAlign.End,
+            """{"width":"matchParent","gravity":["top","centerHorizontal"]}""" to androidx.compose.ui.text.style.TextAlign.Center,
+            """{"width":32,"gravity":"center"}""" to androidx.compose.ui.text.style.TextAlign.Center,
+            """{"width":32,"gravity":"left"}""" to null,
+            // No width guard (kjui's gravity_text_align reads it the same): a
+            // wrapContent Label whose text wraps takes its parent's width, so
+            // its lines follow the gravity too; on one line it changes nothing.
+            """{"width":"wrapContent","gravity":"right"}""" to androidx.compose.ui.text.style.TextAlign.End,
+            """{"gravity":"right"}""" to androidx.compose.ui.text.style.TextAlign.End,
+            // Read as declared: `Right` is no gravity word, so the start.
+            """{"width":32,"gravity":"Right"}""" to null,
+        )
+        assertEquals(cases.map { it.second }, cases.map { DynamicTextComponent.gravityTextAlign(obj(it.first)) })
+    }
+}

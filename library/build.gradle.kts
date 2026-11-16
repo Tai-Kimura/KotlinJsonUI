@@ -1,0 +1,363 @@
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("maven-publish")
+    id("signing")
+    id("com.vanniktech.maven.publish")
+    id("jacoco")
+}
+
+android {
+    namespace = "com.kotlinjsonui"
+    compileSdk = 37
+
+    defaultConfig {
+        minSdk = 24
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        release {
+            // Disable minification for JitPack compatibility
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+                "consumer-rules.pro"
+            )
+            
+            // Include debug sources in release build for unified library
+            // Dynamic features will be controlled at runtime
+        }
+        debug {
+            isMinifyEnabled = false
+            enableAndroidTestCoverage = true
+            enableUnitTestCoverage = true
+        }
+    }
+    
+
+    // The apps' own lint does not look inside this AAR, so an API above minSdk
+    // (24) called without a version guard here is only found when an older
+    // phone crashes. NewApi is an error in every lint run; -PlintNewApiOnly
+    // (CI: the newapi job in .github/workflows/ci.yml) checks it alone.
+    lint {
+        error += "NewApi"
+        if (providers.gradleProperty("lintNewApiOnly").isPresent) {
+            checkOnly += "NewApi"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+
+    buildFeatures {
+        viewBinding = true
+        dataBinding = true
+        compose = true
+        buildConfig = true
+    }
+
+    // composeOptions is no longer needed with Kotlin 2.0+ Compose plugin
+    
+    testOptions {
+        targetSdk = 37
+        unitTests.all {
+            it.extensions.configure<JacocoTaskExtension> {
+                isIncludeNoLocationClasses = true
+                excludes = listOf("jdk.internal.*")
+            }
+        }
+    }
+
+    // Publishing variants are handled by vanniktech plugin
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+// ConsumerRulesTest reads the rule files consumerProguardFiles names, and this
+// file to find them. Declared as inputs so editing a rule re-runs the unit
+// tests instead of reporting the previous run's green as up to date.
+tasks.withType<Test>().configureEach {
+    inputs.files(fileTree(projectDir) { include("*.pro", "build.gradle.kts") })
+        .withPropertyName("consumerRuleSources")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    // ScreenMarkerGateTest reads the consumer document that names the flag.
+    inputs.file(rootProject.file("Docs/ui-tests-on-release-builds.md"))
+        .withPropertyName("screenMarkerDoc")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
+// JaCoCo configuration
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/html"))
+    }
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R\$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*",
+        "**/databinding/**",
+        "**/BR.class"
+    )
+
+    val debugTree = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+
+    val mainSrc = "${project.projectDir}/src/main/kotlin"
+
+    sourceDirectories.setFrom(files(mainSrc))
+    classDirectories.setFrom(files(debugTree))
+    executionData.setFrom(fileTree(layout.buildDirectory) {
+        include("jacoco/testDebugUnitTest.exec")
+    })
+}
+
+// AGP 9 disables the release unit-test component by default, so
+// testReleaseUnitTest stops existing. Falling back to testDebugUnitTest would
+// silently change what the arms are about: library/src/main branches on
+// BuildConfig.DEBUG in two places (DynamicModeManager.kt:28 seeds
+// _isDynamicModeAvailable from it, DynamicModeToggle.kt:27 gates on it), and
+// DynamicModeManagerTest reads that seed. Under debug the default flips
+// false -> true and the suite would be asserting about a variant that is not
+// the one shipped. Keep the release component instead.
+androidComponents {
+    beforeVariants(selector().withBuildType("release")) { variantBuilder ->
+        // The property lives on HasUnitTestBuilder; the beforeVariants lambda
+        // hands back the plain VariantBuilder, so it needs the narrowing cast.
+        (variantBuilder as com.android.build.api.variant.HasUnitTestBuilder)
+            .enableUnitTest = true
+    }
+}
+
+dependencies {
+    // Core Android
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.12.0")
+    
+    // Layout
+    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    
+    // Jetpack Compose
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.runtime:runtime")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+    // BackHandler for isolated-embed private stacks (EmbedContainer)
+    implementation("androidx.activity:activity-compose:1.10.1")
+    
+    // JSON parsing
+    implementation("com.google.code.gson:gson:2.13.1")
+    
+    // Image loading — coil3, the major the kjui codegen emits into consumer
+    // code (coil3.compose.AsyncImage; coil3.network.httpHeaders when a
+    // NetworkImage declares headers), so a coil3 consumer no longer ships two
+    // image loaders. `api`, not `implementation`, on purpose: generated code
+    // calls these packages directly and `kjui init` wires no coil of its own,
+    // so the compile classpath a consumer gets from this library is the only
+    // place they can come from (measured: conformance-host and sample-app
+    // compile their generated views with no coil declaration of their own).
+    // coil3's core has NO network fetcher — without coil-network-okhttp on
+    // the runtime classpath every URL image silently becomes its error
+    // painter (CoilNetworkFetcherTest pins the artifact's presence).
+    // 3.6.3: the NetworkClient / ConcurrentRequestStrategy shapes
+    // KjuiImageLoaderFactory builds on (com.kotlinjsonui.image) — the request's
+    // extras reach the NetworkClient, and DeDupeConcurrentRequestStrategy reads
+    // one URL once. The version the distribution lanes already declare.
+    implementation("io.coil-kt.coil3:coil:3.6.3")
+    api("io.coil-kt.coil3:coil-compose:3.6.3")
+    api("io.coil-kt.coil3:coil-network-okhttp:3.6.3")
+    
+    // Lifecycle
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
+    // Required by EmbedContainer for LocalViewModelStoreOwner. The container
+    // is referenced by every codegen-emitted <Screen>GeneratedView.kt, so it
+    // must compile in release builds (library-dynamic is debug-only).
+    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    
+    // Networking (HotLoader, and the image loader's EventListener: 5.5 has
+    // dispatcherQueueStart / dispatcherQueueEnd, the queued event; 5.1 did not).
+    // The version the distribution lanes already declare.
+    implementation("com.squareup.okhttp3:okhttp:5.5.1")
+    
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.5.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    // KjuiNetworkImageTest: a slow image server on the device.
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.5.1")
+    // EmbedViewModelLifetimeTest: an Embed inside a NavHost destination.
+    androidTestImplementation("androidx.navigation:navigation-compose:2.9.3")
+    
+    // Debug
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+/* Commented out - using vanniktech plugin instead
+publishing {
+    repositories {
+        maven {
+            name = "centralPortal"
+            url = uri("https://central.sonatype.com/api/v1/publisher/deployments/upload")
+            
+            credentials {
+                username = project.findProperty("centralPortalUsername") as String? ?: ""
+                password = project.findProperty("centralPortalPassword") as String? ?: ""
+            }
+        }
+    }
+    
+    publications {
+        // 単一のAAR公開（releaseビルドを使用）
+        register<MavenPublication>("release") {
+            groupId = "io.github.tai-kimura"  // Maven Central向け
+            artifactId = "kotlinjsonui"
+            version = project.findProperty("version") as String
+
+            afterEvaluate {
+                from(components["release"])
+            }
+            
+            // AARのみを公開（ソースは含めない）
+            artifacts {
+                // AAR is included by default from components["release"]
+                // No additional artifacts needed
+            }
+
+            pom {
+                name.set("KotlinJsonUI")
+                description.set("A JSON-based UI framework for Android with Compose support")
+                url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+                
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id.set("tai-kimura")
+                        name.set("Tai Kimura")
+                        email.set("your-email@example.com") // Optional
+                    }
+                }
+                
+                scm {
+                    url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+                    connection.set("scm:git:git://github.com/Tai-Kimura/KotlinJsonUI.git")
+                    developerConnection.set("scm:git:ssh://github.com/Tai-Kimura/KotlinJsonUI.git")
+                }
+            }
+        }
+    }
+    
+    repositories {
+        // Maven Central
+        maven {
+            name = "MavenCentral"
+            url = if (version.toString().endsWith("SNAPSHOT")) {
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            } else {
+                uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            }
+            
+            credentials {
+                username = project.findProperty("ossrhUsername") as String? ?: ""
+                password = project.findProperty("ossrhPassword") as String? ?: ""
+            }
+        }
+        
+        // GitHub Packages (keep as alternative)
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Tai-Kimura/KotlinJsonUI")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+}
+*/
+
+// Signing configuration for vanniktech plugin
+signing {
+    val signingKey = project.findProperty("signing.key") as String?
+    val signingPassword = project.findProperty("signing.password") as String?
+    
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+}
+
+// Configure vanniktech plugin for Central Portal
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
+    signAllPublications()
+    
+    coordinates("io.github.tai-kimura", "kotlinjsonui", project.findProperty("version") as String)
+    
+    pom {
+        name.set("KotlinJsonUI")
+        description.set("A JSON-based UI framework for Android with Compose support")
+        url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+        
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+        
+        developers {
+            developer {
+                id.set("tai-kimura")
+                name.set("Taichiro Kimura")
+                email.set("kimura@tanosys.com")
+            }
+        }
+        
+        scm {
+            connection.set("scm:git:git://github.com/Tai-Kimura/KotlinJsonUI.git")
+            developerConnection.set("scm:git:ssh://github.com/Tai-Kimura/KotlinJsonUI.git")
+            url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+        }
+    }
+}

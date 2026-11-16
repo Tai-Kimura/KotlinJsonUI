@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Probe activities for the IME-follow arms: the consumer's window shape
+     (adjustNothing + edge-to-edge, the reporting face's MainActivity) and the
+     framework-resize shape as its control. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- KjuiNetworkImageTest reads from a MockWebServer on the device (http://127.0.0.1). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:usesCleartextTraffic="true">
+        <activity
+            android:name="com.kotlinjsonui.components.SheetStringsProbeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name="com.kotlinjsonui.components.AdjustNothingEdgeToEdgeActivity"
+            android:windowSoftInputMode="adjustNothing"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name="com.kotlinjsonui.components.AdjustResizeActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <!-- The reorder demo (ticket jui-collection-drag-to-reorder): a screen for the video, launched from adb
+             (am start), so exported; it lives in the test APK only. -->
+        <activity
+            android:name="com.kotlinjsonui.components.ReorderDemoActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name="com.kotlinjsonui.components.ReorderRealClockActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+    </application>
+</manifest>

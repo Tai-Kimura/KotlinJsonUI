@@ -1,0 +1,11 @@
+{
+  "type": "View",
+  "orientation": "horizontal",
+  "width": "matchParent",
+  "height": 64,
+  "onClick": "@{onRowTap}",
+  "child": [
+    { "type": "Label", "text": "@{title}", "weight": 1 },
+    { "type": "View", "id": "grip", "width": 48, "height": 48, "background": "#888888" }
+  ]
+}

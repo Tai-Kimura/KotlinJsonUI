@@ -1,0 +1,355 @@
+name: ci
+
+# Per-push verification for the published modules. Keeps the zero-deprecation
+# state reached in the 2.9.3 migration from regressing, and runs the JVM unit
+# suites. The Compose-dynamic conformance suite (emulator) lives in the
+# jsonui-cli repo's conformance-mobile workflow, not here.
+#
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ------------------------------------------------------------------ #
+  # Vendored attr tables ↔ jsonui-cli manifest. The dynamic/generated
+  # tree is hand-rsynced from jsonui-cli's attr-codegen emit; this job is
+  # the gate that the rsync discipline used to be. It fetches
+  # build/attr_codegen/manifest.json at the pinned jsonui-cli ref and
+  # compares sha256 bidirectionally (mismatch, missing, or stray file all
+  # fail). PIN BUMP: the commit that re-vendors the tables updates
+  # JSONUI_CLI_MANIFEST_REF in the SAME commit — prefer a release tag
+  # once the next jsonui-cli release lands (manifest exists from 2299153
+  # onward; tags v1.2.1 and earlier predate it).
+  # ------------------------------------------------------------------ #
+  vendored-attr-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      JSONUI_CLI_MANIFEST_REF: v2.5.47 # jsonui-cli v2.5.47: a wrapContent Segment is as wide as its longest label times n, capped at the width it is given
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify sha256 against pinned manifest
+        run: |
+          python3 - <<'EOF'
+          import hashlib, json, os, sys, urllib.request
+
+          ref = os.environ["JSONUI_CLI_MANIFEST_REF"]
+          url = (
+              "https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/"
+              f"{ref}/build/attr_codegen/manifest.json"
+          )
+          manifest = json.load(urllib.request.urlopen(url))
+          vendored = "library-dynamic/src/main/kotlin/com/kotlinjsonui/dynamic/generated"
+          # skipped_attributes.json is emit metadata and is deliberately
+          # not vendored into the library repos.
+          expected = {
+              name.split("/", 1)[1]: sha
+              for name, sha in manifest["files"].items()
+              if name.startswith("kotlin/")
+              and not name.endswith("skipped_attributes.json")
+          }
+          # Three exit codes, so that blinding this guard can never look
+          # like passing it: 0 compared and agreed, 1 compared and
+          # diverged, 2 could not compare at all.
+          #
+          # An empty expected set satisfies all three checks below, so
+          # without this the guard would print "match (0 files)" and exit 0
+          # having compared NOTHING. Reachable on a day the pin moves far:
+          # if the manifest ever renames the `kotlin/` prefix or reshapes
+          # `files`, this selection quietly yields nothing, and a same-day
+          # empty vendored dir would then be certified rather than caught.
+          # Either side empty ALONE still fails (every file reads as stray
+          # or missing); it is the pair that is silent.
+          if not expected:
+              print(
+                  f"cannot certify: manifest at {ref} has no kotlin/ entries "
+                  "— there was nothing to compare, so this guard did not run. "
+                  "This is NOT 'compared and agreed'."
+              )
+              sys.exit(2)
+          actual = {
+              entry: hashlib.sha256(
+                  open(os.path.join(vendored, entry), "rb").read()
+              ).hexdigest()
+              for entry in sorted(os.listdir(vendored))
+              if os.path.isfile(os.path.join(vendored, entry))
+          }
+          problems = [
+              f"missing from vendored dir: {n}" for n in expected if n not in actual
+          ] + [
+              f"hash mismatch (re-vendor + bump the pin together): {n}"
+              for n in expected
+              if n in actual and actual[n] != expected[n]
+          ] + [
+              f"not in manifest (stray or renamed): {n}" for n in actual if n not in expected
+          ]
+          if problems:
+              print(f"vendored attr tables diverge from jsonui-cli manifest @ {ref}:")
+              for p in problems:
+                  print(f"  - {p}")
+              sys.exit(1)
+          print(f"vendored attr tables match manifest @ {ref[:12]} ({len(expected)} files)")
+          EOF
+
+      # Test fixtures copied from jsonui-cli, byte for byte. Each copy must
+      # hash the same as its source at JSONUI_CLI_MANIFEST_REF; re-copy and
+      # move the pin in the same commit. Nothing compared them before this
+      # step, and binding_vectors.json sat one case behind jsonui-cli from
+      # 2026-09-10 until it existed. It runs even when the step above
+      # failed: these files do not depend on the attr tables, and a second
+      # divergence should not wait for the first to be fixed.
+      - name: Vendored jsonui-cli test fixtures match the pinned ref
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'EOF'
+          import hashlib, os, sys, urllib.request
+
+          ref = os.environ["JSONUI_CLI_MANIFEST_REF"]
+          # (copy in this repo, source in jsonui-cli)
+          COPIES = [
+              ("library-dynamic/src/test/resources/binding_vectors.json",
+               "shared/core/binding_vectors.json"),
+              # Which grid cells sit their row's height (GridRowHeight; kjui's CollectionComponent reads the same).
+              ("library-dynamic/src/main/resources/com/kotlinjsonui/dynamic/grid_row_height.json",
+               "shared/core/grid_row_height.json"),
+              ("library-dynamic/src/test/resources/include_ids_fixture.json",
+               "shared/core/include_ids_fixture.json"),
+              ("library-dynamic/src/test/resources/include_constraint_targets_fixture.json",
+               "shared/core/include_constraint_targets_fixture.json"),
+              ("library-dynamic/src/test/resources/include_maps_fixture.json",
+               "shared/core/include_maps_fixture.json"),
+              ("library-dynamic/src/test/resources/camel_case_vectors.json",
+               "shared/core/camel_case_vectors.json"),
+              # Text size following (FontScaleRuleVectorsTest).
+              ("library/src/test/resources/font_scale_vectors.json",
+               "shared/core/font_scale_vectors.json"),
+              # A reorderable Collection's rule (CollectionReorderRulesVectorsTest).
+              ("library/src/test/resources/reorder_vectors.json",
+               "shared/core/reorder_vectors.json"),
+              # The callbacks' order on a device (CollectionReorderTest callbacks_*).
+              ("library/src/androidTest/resources/reorder_vectors.json",
+               "shared/core/reorder_vectors.json"),
+              ("library-dynamic/src/test/resources/responsive_resolution_vectors.json",
+               "shared/core/responsive_resolution_vectors.json"),
+              # accessibilitySelected (ControlAccessibilitySelectedVectorsTest).
+              ("library-dynamic/src/test/resources/control_accessibility_vectors.json",
+               "shared/core/control_accessibility_vectors.json"),
+              ("library-dynamic/src/test/resources/image_accessibility_vectors.json",
+               "shared/core/image_accessibility_vectors.json"),
+              ("library-dynamic/src/test/resources/tap_accessibility_vectors.json",
+               "shared/core/tap_accessibility_vectors.json"),
+              ("library-dynamic/src/test/resources/string_default_vectors.json",
+               "shared/core/string_default_vectors.json"),
+              ("library-dynamic/src/test/resources/layout_path_vectors.json",
+               "shared/core/layout_path_vectors.json"),
+              ("library-dynamic/src/test/resources/bind_fold_vectors.json",
+               "shared/core/bind_fold_vectors.json"),
+              ("library-dynamic/src/test/resources/unknown_component_type_vectors.json",
+               "shared/core/unknown_component_type_vectors.json"),
+              # The declared image default (semantics.image.defaultContentMode)
+              # ImageContentScaleDefaultTest binds the no-contentMode drawing to.
+              ("library-dynamic/src/test/resources/attribute_semantics.json",
+               "shared/core/attribute_semantics.json"),
+              # Not a fixture: the table DynamicView draws type synonyms
+              # with (TypeSynonyms), shipped in the AAR.
+              ("library-dynamic/src/main/resources/com/kotlinjsonui/dynamic/type_synonyms.json",
+               "shared/core/type_synonyms.json"),
+              ("library-dynamic/src/androidTest/resources/component_metadata.json",
+               "shared/core/component_metadata.json"),
+              # The app-side check of a UI test's initialState (TestBridge),
+              # canon jsonui-test-runner specs/vectors/initial-state-coercion.json.
+              ("library/src/test/resources/initial_state_coercion_vectors.json",
+               "shared/core/initial_state_coercion_vectors.json"),
+          ]
+          # Same three exit codes as the step above: 0 compared and agreed,
+          # 1 compared and diverged, 2 could not compare.
+          problems = []
+          for copy, source in COPIES:
+              url = f"https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/{ref}/{source}"
+              try:
+                  upstream = urllib.request.urlopen(url).read()
+              except Exception as error:
+                  print(f"cannot compare {copy}: {url} did not load ({error})")
+                  sys.exit(2)
+              if not os.path.isfile(copy):
+                  problems.append(f"missing copy: {copy}")
+                  continue
+              mine = hashlib.sha256(open(copy, "rb").read()).hexdigest()
+              theirs = hashlib.sha256(upstream).hexdigest()
+              if mine != theirs:
+                  problems.append(
+                      f"{copy} is not jsonui-cli {source} @ {ref[:12]} "
+                      f"(sha256 {mine[:12]} here, {theirs[:12]} there) "
+                      "— re-copy it and move the pin together"
+                  )
+              else:
+                  print(f"  {copy} == {source} ({theirs[:12]})")
+          if problems:
+              print(f"vendored test fixtures diverge from jsonui-cli @ {ref}:")
+              for p in problems:
+                  print(f"  - {p}")
+              sys.exit(1)
+          print(f"vendored test fixtures match jsonui-cli @ {ref[:12]} ({len(COPIES)} files)")
+          EOF
+
+      # A copy that is not a file: ModifierBuilder.PAN_NOT_APPLICABLE is the
+      # SSoT's `common.onPan.notApplicableTo` (the types onPan does not reach,
+      # ruling 2026-10-03), written as a Kotlin set because this library ships
+      # no copy of attribute_definitions.json. Compared by name with the SSoT
+      # at the pinned ref; a pin from before the declaration existed cannot
+      # compare, and says so (exit 2) rather than passing.
+      - name: Dynamic's onPan exclusions match the pinned SSoT declaration
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, re, sys, urllib.request
+
+          ref = os.environ["JSONUI_CLI_MANIFEST_REF"]
+          src = "library-dynamic/src/main/kotlin/com/kotlinjsonui/dynamic/helpers/ModifierBuilder.kt"
+          m = re.search(r"PAN_NOT_APPLICABLE: Set<String> = setOf\(([^)]*)\)", open(src).read())
+          if not m:
+              print(f"cannot compare: PAN_NOT_APPLICABLE not found in {src}")
+              sys.exit(2)
+          mine = set(re.findall(r'"([^"]+)"', m.group(1)))
+          url = f"https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/{ref}/shared/core/attribute_definitions.json"
+          try:
+              defs = json.loads(urllib.request.urlopen(url).read())
+          except Exception as error:
+              print(f"cannot compare: {url} did not load ({error})")
+              sys.exit(2)
+          table = defs.get("common", {}).get("onPan", {}).get("notApplicableTo")
+          if not isinstance(table, dict):
+              print(f"cannot compare: jsonui-cli @ {ref[:12]} declares no common.onPan.notApplicableTo (move the pin to a release that does)")
+              sys.exit(2)
+          theirs = set(table)
+          if mine != theirs:
+              print(f"PAN_NOT_APPLICABLE {sorted(mine)} is not common.onPan.notApplicableTo {sorted(theirs)} @ {ref[:12]}")
+              sys.exit(1)
+          print(f"PAN_NOT_APPLICABLE == common.onPan.notApplicableTo @ {ref[:12]}: {sorted(mine)}")
+          EOF
+
+  # ------------------------------------------------------------------ #
+  # NewApi: an API above minSdk (24) called without a version guard. An
+  # app's lint does not look inside a dependency's AAR, so a call like this
+  # in the library is found only when an older phone crashes. -PlintNewApiOnly
+  # makes lint check NewApi alone (the `lint {}` block in each module), so
+  # this job fails on it and on nothing else.
+  # ------------------------------------------------------------------ #
+  newapi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Lint NewApi (library, library-dynamic)
+        run: ./gradlew :library:lintRelease :library-dynamic:lintRelease -PlintNewApiOnly
+      # Every run proves the step above can fail: the probe calls three APIs
+      # above minSdk (API 35, 29, 33) in each module, and lint must fail and
+      # name each of them. The probes are copied in and always removed.
+      - name: NewApi — positive control (3 calls above minSdk in each module)
+        run: |
+          set -uo pipefail
+          lib=library/src/main/kotlin/com/kotlinjsonui/ciprobe
+          dyn=library-dynamic/src/main/kotlin/com/kotlinjsonui/ciprobe
+          cleanup() { rm -rf "$lib" "$dyn"; }
+          trap cleanup EXIT
+          fail() { echo "::error::$1"; exit 1; }
+          mkdir -p "$lib" "$dyn"
+          cp .github/ci/probes/NewApiProbe.kt "$lib/"
+          cp .github/ci/probes/NewApiProbe.kt "$dyn/"
+          if ./gradlew :library:lintRelease :library-dynamic:lintRelease -PlintNewApiOnly --continue > probe-newapi.log 2>&1; then
+            fail "lint passed three calls above minSdk in each module: the NewApi gate is off"
+          fi
+          for m in library library-dynamic; do
+            r="$m/build/reports/lint-results-release.txt"
+            for api in "java.util.List#removeLast" "android.view.View#setSystemGestureExclusionRects" "java.net.URLDecoder#decode"; do
+              grep "NewApiProbe.kt" "$r" | grep -qF "$api" || fail "$m: lint did not name $api in NewApiProbe.kt"
+            done
+          done
+          echo "newapi gate: lint failed on the probe and named all 3 calls in both modules"
+      - name: Upload lint reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: |
+            library/build/reports/lint-results-release.*
+            library-dynamic/build/reports/lint-results-release.*
+
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      # The warning gate IS this compile failing: every Kotlin warning is an
+      # error here (.github/ci/kotlin-warnings-as-errors.gradle, CI only), in
+      # main and test sources alike. 2.9.3 and the brush-up after it cleared
+      # the main sources; the test sources' 4 were cleared on 2026-09-25.
+      #
+      # It used to grep `^w: ` in this log. Under `--warning-mode all` a Kotlin
+      # warning prints as `Problem found: Kotlin compiler warning …` instead,
+      # so that grep passed a build with a warning in main (measured
+      # 2026-09-25) — a count keyed on the log's form went silently blind.
+      - name: Compile (release, main and test sources, every Kotlin warning an error)
+        run: |
+          bash .github/ci/compile-kotlin.sh compile.log \
+            :library:compileReleaseKotlin :library-dynamic:compileReleaseKotlin \
+            :sample-app:compileDevDebugKotlin \
+            :library:compileReleaseUnitTestKotlin :library-dynamic:compileReleaseUnitTestKotlin \
+            --rerun-tasks
+      # Every run proves the step above can fail: the same script, handed a
+      # probe, must fail and name it — a warning in main (sample-app), one in
+      # test (library-dynamic), and a compile error (its pipeline keeps
+      # gradle's exit code). The probes are copied in and always removed.
+      - name: Warning gate — positive controls (a warning in main, one in test, a compile error)
+        run: |
+          set -euo pipefail
+          main=sample-app/src/main/kotlin/com/kotlinjsonui/ciprobe
+          test=library-dynamic/src/test/kotlin/com/kotlinjsonui/ciprobe
+          cleanup() { rm -rf "$main" "$test"; }
+          trap cleanup EXIT
+          fail() { echo "::error::$1"; exit 1; }
+          mkdir -p "$main" "$test"
+          cp .github/ci/probes/WarningProbeMain.kt "$main/"
+          cp .github/ci/probes/WarningProbeTest.kt "$test/"
+          if bash .github/ci/compile-kotlin.sh probe-warnings.log \
+              :sample-app:compileDevDebugKotlin :library-dynamic:compileReleaseUnitTestKotlin; then
+            fail "the compile passed a warning in main and one in test: the gate is off"
+          fi
+          for f in WarningProbeMain.kt WarningProbeTest.kt; do
+            grep -q "$f" probe-warnings.log || fail "the failed compile did not name $f"
+          done
+          cleanup
+          mkdir -p "$main"
+          cp .github/ci/probes/CompileErrorProbe.kt "$main/"
+          if bash .github/ci/compile-kotlin.sh probe-error.log :sample-app:compileDevDebugKotlin; then
+            fail "the compile script passed a compile error: its pipeline lost gradle's exit code"
+          fi
+          grep -q CompileErrorProbe.kt probe-error.log || fail "the failed compile did not name CompileErrorProbe.kt"
+          echo "warning gate: the compile failed on each probe (2 warnings, 1 compile error) and named it"
+      # The same init script, so the compile tasks match the step above and
+      # are not compiled a second time.
+      - name: Unit tests
+        run: ./gradlew -I .github/ci/kotlin-warnings-as-errors.gradle :library:testReleaseUnitTest :library-dynamic:testReleaseUnitTest
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            library/build/reports/tests/
+            library-dynamic/build/reports/tests/

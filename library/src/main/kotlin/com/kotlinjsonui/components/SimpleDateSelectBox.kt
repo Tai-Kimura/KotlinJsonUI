@@ -1,0 +1,110 @@
+package com.kotlinjsonui.components
+
+import com.kotlinjsonui.core.jsonUILetterSpacing
+import com.kotlinjsonui.core.jsonUILineHeight
+import com.kotlinjsonui.core.jsonUIFontSize
+import com.kotlinjsonui.core.DateFormats
+import android.app.DatePickerDialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import com.kotlinjsonui.R
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.util.*
+
+/**
+ * A simplified date selection component for testing
+ */
+@Composable
+fun SimpleDateSelectBox(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    enabled: Boolean = true,
+    backgroundColor: Color = Color.White,
+    borderColor: Color = Color(0xFFCCCCCC),
+    textColor: Color = Color.Black,
+    hintColor: Color = Color(0xFF999999),
+    cornerRadius: Int = 8
+) {
+    val context = LocalContext.current
+    val calendar = remember { Calendar.getInstance() }
+    val dateFormat = DateFormats.value("yyyy-MM-dd") // the bound value, not text the user reads
+    
+    // Parse current value if not empty
+    LaunchedEffect(value) {
+        if (value.isNotEmpty()) {
+            try {
+                DateFormats.parseValue(value, "yyyy-MM-dd")?.let {
+                    calendar.time = it
+                }
+            } catch (e: Exception) {
+                // Invalid date format
+            }
+        }
+    }
+    
+    // Display text
+    val displayText = if (value.isNotEmpty()) value else ""
+    
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 56.dp)
+            .clickable(enabled = enabled) {
+                // Show date picker dialog
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        calendar.set(year, month, dayOfMonth)
+                        val newValue = dateFormat.format(calendar.time)
+                        onValueChange(newValue)
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
+            }
+            .border(
+                width = 1.dp,
+                color = if (enabled) borderColor else borderColor.copy(alpha = 0.38f),
+                shape = RoundedCornerShape(cornerRadius.dp)
+            )
+            .background(
+                color = backgroundColor,
+                shape = RoundedCornerShape(cornerRadius.dp)
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (displayText.isNotEmpty()) displayText else (placeholder ?: ""),
+                color = if (displayText.isNotEmpty()) textColor else hintColor,
+                fontSize = jsonUIFontSize(16.sp),
+                letterSpacing = jsonUILetterSpacing(),
+                lineHeight = jsonUILineHeight(jsonUIFontSize(16.sp)),
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                painter = painterResource(R.drawable.ic_date_range),
+                contentDescription = "Calendar",
+                tint = textColor
+            )
+        }
+    }
+}

@@ -1,0 +1,533 @@
+package com.kotlinjsonui.dynamic
+
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import org.junit.Assert.*
+import org.junit.Test
+
+class ResponsiveResolverTest {
+
+    // ── widthSizeClassKey ──
+
+    @Test
+    fun widthSizeClassKey_compact() {
+        assertEquals("compact", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(400, 600)))
+    }
+
+    @Test
+    fun widthSizeClassKey_medium() {
+        assertEquals("medium", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(700, 900)))
+    }
+
+    @Test
+    fun widthSizeClassKey_expanded() {
+        assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(900, 1200)))
+    }
+
+    // ── the tier is a THRESHOLD, not an equality ──
+    //
+    // Compose 1.12's adaptive library adds L and XL width size classes and
+    // deprecates currentWindowAdaptiveInfo in favour of a V2 that reports
+    // them. Moving to V2 changes nothing here, and the reason is narrow:
+    // widthSizeClassKey asks isWidthAtLeastBreakpoint, so a width that V2
+    // classifies as L or XL still satisfies the EXPANDED lower bound and
+    // still lands on "regular". Written as `sizeClass == EXPANDED`, the same
+    // migration would have dropped every large window out of "regular"
+    // without a single test going red.
+    //
+    // This is a property the code happens to have rather than one anything
+    // was defending, so these three arms defend it. They read the SDK's own
+    // lower bound instead of 840, sit on both sides of it, and the third is
+    // in the L/XL territory V2 exists to name.
+
+    @Test
+    fun widthSizeClassKey_oneDpBelowExpandedIsStillMedium() {
+        val width = WIDTH_DP_EXPANDED_LOWER_BOUND - 1
+        assertEquals("medium", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(width, 1200)))
+    }
+
+    @Test
+    fun widthSizeClassKey_exactlyAtExpandedLowerBoundIsRegular() {
+        val width = WIDTH_DP_EXPANDED_LOWER_BOUND
+        assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(width, 1200)))
+    }
+
+    @Test
+    fun widthSizeClassKey_farAboveExpandedIsStillRegular() {
+        // Three times the bound: what Compose 1.12 would call L or XL.
+        val width = WIDTH_DP_EXPANDED_LOWER_BOUND * 3
+        assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(width, 1600)))
+    }
+
+    // ── resolveMatchingKeys ──
+
+    @Test
+    fun resolveMatchingKeys_compact_portrait() {
+        val keys = ResponsiveResolver.resolveMatchingKeys("compact", isLandscape = false)
+        assertEquals(listOf("compact"), keys)
+    }
+
+    @Test
+    fun resolveMatchingKeys_medium_portrait() {
+        val keys = ResponsiveResolver.resolveMatchingKeys("medium", isLandscape = false)
+        assertEquals(listOf("medium"), keys)
+    }
+
+    @Test
+    fun resolveMatchingKeys_regular_portrait() {
+        val keys = ResponsiveResolver.resolveMatchingKeys("regular", isLandscape = false)
+        assertEquals(listOf("regular"), keys)
+    }
+
+    @Test
+    fun resolveMatchingKeys_compact_landscape() {
+        val keys = ResponsiveResolver.resolveMatchingKeys("compact", isLandscape = true)
+        assertEquals(listOf("compact-landscape", "landscape", "compact"), keys)
+    }
+
+    @Test
+    fun resolveMatchingKeys_medium_landscape() {
+        val keys = ResponsiveResolver.resolveMatchingKeys("medium", isLandscape = true)
+        assertEquals(listOf("medium-landscape", "landscape", "medium"), keys)
+    }
+
+    @Test
+    fun resolveMatchingKeys_regular_landscape() {
+        val keys = ResponsiveResolver.resolveMatchingKeys("regular", isLandscape = true)
+        assertEquals(listOf("regular-landscape", "landscape", "regular"), keys)
+    }
+
+    // ── mergeOverrides ──
+
+    @Test
+    fun mergeOverrides_appliesMatchingKeys() {
+        val base = JsonParser.parseString("""
+            {
+                "type": "View",
+                "orientation": "vertical",
+                "spacing": 8,
+                "responsive": {
+                    "regular": { "orientation": "horizontal", "spacing": 24 },
+                    "medium": { "spacing": 12 }
+                }
+            }
+        """).asJsonObject
+
+        val responsive = base.getAsJsonObject("responsive")
+        val result = ResponsiveResolver.mergeOverrides(
+            base, responsive, ResponsiveResolver.resolveMatchingKeys("regular", isLandscape = false))
+
+        assertEquals("horizontal", result.get("orientation").asString)
+        assertEquals(24, result.get("spacing").asInt)
+        assertFalse(result.has("responsive"))
+    }
+
+    @Test
+    // Was mergeOverrides_laterKeysOverrideEarlier (every holding key applied,
+    // lowest first): one key wins, alone
+    // (kjui-dynamic-responsive-stacks-overrides-codegen-picks-one).
+    fun mergeOverrides_onlyTheFirstKeyTheBlockHasApplies() {
+        val base = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "compact": { "spacing": 4 },
+                    "medium": { "spacing": 12 },
+                    "regular": { "spacing": 24 }
+                }
+            }
+        """).asJsonObject
+
+        val responsive = base.getAsJsonObject("responsive")
+
+        // A medium window: medium wins; compact is not applied under it.
+        val result = ResponsiveResolver.mergeOverrides(base, responsive, listOf("medium", "compact"))
+        assertEquals(12, result.get("spacing").asInt)
+        val compactOnly = ResponsiveResolver.mergeOverrides(base, responsive, listOf("compact", "medium"))
+        assertEquals(4, compactOnly.get("spacing").asInt)
+    }
+
+    @Test
+    fun mergeOverrides_doesNotOverrideChildren() {
+        val base = JsonParser.parseString("""
+            {
+                "type": "View",
+                "child": [{ "type": "Text", "text": "original" }],
+                "responsive": {
+                    "regular": { "child": [{ "type": "Text", "text": "replaced" }], "spacing": 24 }
+                }
+            }
+        """).asJsonObject
+
+        val responsive = base.getAsJsonObject("responsive")
+        val result = ResponsiveResolver.mergeOverrides(base, responsive, listOf("regular"))
+
+        // child should NOT be replaced
+        val child = result.getAsJsonArray("child").get(0).asJsonObject
+        assertEquals("original", child.get("text").asString)
+        // spacing should be applied
+        assertEquals(24, result.get("spacing").asInt)
+    }
+
+    @Test
+    fun mergeOverrides_skipsNonexistentKeys() {
+        val base = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "regular": { "spacing": 24 }
+                }
+            }
+        """).asJsonObject
+
+        val responsive = base.getAsJsonObject("responsive")
+        val result = ResponsiveResolver.mergeOverrides(base, responsive, listOf("compact", "medium"))
+
+        // Neither compact nor medium exist in responsive, so base value stays
+        assertEquals(8, result.get("spacing").asInt)
+    }
+
+    // ── resolveNode ──
+
+    @Test
+    fun resolveNode_noResponsiveBlock_returnsOriginal() {
+        val json = JsonParser.parseString("""
+            { "type": "View", "spacing": 8 }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveNode(json, "regular", isLandscape = false)
+        assertSame(json, result) // Same object returned when no responsive block
+    }
+
+    @Test
+    fun resolveNode_withResponsive_mergesAndRemoves() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "orientation": "vertical",
+                "spacing": 8,
+                "responsive": {
+                    "regular": { "orientation": "horizontal", "spacing": 24 }
+                }
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveNode(json, "regular", isLandscape = false)
+
+        assertEquals("horizontal", result.get("orientation").asString)
+        assertEquals(24, result.get("spacing").asInt)
+        assertFalse(result.has("responsive"))
+        assertEquals("View", result.get("type").asString)
+    }
+
+    @Test
+    fun resolveNode_compactDoesNotApplyRegular() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "regular": { "spacing": 24 }
+                }
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveNode(json, "compact", isLandscape = false)
+
+        assertEquals(8, result.get("spacing").asInt)
+        assertFalse(result.has("responsive"))
+    }
+
+    @Test
+    fun resolveNode_landscapeOverridesTakeEffect() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "landscape": { "spacing": 16 }
+                }
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveNode(json, "compact", isLandscape = true)
+        assertEquals(16, result.get("spacing").asInt)
+    }
+
+    @Test
+    fun resolveNode_compoundKeyHasHighestPriority() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "regular": { "spacing": 24 },
+                    "landscape": { "spacing": 16 },
+                    "regular-landscape": { "spacing": 32 }
+                }
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveNode(json, "regular", isLandscape = true)
+        assertEquals(32, result.get("spacing").asInt)
+    }
+
+    @Test
+    fun resolveNode_mediumLandscapeCompound() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "medium": { "spacing": 12 },
+                    "landscape": { "spacing": 16 },
+                    "medium-landscape": { "spacing": 20 }
+                }
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveNode(json, "medium", isLandscape = true)
+        assertEquals(20, result.get("spacing").asInt)
+    }
+
+    // ── resolveTree ──
+
+    @Test
+    fun resolveTree_recursesIntoChildren() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "orientation": "vertical",
+                "responsive": {
+                    "regular": { "orientation": "horizontal" }
+                },
+                "child": [
+                    {
+                        "type": "Text",
+                        "text": "Hello",
+                        "responsive": {
+                            "regular": { "fontSize": 24 }
+                        }
+                    },
+                    {
+                        "type": "Text",
+                        "text": "World"
+                    }
+                ]
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(900, 1200), isLandscape = false)
+
+        // Root resolved
+        assertEquals("horizontal", result.get("orientation").asString)
+        assertFalse(result.has("responsive"))
+
+        // First child resolved
+        val children = result.getAsJsonArray("child")
+        val firstChild = children.get(0).asJsonObject
+        assertEquals(24, firstChild.get("fontSize").asInt)
+        assertFalse(firstChild.has("responsive"))
+
+        // Second child unchanged
+        val secondChild = children.get(1).asJsonObject
+        assertEquals("World", secondChild.get("text").asString)
+    }
+
+    @Test
+    fun resolveTree_handlesSingleChildObject() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "child": {
+                    "type": "Text",
+                    "text": "Hello",
+                    "responsive": {
+                        "regular": { "fontSize": 24 }
+                    }
+                }
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(900, 1200), isLandscape = false)
+
+        val child = result.getAsJsonObject("child")
+        assertEquals(24, child.get("fontSize").asInt)
+        assertFalse(child.has("responsive"))
+    }
+
+    @Test
+    fun resolveTree_handlesChildrenKey() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "children": [
+                    {
+                        "type": "Text",
+                        "responsive": {
+                            "medium": { "fontSize": 16 }
+                        }
+                    }
+                ]
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(700, 900), isLandscape = false)
+
+        val child = result.getAsJsonArray("children").get(0).asJsonObject
+        assertEquals(16, child.get("fontSize").asInt)
+        assertFalse(child.has("responsive"))
+    }
+
+    @Test
+    fun resolveTree_deeplyNested() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "child": [
+                    {
+                        "type": "View",
+                        "child": [
+                            {
+                                "type": "Text",
+                                "fontSize": 12,
+                                "responsive": {
+                                    "regular": { "fontSize": 20 }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(900, 1200), isLandscape = false)
+
+        val innerText = result.getAsJsonArray("child")
+            .get(0).asJsonObject
+            .getAsJsonArray("child")
+            .get(0).asJsonObject
+
+        assertEquals(20, innerText.get("fontSize").asInt)
+        assertFalse(innerText.has("responsive"))
+    }
+
+    // ── Priority integration tests ──
+
+    @Test
+    fun priority_compoundOverridesLandscapeOverridesRegular() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "orientation": "vertical",
+                "spacing": 8,
+                "background": "#FFFFFF",
+                "responsive": {
+                    "regular": { "orientation": "horizontal", "spacing": 24, "background": "#EEEEEE" },
+                    "landscape": { "spacing": 16, "background": "#DDDDDD" },
+                    "regular-landscape": { "spacing": 32 }
+                }
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveNode(json, "regular", isLandscape = true)
+
+        // regular-landscape wins, alone: its spacing (32), and the base for
+        // what it does not set — not regular's orientation, not landscape's
+        // background (as every codegen's if / else if chain draws it).
+        assertEquals(32, result.get("spacing").asInt)
+        assertEquals("vertical", result.get("orientation").asString)
+        assertEquals("#FFFFFF", result.get("background").asString)
+    }
+
+    @Test
+    // Was priority_mediumIncludesCompactOverrides: the stacking the codegen
+    // never drew (kjui-dynamic-responsive-stacks-overrides-codegen-picks-one).
+    fun priority_mediumDoesNotIncludeCompactOverrides() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "compact": { "padding": 4 },
+                    "medium": { "spacing": 12 }
+                }
+            }
+        """).asJsonObject
+
+        // A medium window draws medium's overrides only.
+        val result = ResponsiveResolver.resolveNode(json, "medium", isLandscape = false)
+
+        assertEquals(12, result.get("spacing").asInt)
+        assertFalse(result.has("padding")) // compact's is not applied
+    }
+
+    @Test
+    fun resolveNode_noMatchingKeys_removesResponsiveOnly() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "spacing": 8,
+                "responsive": {
+                    "regular": { "spacing": 24 }
+                }
+            }
+        """).asJsonObject
+
+        // compact portrait — no matching key in responsive block
+        val result = ResponsiveResolver.resolveNode(json, "compact", isLandscape = false)
+
+        assertEquals(8, result.get("spacing").asInt)
+        assertFalse(result.has("responsive"))
+    }
+
+    @Test
+    fun resolveTree_noResponsiveAnywhere_returnsCopy() {
+        val json = JsonParser.parseString("""
+            {
+                "type": "View",
+                "child": [{ "type": "Text", "text": "Hello" }]
+            }
+        """).asJsonObject
+
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(400, 600), isLandscape = false)
+
+        assertEquals("View", result.get("type").asString)
+        val child = result.getAsJsonArray("child").get(0).asJsonObject
+        assertEquals("Hello", child.get("text").asString)
+    }
+
+    @Test
+    fun resolveNode_responsiveNotObject_returnsOriginal() {
+        val json = JsonObject().apply {
+            addProperty("type", "View")
+            addProperty("responsive", "invalid")
+        }
+
+        val result = ResponsiveResolver.resolveNode(json, "regular", isLandscape = false)
+        assertSame(json, result)
+    }
+
+    @Test
+    fun mergeOverrides_addsNewProperties() {
+        val base = JsonParser.parseString("""
+            {
+                "type": "View",
+                "responsive": {
+                    "regular": { "shadow": 4, "cornerRadius": 8 }
+                }
+            }
+        """).asJsonObject
+
+        val responsive = base.getAsJsonObject("responsive")
+        val result = ResponsiveResolver.mergeOverrides(base, responsive, listOf("regular"))
+
+        assertEquals(4, result.get("shadow").asInt)
+        assertEquals(8, result.get("cornerRadius").asInt)
+    }
+}

@@ -1,0 +1,626 @@
+package com.jsonui.testrunner.assertions
+
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.StaleObjectException
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
+import com.jsonui.testrunner.models.TestStep
+import com.jsonui.testrunner.runner.Deadline
+import com.jsonui.testrunner.runner.ElementLookup
+import com.jsonui.testrunner.runner.FindTimeoutReport
+import com.jsonui.testrunner.runner.NodeCache
+import com.jsonui.testrunner.runner.ProjectionProbe
+import com.jsonui.testrunner.runner.ZeroSizeNodes
+import com.jsonui.testrunner.runner.ViewModelStateProvider
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.intOrNull
+import java.io.File
+import java.io.FileOutputStream
+
+/**
+ * Executes test assertions using UI Automator
+ * Uses resource-id for element matching (Compose testTag exposed via testTagsAsResourceId)
+ *
+ * All element assertions auto-wait: the condition is polled every 100ms until
+ * it holds or the timeout (step `timeout` or the runner's defaultTimeout)
+ * elapses; the failure message includes the last observed actual value.
+ */
+class AssertionExecutor(
+    private val device: UiDevice,
+    private val defaultTimeout: Long = 5000L,
+    /**
+     * Cross-screen waits are legitimately slower than in-screen ones: real
+     * suites already hand-write 15-20s after a cold start. Kept distinct from
+     * defaultTimeout so raising one does not silently raise the other.
+     */
+    private val screenTransitionTimeout: Long = 10000L
+) {
+
+    /**
+     * Every id here is resolved through this, with the step's `within`
+     * (null: the whole screen, exactly as before).
+     */
+    private val lookup = ElementLookup(device)
+
+    /** State provider for `state` assertions (injected by the runner) */
+    var stateProvider: ViewModelStateProvider? = null
+
+    /**
+     * Where `state` reads when no [stateProvider] is set: the state bridge of
+     * the runner's state screen (spec §10.5, `state-path.json`).
+     */
+    var bridgeState: com.jsonui.testrunner.runner.BridgeStateSource? = null
+
+    /**
+     * Baseline directory for `screenshot` assertions. Baselines live at
+     * <baselineDir>/android/<name>.png. Defaults to the instrumented app's
+     * external files dir (falling back to filesDir) when null.
+     */
+    var baselineDir: File? = null
+
+    /** When true, `screenshot` assertions always overwrite the baseline and pass */
+    var updateBaselines: Boolean = false
+
+    /** Sink for non-fatal warnings (e.g. "baseline created"), set by the runner */
+    var warningHandler: ((String) -> Unit)? = null
+
+    /**
+     * Execute an assertion step
+     */
+    fun execute(step: TestStep) {
+        val assertion = step.assert ?: throw IllegalArgumentException("Step has no assert")
+        val timeout = step.timeout?.toLong() ?: defaultTimeout
+
+        when (assertion) {
+            "visible" -> assertVisible(step, timeout)
+            "notVisible" -> assertNotVisible(step, timeout)
+            "hidden" -> assertHidden(step, timeout)
+            "enabled" -> assertEnabled(step, timeout)
+            "disabled" -> assertDisabled(step, timeout)
+            "text" -> assertText(step, timeout)
+            "count" -> assertCount(step, timeout)
+            "state" -> assertState(step, timeout)
+            "screenshot" -> assertScreenshot(step, timeout)
+            "screen" -> assertScreen(step, step.timeout?.toLong() ?: screenTransitionTimeout)
+            else -> throw IllegalArgumentException("Unknown assertion: $assertion")
+        }
+    }
+
+    /**
+     * `assert: "screen"` — the named screen IS DISPLAYED.
+     *
+     * Not "displayed exclusively": embedded screens, split panes and tab
+     * hosts legitimately show several markers at once, so this only ever
+     * looks at the target's own marker.
+     *
+     * The predicate is just "found", which is the same primitive every other
+     * assertion uses. Measured on API 35: a screen covered by a dialog or a
+     * modal bottom sheet leaves the search ENTIRELY (findObject returns null,
+     * and it is absent from rootInActiveWindow), and a NavHost destination
+     * replaces its source — so no visibleBounds test and no window scoping
+     * are needed to tell "displayed" from "still composed underneath".
+     */
+    private fun assertScreen(step: TestStep, timeout: Long) {
+        val screenId = step.name ?: throw IllegalArgumentException("screen requires 'name'")
+        val marker = ScreenMarker.tagFor(screenId)
+
+        val deadline = Deadline.of(timeout)
+        // A marker whose drawn box is 0 x 0 is not in the accessibility tree
+        // (ZeroSizeNodes). It counts as displayed only while no OTHER screen's
+        // marker is findable — iOS's condition (no other marker hittable) —
+        // because the semantics tree also holds a screen a sheet now covers.
+        deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            device.findObject(By.res(marker))
+                ?: ZeroSizeNodes.find(marker).firstOrNull()
+                    ?.takeIf { ScreenMarker.presentMarkers(device).none { other -> other != screenId } }
+        }?.let { return }
+        val appPackage = InstrumentationRegistry.getInstrumentation().targetContext.packageName
+        throw AssertionError(ScreenMarker.diagnosis(device, screenId, appPackage) + "\n  " + deadline.describe())
+    }
+
+    /**
+     * "Not found" plus what the accessibility projection actually held, and
+     * whether dropping UiAutomator's cache or resyncing the service brought
+     * it back (ProjectionProbe). Runs only on this failure path, so a green
+     * run pays nothing — and the next intermittent occurrence answers, by
+     * itself, the question a consumer could not reproduce on demand.
+     */
+    private fun elementNotFound(id: String, waited: String, deadline: Deadline? = null): String =
+        "Element '$id' not found by resource-id within $waited\n" +
+            (deadline?.let { FindTimeoutReport.render(device, id, it) + "\n" } ?: "") +
+            ProjectionProbe.report(id)
+
+    /**
+     * Not found, scoped or not: with `within`, which of the two was missing —
+     * the container, or the target inside it (ElementLookup / Within). The
+     * same-id census of the whole screen follows, so a target that exists
+     * only OUTSIDE the container says so.
+     */
+    private fun notFound(id: String, within: String?, timeout: Long, waited: String, deadline: Deadline? = null): String =
+        lookup.scopedMiss(id, within, timeout)?.let { miss ->
+            miss + (deadline?.let { "\n" + FindTimeoutReport.render(device, id, it) } ?: "")
+        } ?: elementNotFound(id, waited, deadline)
+
+    /** A `within` container that is not there fails the step, naming it. */
+    private fun failOnMissingContainer(id: String, within: String?, timeout: Long) {
+        if (com.jsonui.testrunner.runner.Within.missingContainerFails(within, within?.let { lookup.container(it) } != null)) {
+            throw AssertionError(com.jsonui.testrunner.runner.Within.containerNotFound(within!!, id, timeout))
+        }
+    }
+
+    /** How a message names the element: `'x'`, or `'x' inside 'c'` with `within`. */
+    private fun named(id: String, within: String?) =
+        com.jsonui.testrunner.runner.Within.label(id, within)
+
+    private fun assertVisible(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("visible requires 'id'")
+        val within = step.within
+        pollUntil(timeout, id) {
+            findElement(id, within) ?: throw AssertionError(
+                lookup.zeroSize(id, within).firstOrNull()?.let { hit ->
+                    "Element ${named(id, within)} exists, but its drawn box is ${hit.width}x${hit.height}, so it is not visible " +
+                        "(iOS: exists, not hittable, empty frame). Waited ${timeout}ms."
+                } ?: notFound(id, within, timeout, "${timeout}ms")
+            )
+        }
+    }
+
+    private fun assertNotVisible(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("notVisible requires 'id'")
+        // Passes as soon as the element is gone; polled from t=0 (no fixed pre-wait)
+        // With `within`, a container that is not there FAILS (Within.missingContainerFails).
+        pollUntil(timeout, id) {
+            failOnMissingContainer(id, step.within, timeout)
+            if (findElement(id, step.within) != null) {
+                throw AssertionError("Element ${named(id, step.within)} should not be visible but it is still visible after ${timeout}ms")
+            }
+        }
+    }
+
+    /**
+     * Not drawn, wherever it is: absent, gone, or invisible / hidden (HiddenNodes).
+     * A view off screen, under a dialog, at opacity 0 or disabled is drawn, so
+     * `hidden` fails on it — unlike `notVisible`, which is about the viewport.
+     * Every element with the id counts (as on web): hidden only when none of
+     * them is drawn. With `within`, only those inside the container; a
+     * container that is not there FAILS (Within.missingContainerFails).
+     */
+    private fun assertHidden(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("hidden requires 'id'")
+        pollUntil(timeout, id) {
+            failOnMissingContainer(id, step.within, timeout)
+            if (!isHidden(id, step.within)) {
+                throw AssertionError("Element ${named(id, step.within)} should be hidden but it is shown (drawn, wherever it is) after ${timeout}ms")
+            }
+        }
+    }
+
+    /**
+     * The `hidden` predicate, once (also `when: { hidden }`). Without Compose
+     * the semantics tree cannot be read: absent from the accessibility tree is
+     * the best answer there, and it cannot tell off-screen from not drawn.
+     */
+    fun isHidden(id: String, within: String? = null): Boolean = lookup.isHidden(id, within)
+
+    private fun assertEnabled(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("enabled requires 'id'")
+        pollUntil(timeout, id) {
+            val enabled = findElement(id, step.within)?.isEnabled
+                ?: lookup.zeroSize(id, step.within).firstOrNull()?.enabled
+                ?: throw AssertionError(notFound(id, step.within, timeout, "${timeout}ms"))
+            if (!enabled) {
+                throw AssertionError("Element '$id' should be enabled but it is disabled")
+            }
+        }
+    }
+
+    private fun assertDisabled(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("disabled requires 'id'")
+        pollUntil(timeout, id) {
+            val enabled = findElement(id, step.within)?.isEnabled
+                ?: lookup.zeroSize(id, step.within).firstOrNull()?.enabled
+                ?: throw AssertionError(notFound(id, step.within, timeout, "${timeout}ms"))
+            if (enabled) {
+                throw AssertionError("Element '$id' should be disabled but it is enabled")
+            }
+        }
+    }
+
+    private fun assertText(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("text requires 'id'")
+        // State-driven UIs (Compose input -> handler -> state -> recompose)
+        // update bound text asynchronously; a single read races the
+        // recomposition (testrunner-android-asserttext-single-sample-race).
+        pollUntil(timeout, id) {
+            assertTextOnce(step, id)
+        }
+    }
+
+    private fun assertTextOnce(step: TestStep, id: String) {
+        val element = findElement(id, step.within) ?: run {
+            // An element whose drawn box is 0 x 0 reads its semantics text, as
+            // iOS reads value / label (ZeroSizeNodes).
+            val hit = lookup.zeroSize(id, step.within).firstOrNull()
+                ?: throw AssertionError(
+                    notFound(id, step.within, step.timeout?.toLong() ?: defaultTimeout, "a step of polling")
+                )
+            return compareText(step, id, hit.text)
+        }
+
+        // For Compose TextField, the editable value is on an EditText-classed
+        // a11y node — either the tagged element itself or a descendant.
+        val editText = if (element.className == "android.widget.EditText") element
+            else element.findObject(By.clazz("android.widget.EditText"))
+
+        val actualText: String = if (editText != null) {
+            // Editable field: the INPUT VALUE is authoritative. An empty field
+            // reads "" — NOT its placeholder/hint (a separate decoration node).
+            // This mirrors iOS `XCUIElement.value` and is required for
+            // cross-platform parity: without it the descendant-text aggregation
+            // below would scoop up the placeholder for an empty/cleared field
+            // (test-empty-textfield-text-ios-empty-android-placeholder).
+            editText.text ?: ""
+        } else {
+            // Non-editable (Button, labeled CheckBox/Radio rows, ...) expose
+            // their label on child text nodes, not on the testTag'd container,
+            // while iOS (XCUITest label) and web (textContent) include descendant
+            // text. Mirror that: aggregate descendant text when the node has none.
+            var t = element.text ?: ""
+            if (t.isEmpty()) {
+                t = element.findObjects(By.clazz("android.widget.TextView"))
+                    .mapNotNull { it.text }
+                    .filter { it.isNotEmpty() }
+                    .joinToString(" ")
+            }
+            t
+        }
+        compareText(step, id, actualText)
+    }
+
+    private fun compareText(step: TestStep, id: String, actualText: String) {
+        when {
+            step.equals != null -> {
+                val expectedText = when (val value = step.equals) {
+                    is JsonPrimitive -> value.content
+                    else -> value.toString()
+                }
+                if (actualText != expectedText) {
+                    throw AssertionError("Expected text '$expectedText' but got '$actualText' for element '$id'")
+                }
+            }
+            step.contains != null -> {
+                if (!actualText.contains(step.contains)) {
+                    throw AssertionError("Expected text containing '${step.contains}' but got '$actualText' for element '$id'")
+                }
+            }
+            else -> throw IllegalArgumentException("text requires 'equals' or 'contains'")
+        }
+    }
+
+    private fun assertCount(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("count requires 'id'")
+        val expected = step.equals?.let {
+            when (it) {
+                is JsonPrimitive -> it.intOrNull
+                else -> null
+            }
+        } ?: throw IllegalArgumentException("count requires 'equals' with integer value")
+
+        // Poll until the count matches. `equals: 0` passes on absence, so we
+        // must NOT pre-wait for at least one element here.
+        pollUntil(timeout, id) {
+            // iOS counts an element whatever its size; Android's tree has no
+            // node for one whose drawn box is 0 x 0 (ZeroSizeNodes).
+            // With `within`: the matches inside the container. Counting inside
+            // a container that is not there is not a count, so it fails
+            // naming the container instead of reading 0.
+            val within = step.within
+            if (within != null && lookup.container(within) == null) {
+                throw AssertionError(com.jsonui.testrunner.runner.Within.containerNotFound(within, id, timeout))
+            }
+            val actualCount = lookup.findAll(id, within).size + lookup.zeroSize(id, within).size
+            if (actualCount != expected) {
+                throw AssertionError(
+                    "Expected $expected elements with id '$id'" +
+                        (within?.let { " inside '$it'" } ?: "") + ", but found $actualCount"
+                )
+            }
+        }
+    }
+
+    private fun assertState(step: TestStep, timeout: Long) {
+        val path = step.path ?: throw IllegalArgumentException("state requires 'path'")
+        val expected = step.equals ?: throw IllegalArgumentException("state requires 'equals'")
+        val provider = stateProvider
+        if (provider != null) {
+            pollUntil(timeout, null) {
+                val actual = provider.getValue(path)
+                if (!stateValueMatches(actual, expected)) {
+                    throw AssertionError("Expected state '$path' to equal '$expected' but got '$actual'")
+                }
+            }
+            return
+        }
+        val bridge = requireBridgeState()
+        pollUntil(timeout, null) {
+            val actual = bridgeValue(bridge, path)
+                ?: throw AssertionError(bridgeMissReason(bridge, path))
+            if (!stateValueMatches(actual.value, expected)) {
+                throw AssertionError("Expected state '$path' to equal '$expected' but got '${actual.value}'")
+            }
+        }
+    }
+
+    /** A value read from the bridge (null inside means the key holds null). */
+    private class BridgeValue(val value: Any?)
+
+    /**
+     * The bridge's value at [path], or null while it is not there yet (no
+     * bridge, or the path does not resolve). A truncated bridge fails at once.
+     */
+    private fun bridgeValue(bridge: com.jsonui.testrunner.runner.BridgeStateSource, path: String): BridgeValue? =
+        when (val outcome = bridge.outcome(path)) {
+            is com.jsonui.testrunner.runner.StateBridge.Outcome.Value ->
+                BridgeValue(com.jsonui.testrunner.runner.StateBridge.plain(outcome.value))
+            is com.jsonui.testrunner.runner.StateBridge.Outcome.Truncated ->
+                throw IllegalStateException(
+                    com.jsonui.testrunner.runner.StateBridge.truncatedMessage(bridge.screenId() ?: "?", outcome.bytes)
+                )
+            com.jsonui.testrunner.runner.StateBridge.Outcome.Pending,
+            com.jsonui.testrunner.runner.StateBridge.Outcome.Unresolved -> null
+        }
+
+    private fun bridgeMissReason(bridge: com.jsonui.testrunner.runner.BridgeStateSource, path: String): String {
+        val screen = bridge.screenId()
+            ?: return "state '$path': no screen to read the state bridge of (no screen under test, and no flow step has named one)"
+        return when (bridge.outcome(path)) {
+            com.jsonui.testrunner.runner.StateBridge.Outcome.Pending ->
+                "state '$path': the state bridge of '$screen' is absent (the screen is not showing, or KotlinJsonUI " +
+                    "is older than 2.44.0 / the code was generated by an older jsonui-cli, or the marker gate is closed)"
+            else -> "state '$path' does not resolve in the state bridge data of '$screen'"
+        }
+    }
+
+    private fun requireBridgeState(): com.jsonui.testrunner.runner.BridgeStateSource =
+        bridgeState ?: throw IllegalStateException(
+            "'state' requires a ViewModelStateProvider or the runner's state bridge, and neither is configured"
+        )
+
+    // MARK: - State helpers (shared with `when` / `repeat.while` conditions)
+
+    /**
+     * Instant check whether the state at `path` matches `expected`.
+     * Throws when no state provider is configured (spec: a `state` condition
+     * without a provider is an error, not a silent skip).
+     */
+    fun stateMatches(path: String, expected: JsonElement): Boolean {
+        stateProvider?.let { return stateValueMatches(it.getValue(path), expected) }
+        val actual = bridgeValue(requireBridgeState(), path) ?: return false
+        return stateValueMatches(actual.value, expected)
+    }
+
+    private fun stateValueMatches(actual: Any?, expected: JsonElement): Boolean {
+        return when {
+            expected is JsonNull -> actual == null
+            expected is JsonPrimitive -> when {
+                expected.isString -> actual?.toString() == expected.content
+                expected.booleanOrNull != null -> (actual as? Boolean) == expected.booleanOrNull
+                expected.doubleOrNull != null -> {
+                    val actualNumber = (actual as? Number)?.toDouble()
+                        ?: actual?.toString()?.toDoubleOrNull()
+                    actualNumber == expected.doubleOrNull
+                }
+                else -> actual?.toString() == expected.content
+            }
+            else -> actual?.toString() == expected.toString()
+        }
+    }
+
+    // MARK: - Screenshot assertion (visual regression)
+
+    private fun assertScreenshot(step: TestStep, timeout: Long) {
+        val name = step.name ?: throw IllegalArgumentException("screenshot requires 'name'")
+        val threshold = step.threshold ?: 98.0
+
+        var capture: Bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+            ?: throw AssertionError("Failed to capture screenshot for '$name'")
+
+        // Crop to the element's visible bounds when cropId is set
+        step.cropId?.let { cropId ->
+            val element = waitForElement(cropId, timeout, step.within)
+            val bounds = element.visibleBounds
+            val left = bounds.left.coerceIn(0, capture.width - 1)
+            val top = bounds.top.coerceIn(0, capture.height - 1)
+            val width = bounds.width().coerceIn(1, capture.width - left)
+            val height = bounds.height().coerceIn(1, capture.height - top)
+            capture = Bitmap.createBitmap(capture, left, top, width, height)
+        }
+
+        val dir = File(resolveBaselineDir(), "android")
+        val baselineFile = File(dir, "$name.png")
+
+        if (updateBaselines) {
+            saveBitmap(capture, baselineFile)
+            return
+        }
+
+        if (!baselineFile.exists()) {
+            // Missing baseline: save the capture and pass with a warning
+            saveBitmap(capture, baselineFile)
+            warningHandler?.invoke("baseline created: ${baselineFile.absolutePath}")
+            return
+        }
+
+        val baseline = BitmapFactory.decodeFile(baselineFile.absolutePath)
+            ?: throw AssertionError("Failed to decode baseline image: ${baselineFile.absolutePath}")
+
+        if (baseline.width != capture.width || baseline.height != capture.height) {
+            throw AssertionError(
+                "Screenshot '$name' size mismatch: baseline is ${baseline.width}x${baseline.height} " +
+                    "but capture is ${capture.width}x${capture.height}"
+            )
+        }
+
+        val similarity = computeSimilarity(baseline, capture)
+        if (similarity < threshold) {
+            throw AssertionError(
+                "Screenshot '$name' similarity ${"%.2f".format(similarity)}% is below threshold ${threshold}%"
+            )
+        }
+    }
+
+    /**
+     * Similarity = 100 x (matching pixels / total pixels); a pixel matches
+     * when each RGBA channel differs by <= 16/255.
+     */
+    private fun computeSimilarity(baseline: Bitmap, capture: Bitmap): Double {
+        val width = baseline.width
+        val height = baseline.height
+        val total = width * height
+        if (total == 0) return 100.0
+
+        val baselinePixels = IntArray(total)
+        val capturePixels = IntArray(total)
+        baseline.getPixels(baselinePixels, 0, width, 0, 0, width, height)
+        capture.getPixels(capturePixels, 0, width, 0, 0, width, height)
+
+        var matching = 0
+        for (i in 0 until total) {
+            val a = baselinePixels[i]
+            val b = capturePixels[i]
+            val alphaDiff = kotlin.math.abs(((a shr 24) and 0xFF) - ((b shr 24) and 0xFF))
+            val redDiff = kotlin.math.abs(((a shr 16) and 0xFF) - ((b shr 16) and 0xFF))
+            val greenDiff = kotlin.math.abs(((a shr 8) and 0xFF) - ((b shr 8) and 0xFF))
+            val blueDiff = kotlin.math.abs((a and 0xFF) - (b and 0xFF))
+            if (alphaDiff <= 16 && redDiff <= 16 && greenDiff <= 16 && blueDiff <= 16) {
+                matching++
+            }
+        }
+
+        return 100.0 * matching / total
+    }
+
+    private fun resolveBaselineDir(): File {
+        baselineDir?.let { return it }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        return context.getExternalFilesDir(null) ?: context.filesDir
+    }
+
+    private fun saveBitmap(bitmap: Bitmap, file: File) {
+        file.parentFile?.mkdirs()
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+    }
+
+    // Helper functions
+
+    /**
+     * Poll a check every 100ms until it passes or the timeout elapses.
+     * The last failure (with the current actual value) is rethrown at timeout.
+     *
+     * 🚨 `StaleObjectException` IS RETRIED HERE, AND IT IS NAMED, NOT INHERITED.
+     * `assertText` polls because a state-driven UI updates bound text
+     * asynchronously; that same recomposition replaces the a11y node behind a
+     * handle this loop's `check` is holding, and uiautomator then raises
+     * `StaleObjectException` — which `javap` reports as
+     * `extends java.lang.RuntimeException`, NOT an `AssertionError`. Until
+     * 2026-09-09 the loop caught only `AssertionError`, so the one failure the
+     * poll exists to absorb was the one failure that escaped it: the poll was
+     * abandoned on first occurrence and the case fell back to whole-case retry
+     * (the run survives — the per-case catch is `Throwable` — so what is lost
+     * is the 100ms granularity, and the assertion's own message).
+     *
+     * ⚠️ Caught by NAME rather than by `RuntimeException`. The parent would
+     * absorb unrelated runtime failures into this loop and re-report them as a
+     * timeout, which hides defects instead of surviving a race. Adding a new
+     * transient type here is a deliberate act, not a side effect of widening.
+     *
+     * ⚠️ The throw at timeout is `last`, the exception that ACTUALLY ended the
+     * final attempt. Rethrowing a manufactured `AssertionError` would point the
+     * reader at a value comparison that never happened. When the reason changed
+     * while waiting, [ReasonHistory.failure] wraps it: `last`'s own message
+     * first, then every reason with its span, and `last` as the cause.
+     */
+    private fun pollUntil(timeout: Long, searchedId: String?, check: () -> Unit) {
+        val deadline = Deadline.of(timeout)
+        val history = ReasonHistory()
+        var lookedAtMs = 0L
+        var debugLogged = false
+
+        // One body, two catch clauses: the retry policy lives in a single place
+        // so a future transient type cannot be handled one way here and another
+        // way three lines down.
+        fun retryOrRethrow(last: Throwable) {
+            history.observe(ReasonHistory.reasonOf(last), lookedAtMs)
+            // The attempt that threw was the last look: the deadline is judged
+            // after a look, never after a sleep (Deadline.poll's order).
+            if (deadline.expired()) throw history.failure(last, deadline.elapsedMs)
+
+            // Debug: dump hierarchy once after 2 seconds of element polling
+            if (searchedId != null && !debugLogged && deadline.elapsedMs > 2000) {
+                debugLogged = true
+                dumpHierarchy(searchedId)
+            }
+
+            Thread.sleep(100)
+            // The next attempt re-finds; it must not read the node this one
+            // read (NodeCache: Compose sends no event that would refresh it).
+            NodeCache.clear()
+        }
+
+        while (true) {
+            lookedAtMs = deadline.elapsedMs
+            try {
+                check()
+                return
+            } catch (e: AssertionError) {
+                retryOrRethrow(e)
+            } catch (e: StaleObjectException) {
+                retryOrRethrow(e)
+            }
+        }
+    }
+
+    private fun dumpHierarchy(id: String) {
+        println("[AssertionExecutor] Still polling for '$id' by resource-id - dumping UI hierarchy...")
+        try {
+            val file = java.io.File.createTempFile("ui_dump", ".xml")
+            device.dumpWindowHierarchy(file)
+            val content = file.readText()
+            println("[AssertionExecutor] UI Hierarchy (first 5000 chars):")
+            println(content.take(5000))
+            file.delete()
+        } catch (e: Exception) {
+            println("[AssertionExecutor] Failed to dump hierarchy: ${e.message}")
+        }
+    }
+
+    /**
+     * Find element by id using resource-id (testTag), inside [within] when
+     * the step has one (ElementLookup).
+     */
+    private fun findElement(id: String, within: String? = null): UiObject2? = lookup.find(id, within)
+
+    /**
+     * Wait for element to appear by id
+     */
+    private fun waitForElement(id: String, timeout: Long, within: String? = null): UiObject2 {
+        val deadline = Deadline.of(timeout)
+        // Find by resource-id (Compose testTag with testTagsAsResourceId = true)
+        return deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) { lookup.find(id, within) }
+            ?: throw AssertionError(
+                lookup.zeroSize(id, within).firstOrNull()?.let { hit ->
+                    "Element ${named(id, within)} exists, but its drawn box is ${hit.width}x${hit.height}: there is nothing to crop to. " +
+                        "Waited ${timeout}ms."
+                } ?: notFound(id, within, timeout, "${timeout}ms", deadline)
+            )
+    }
+}

@@ -1,0 +1,780 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.kotlinjsonui.core.jsonUIFontSize
+import com.kotlinjsonui.core.jsonUITintOr
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import com.kotlinjsonui.dynamic.R
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.font.FontWeight
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.RadioAttributes
+import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
+import androidx.compose.ui.platform.LocalContext
+
+/**
+ * Dynamic Radio Component Converter
+ * Converts JSON to RadioButton/RadioGroup composable at runtime.
+ * Reference: radio_component.rb in kjui_tools.
+ *
+ * Three modes:
+ * 1. Radio group with items array (highest priority)
+ * 2. Individual radio item (has group or text without items/options)
+ * 3. Radio group with options (static array or @{binding})
+ *
+ * Attribute access goes through the generated [RadioAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; the node itself is only passed wholesale to the shared
+ * ModifierBuilder pipeline. `items`, `selectedValue` and `onValueChange`
+ * WERE legacy runtime extras and are declared as of plan 51-E, so they go
+ * through the typed rows now; `options`, `selectedColor`,
+ * `unselectedColor` and `textColor` are still undeclared and stay on
+ * [TypedAttrs.undeclared].
+ *
+ * Supported JSON attributes:
+ * - bind: @{variable} for selected value binding
+ * - options: Array of options or @{variable} for dynamic options
+ * - items: Array of items for radio group
+ * - selectedValue: @{variable} for selected value in items mode
+ * - onValueChange: @{handler} for change callback
+ * - selectedColor/unselectedColor: Colors for RadioButtonDefaults.colors
+ * - icon/selectedIcon: Custom icon names
+ * - group: Group identifier for individual radio item
+ * - text: Label text
+ * - fontColor/textColor: Label text color
+ * - Modifiers: testTag, margins, alpha, padding, weight
+ */
+class DynamicRadioComponent {
+    companion object {
+        /** Radio-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "group", "text", "label", "icon", "selectedIcon", "fontColor", "tintColor",
+            "selectedValue", "value", "font", "fontSize", "checkedColor", "uncheckedColor", "iconColor"
+        )
+
+        @Composable
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                RadioAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Radio", json,
+                declared = RadioAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = LocalContext.current
+            )
+
+            when {
+                // Handle radio group with items (highest priority).
+                // `items` is DECLARED on Radio since plan 51-E, so the routing
+                // asks the typed row rather than the raw element.
+                a.items != null ->
+                    createRadioGroupWithItems(json, a, data)
+                // Handle individual radio item —
+                // 'options' is an undeclared legacy runtime extra
+                rendersAsItem(a, hasOptions = TypedAttrs.undeclared(json, "options") != null) ->
+                    createRadioItem(json, a, data)
+                // Handle radio group with options
+                else -> createRadioGroup(json, a, data)
+            }
+        }
+
+        // ── Item-mode decisions (pure; pinned by DynamicRadioItemModeTest) ──
+
+        /**
+         * Whether the node renders as a single radio row rather than a group.
+         *
+         * `label` is the cross-platform spelling of the row text and routes
+         * here exactly like `text` — the kjui codegen has read both since it
+         * was written (`radio_component.rb:19`, `text || label` at :182). The
+         * dynamic path read only `text`, so a label-only Radio fell through to
+         * the options branch and rendered an empty Column (34: `Radio/label`
+         * pixel-identical to its control on android).
+         */
+        /**
+         * `Radio.spacing` — "Space between icon and text", declared
+         * `["number","binding"]` and hard-coded at 8.dp here, so no declared
+         * value could reach the output. C landed the codegen half
+         * (`radio_component.rb:533` `radio_spacing_dp`, default 8) and run 4
+         * measured the gap at distance 12 once D raised the fixture from 8 to
+         * 16 — at 8 the two paths agreed by sharing a default, which is how a
+         * dropped attribute hides: BOTH sides silently right for one value.
+         *
+         * The vertical gap between a group's own label and its items is a
+         * different distance and stays where it is; the codegen does not spell
+         * it either.
+         */
+        internal fun spacingDp(a: RadioAttributes, data: Map<String, Any>): Float =
+            TypedAttrs.float(a.spacing, data) ?: 8f
+
+        /**
+         * A Radio with no `items` (routed first) and no `options` is one radio
+         * row, with or without text: with nothing to list, the options branch
+         * drew an empty Column, 0 high, where web draws the indicator
+         * (jsonui-cli ticket kjui-radio-without-a-label-draws-nothing; the
+         * item row already draws its RadioButton and a label only when there
+         * is text). Same rule as the codegen's radio_component.rb.
+         */
+        internal fun rendersAsItem(a: RadioAttributes, hasOptions: Boolean): Boolean =
+            a.group != null || !hasOptions
+
+        /**
+         * The row's text as WRITTEN — `text || label`, the codegen's order.
+         *
+         * This is the layout spelling, so `@{expr}` comes back verbatim; the
+         * caller resolves it. Keeping the choice-of-row separate from the
+         * resolution is what lets it be pinned on the JVM, where there is no
+         * Context to resolve against.
+         */
+        internal fun itemText(a: RadioAttributes): String =
+            TypedAttrs.rawString(a.text) ?: TypedAttrs.rawString(a.label) ?: ""
+
+        /**
+         * The option's identity within its group: the declared `value`, with
+         * the node id as the fallback (`sjui radio_converter.rb:65` and the
+         * rjui single-radio path read the same order).
+         */
+        internal fun itemValue(a: RadioAttributes, id: String): String =
+            a.value?.toString() ?: id
+
+        /**
+         * The item's id: the declared one, or its position in the layout
+         * ([LayoutPath], stamped by DynamicView) — the codegen's
+         * `radio_<path>` (kjui_tools radio_component.rb). It was
+         * `radio_<the clock>`, a new name on every composition: an id-less
+         * item wrote one name on selection and asked for another when drawn,
+         * so it never read selected.
+         */
+        internal fun itemId(a: RadioAttributes, json: JsonObject): String =
+            a.common.id ?: "radio_${LayoutPath.of(json)}"
+
+        /**
+         * Selected state for a single radio row.
+         *
+         * A declared `selectedValue` names the group's selected option
+         * directly and wins over the group state — a static one selects this
+         * row when it matches its value, a bound one is the two-way channel.
+         * Only the group data drove selection here, so a Radio declaring
+         * selectedValue rendered unselected (34: pixel-identical to its
+         * control on android; rjui was corrected the same way in plan 44
+         * Phase 0, `checked = selectedValue === value`).
+         *
+         * Without `selectedValue` the historical rule stands: the group state
+         * names this row's id, or a declared `checked` (static or bound) seeds
+         * the group while it is still unset.
+         */
+        internal fun itemIsSelected(
+            a: RadioAttributes,
+            id: String,
+            data: Map<String, Any>
+        ): Boolean {
+            val declaredSelection = TypedAttrs.string(a.selectedValue, data)
+            val token = itemValue(a, id)
+            if (declaredSelection != null) return declaredSelection == token
+            val selectedVar = selectedVarName(a.group ?: "default")
+            // The group's selection is compared against this item's IDENTITY —
+            // `value` when declared, the node id otherwise — not against the id
+            // unconditionally (codegen: `token = value || id`).
+            val groupState = (data[selectedVar] as? String) == token
+
+            // `checked` is a SEED, not an override: it says which option STARTS
+            // selected when nothing else has. Both faces of the seed are
+            // declared — `["boolean","binding"]` — and the SSoT is explicit
+            // that the BOUND form "seeds the glyph rather than the state, since
+            // a property initialiser cannot read the data map: it selects only
+            // while the group has made no choice yet". `raw(...) as? Boolean`
+            // hands back the `"@{expr}"` String for that face, so the cast
+            // silently dropped it (Radio/checked__true active on android,
+            // Radio/checked__binding inert).
+            val seedChecked = TypedAttrs.boolean(a.checked, data) == true
+
+            // "Until the group has made a choice" is the whole guard, and it is
+            // the SAME guard whether or not the node names a group: `group`
+            // only picks WHICH key holds the selection, it does not decide
+            // whether a seed exists. Returning groupState unconditionally for a
+            // named group discarded the seed even at first render, where
+            // nothing had chosen yet — Radio/checked__true_with_group drew an
+            // unselected glyph on android while ios and web drew the seed.
+            // Once the group HAS a selection the seed is out of the way, which
+            // is what stops it pinning a radio the user can no longer change.
+            // (49-E's precedence — bound selectedValue > literal selectedValue
+            // > checked — never listed the group state above the seed; the
+            // group is the state the seed initialises, not a rival to it.)
+            return groupState || (seedChecked && data[selectedVar] == null)
+        }
+
+        /**
+         * The group's option list, both declared faces.
+         *
+         * `items` is declared `["array","binding"]` (plan 51-E). It used to be
+         * read through the raw hatch as `json.get("items").asJsonArray`, and
+         * gson throws `IllegalStateException` when that element is a primitive
+         * — so a BOUND `items: "@{options}"` did not degrade to an empty group,
+         * it took the renderer down. The routing test one function up only asks
+         * whether the element is present, so the bound face reached this line.
+         *
+         * Bound lists resolve the same way `parseOptions` already resolves
+         * them: the expression names a key whose value is the list.
+         */
+        @Suppress("UNCHECKED_CAST")
+        internal fun itemsOf(a: RadioAttributes, data: Map<String, Any>): List<String> {
+            TypedAttrs.static(a.items)?.let { return it.map { item -> item?.toString() ?: "" } }
+            val variable = TypedAttrs.binding(a.items) ?: return emptyList()
+            val bound = DataBindingContext.evaluateExpression("@{$variable}", data)
+            return (bound as? List<Any?>)?.map { item -> item?.toString() ?: "" } ?: emptyList()
+        }
+
+        /**
+         * Which option an ITEMS-mode group starts on.
+         *
+         * `selectedValue` is declared on Radio, and the item-mode path reads it
+         * through the typed accessor — but this path reached for it through the
+         * `undeclared` escape hatch and then only asked whether it was a
+         * binding. A literal `selectedValue: "Gamma"` therefore named nothing
+         * and the group rendered with nothing selected
+         * (`Radio/selectedValue__gamma`).
+         *
+         * The two faces do different jobs, exactly as they do on SelectBox: the
+         * bound one is the group's live channel, the literal one is the seed.
+         */
+        internal fun groupInitialSelection(
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ): String {
+            val bindingVariable = extractBindingVariable(TypedAttrs.rawString(a.selectedValue))
+            if (bindingVariable != null) return (data[bindingVariable] as? String) ?: ""
+            return TypedAttrs.static(a.selectedValue) ?: ""
+        }
+
+        /** Group name → the data key holding that group's selection. */
+        internal fun selectedVarName(group: String): String =
+            if (group.lowercase() != "default") {
+                "selected${group.replaceFirstChar { it.uppercase() }}"
+            } else {
+                "selectedRadiogroup"
+            }
+
+        // ── Radio group with options (static array or @{binding}) ──
+
+        @Composable
+        private fun createRadioGroup(
+            json: JsonObject,
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ) {
+            val context = LocalContext.current
+
+            // The group's selection: its bound selectedValue (a lone `bind`
+            // arrives as it, BindFold)
+            val bindingVariable = bindingVariableOf(a)
+
+            // Get selected value from data
+            val currentSelected = if (bindingVariable != null) {
+                (data[bindingVariable] as? String) ?: ""
+            } else ""
+
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var selectedValue by remember(currentSelected, bindingVariable) {
+                mutableStateOf(currentSelected)
+            }
+
+            // Parse options: static array or @{binding}
+            val options = parseOptions(json, data)
+
+            val colors = buttonColors(buttonColorValues(a, json, data, context))
+            val labelStyle = labelStyle(a, json, data, context)
+
+            // `enabled` is the Radio's own controls' parameter — each
+            // RadioButton and the row that selects it: a disabled Radio neither
+            // selects nor calls the declared onClick.
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+            // The declared onClick, called from the selection after it — the
+            // Radio's own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+
+            // Handle value change
+            val viewId = LayoutPath.viewId(json)
+            val onValueChange: (String) -> Unit = { newValue ->
+                selectedValue = newValue
+
+                // Update bound variable
+                if (bindingVariable != null) {
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(bindingVariable to newValue))
+                }
+
+                // Call onValueChange handler if specified
+                // (undeclared legacy runtime extra on Radio)
+                val handler = TypedAttrs.undeclared(json, "onValueChange")?.asString
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                }
+                onClick?.invoke()
+            }
+
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from the selection), and the container carries
+            // the tag while the buttons inside carry `enabled` (WRAPPER).
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
+
+            // The rows and buttons inside read the stop too (stoppedItem).
+            val stopped = ModifierBuilder.stoppedItem(json, data)
+            Column(modifier = modifier) {
+                options.forEach { (value, label) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(stopped)
+                            .clickable(enabled = isEnabled) { onValueChange(value) }
+                    ) {
+                        RadioButton(
+                            modifier = stopped,
+                            selected = selectedValue == value,
+                            onClick = { onValueChange(value) },
+                            enabled = isEnabled,
+                            colors = colors
+                        )
+                        Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
+                        // not given a colour before: the theme's content colour
+                        RadioLabel(text = label, style = labelStyle, fallbackColor = Color.Unspecified)
+                    }
+                }
+            }
+        }
+
+        // ── Individual radio item (group/text mode) ──
+
+        @Composable
+        private fun createRadioItem(
+            json: JsonObject,
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ) {
+            val context = LocalContext.current
+            val id = itemId(a, json)
+            // Resolve the binding / string-resource name — the raw spelling
+            // used to reach the label unchanged, so a bound row drew the
+            // characters `@{expr}` on screen (smoke run: Radio/text__binding
+            // rendered "@{boundText}").
+            val text = ResourceResolver.resolveTextValue(itemText(a), data, context)
+            val radioValue = itemValue(a, id)
+            val selectedVar = selectedVarName(a.group ?: "default")
+            val isSelected = itemIsSelected(a, id, data)
+            // `enabled` is the Radio's own controls' parameter — each
+            // RadioButton and the row that selects it: a disabled Radio neither
+            // selects nor calls the declared onClick.
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+            // The declared onClick, called from the selection after it — the
+            // Radio's own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from the selection), and the container carries
+            // the tag while the buttons inside carry `enabled` (WRAPPER).
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = modifier
+            ) {
+                val icon = a.icon
+                val selectedIcon = a.selectedIcon
+
+                // Update function for selection. A bound `selectedValue` is
+                // the declared two-way channel, so the tap writes this row's
+                // value back through it as well as through the group state.
+                val selectionBinding =
+                    extractBindingVariable(TypedAttrs.rawString(a.selectedValue))
+                // onValueChange, with this radio's value, after the selection
+                // is written and before onClick — as the items form passes its
+                // item, and as the iOS faces call it (jsonui-cli f96b340e,
+                // SwiftJsonUI 7ea1e4a). A group radio wrote the selection and
+                // called only onClick (jsonui-cli ticket
+                // kjui-radio-group-form-never-calls-onvaluechange).
+                val changeHandler = (TypedAttrs.raw(a.onValueChange) as? String)
+                    ?.takeIf { ModifierBuilder.isBinding(it) }
+                val onSelect: () -> Unit = {
+                    val updates = mutableMapOf<String, Any>(selectedVar to id)
+                    if (selectionBinding != null) updates[selectionBinding] = radioValue
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)?.invoke(updates)
+                    if (changeHandler != null) ModifierBuilder.resolveEventHandler(changeHandler, data, id, radioValue)
+                    onClick?.invoke()
+                }
+
+                // iconSize sizes the GLYPH: Material draws its radio glyph at
+                // a fixed 20dp, so a bare .size(N) just clips it. Scaling by
+                // N/20 inside the N-dp box draws it at the declared size
+                // (same emission as the kjui codegen icon_appearance_args).
+                // The button inside reads the stop too (stoppedItem).
+                val stopped = ModifierBuilder.stoppedItem(json, data)
+                val glyphModifier = (a.iconSize?.let {
+                    Modifier.size(it.dp).scale((it / 20.0).toFloat())
+                } ?: Modifier).then(stopped)
+
+                when {
+                    // Standard radio button (circle icons or no icons)
+                    (icon == "circle" || icon == null) &&
+                            (selectedIcon == "checkmark.circle.fill" || selectedIcon == null) -> {
+                        // Declared color skin — this branch (the one every
+                        // icon-less fixture takes) never received it (33
+                        // cross-effect round-2: android still default).
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = onSelect,
+                            enabled = isEnabled,
+                            modifier = glyphModifier,
+                            colors = buttonColors(buttonColorValues(a, json, data, context))
+                        )
+                    }
+                    // Square checkbox appearance
+                    icon == "square" &&
+                            (selectedIcon == "checkmark.square.fill" || selectedIcon == null) -> {
+                        Checkbox(
+                            checked = isSelected,
+                            onCheckedChange = { onSelect() },
+                            enabled = isEnabled,
+                            modifier = stopped
+                        )
+                    }
+                    // Custom icons
+                    icon != null || selectedIcon != null -> {
+                        val iconResId = mapIconResId(icon ?: "star")
+                        val selectedIconResId = mapIconResId(selectedIcon ?: "star.fill")
+
+                        IconButton(onClick = onSelect, enabled = isEnabled, modifier = stopped) {
+                            Icon(
+                                painter = painterResource(if (isSelected) selectedIconResId else iconResId),
+                                contentDescription = text,
+                                tint = if (isSelected) {
+                                    // 'selectedColor' is an undeclared legacy runtime extra
+                                    ColorParser.parseColorStringWithBinding(
+                                        TypedAttrs.undeclared(json, "selectedColor")?.asString,
+                                        data, context
+                                    )
+                                        ?: ColorParser.parseColorStringWithBinding(
+                                            TypedAttrs.rawString(a.common.tintColor), data, context
+                                        )
+                                        // none of its own: the tint a container handed down
+                                        ?: jsonUITintOr(MaterialTheme.colorScheme.primary)
+                                } else {
+                                    Color.Gray
+                                }
+                            )
+                        }
+                    }
+                    // Default radio button
+                    else -> {
+                        // The default-glyph path dropped the color skin
+                        // entirely (33 cross-effect) — the declared
+                        // checked/unchecked/icon colors.
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = onSelect,
+                            enabled = isEnabled,
+                            modifier = glyphModifier,
+                            colors = buttonColors(buttonColorValues(a, json, data, context))
+                        )
+                    }
+                }
+
+                // Add label text
+                if (text.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
+                    RadioLabel(text = text, style = labelStyle(a, json, data, context))
+                }
+            }
+        }
+
+        // ── Radio group with items array ──
+
+        @Composable
+        private fun createRadioGroupWithItems(
+            json: JsonObject,
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ) {
+            val context = LocalContext.current
+            // 'items' is an undeclared legacy runtime extra on Radio
+            val items = itemsOf(a, data)
+
+            // `selectedValue` IS declared on Radio — the item-mode path reads it
+            // through the typed accessor — so reaching for it through the
+            // `undeclared` escape hatch here was the bug, not a legacy quirk:
+            // the hatch returns the raw element, and only its BOUND face was
+            // ever consulted. A literal `selectedValue: "Gamma"` therefore
+            // named nothing and the group rendered with no option selected
+            // (Radio/selectedValue__gamma, redistributed by E2).
+            //
+            // Same two-face split as SelectBox's seed: the binding is the
+            // channel, the literal is the seed.
+            val bindingVariable = extractBindingVariable(TypedAttrs.rawString(a.selectedValue))
+            val currentSelected = groupInitialSelection(a, data)
+
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var selectedValue by remember(currentSelected, bindingVariable) {
+                mutableStateOf(currentSelected)
+            }
+
+            // `enabled` is the Radio's own controls' parameter — each
+            // RadioButton and the row that selects it: a disabled Radio neither
+            // selects nor calls the declared onClick.
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+            // The declared onClick, called from the selection after it — the
+            // Radio's own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+
+            // The declared onValueChange, with the tapped item, after the
+            // selection is written and before onClick — as kjui codegen and
+            // the iOS faces call it. This path wrote the selection and called
+            // only onClick; the handler was read on the options path alone
+            // (jsonui-cli ticket kjui-dynamic-radio-items-never-calls-onvaluechange).
+            val changeHandler = (TypedAttrs.raw(a.onValueChange) as? String)
+                ?.takeIf { ModifierBuilder.isBinding(it) }
+            val itemsViewId = LayoutPath.viewId(json)
+
+            // Handle value change
+            val onValueChange: (String) -> Unit = { newValue ->
+                selectedValue = newValue
+                if (bindingVariable != null) {
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(bindingVariable to newValue))
+                }
+                if (changeHandler != null) ModifierBuilder.resolveEventHandler(changeHandler, data, itemsViewId, newValue)
+                onClick?.invoke()
+            }
+
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from the selection), and the container carries
+            // the tag while the buttons inside carry `enabled` (WRAPPER).
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
+
+            val labelStyle = labelStyle(a, json, data, context)
+            val colors = buttonColors(buttonColorValues(a, json, data, context))
+
+            Column(modifier = modifier) {
+                // Add label if present
+                TypedAttrs.rawString(a.text)?.let {
+                    val label = ResourceResolver.resolveTextValue(it, data, context)
+                    RadioLabel(text = label, style = labelStyle)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                // Generate radio items. The rows and buttons read the stop
+                // too (stoppedItem).
+                val stopped = ModifierBuilder.stoppedItem(json, data)
+                items.forEach { item ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(stopped)
+                            .clickable(enabled = isEnabled) { onValueChange(item) }
+                    ) {
+                        RadioButton(
+                            modifier = stopped,
+                            selected = selectedValue == item,
+                            onClick = { onValueChange(item) },
+                            enabled = isEnabled,
+                            colors = colors
+                        )
+                        Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
+                        RadioLabel(text = item, style = labelStyle)
+                    }
+                }
+            }
+        }
+
+        // ── Helpers ──
+
+        /**
+         * What every label a Radio draws is drawn with — the item's, the
+         * group's and each option's: the declared font (weight spelling),
+         * fontSize and fontColor (`textColor` is the undeclared legacy
+         * spelling of the colour, read after it). The items group drew no
+         * fontSize and the options group neither fontSize nor fontColor.
+         */
+        internal data class LabelStyle(
+            val color: Color?, val weight: FontWeight?, val size: Float?,
+            val fontScaling: Boolean? = null, val maxFontScale: Float? = null,
+        )
+
+        // `font` is declared `["string","binding"]` and `rawString` returns
+        // `"@{expr}"` verbatim, so a local table could only match the static
+        // face (Radio/font__binding drew the default weight): resolve, then
+        // the shared table.
+        internal fun labelStyle(
+            a: RadioAttributes,
+            json: JsonObject,
+            data: Map<String, Any>,
+            context: android.content.Context?
+        ): LabelStyle = LabelStyle(
+            color = ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.fontColor), data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.undeclared(json, "textColor")?.asString, data, context
+                ),
+            weight = ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data)),
+            size = TypedAttrs.float(a.fontSize, data),
+            fontScaling = json.fontScalingAttr(),
+            maxFontScale = json.maxFontScaleAttr()
+        )
+
+        /** A Radio's label. `fallbackColor` is the path's colour when none is declared. */
+        @Composable
+        private fun RadioLabel(text: String, style: LabelStyle, fallbackColor: Color = Color.Black) {
+            // Through the app's fontProvider whatever the label declares (P1); a null slot draws as before.
+            val font = ResourceResolver.providerFont(
+                weight = style.weight ?: androidx.compose.material3.LocalTextStyle.current.fontWeight,
+                size = style.size?.sp,
+            )
+            Text(
+                text = text,
+                color = style.color ?: fallbackColor,
+                fontWeight = font.weight ?: style.weight,
+                fontFamily = font.family,
+                fontStyle = font.style,
+                fontSize = jsonUIFontSize(font.size ?: style.size?.sp ?: TextUnit.Unspecified, style.fontScaling, style.maxFontScale),
+                letterSpacing = com.kotlinjsonui.core.jsonUILetterSpacing(style.fontScaling, style.maxFontScale),
+                lineHeight = com.kotlinjsonui.core.jsonUILineHeight(
+                    jsonUIFontSize(font.size ?: style.size?.sp ?: TextUnit.Unspecified, style.fontScaling, style.maxFontScale),
+                    style.fontScaling, style.maxFontScale
+                )
+            )
+        }
+
+        /**
+         * A Radio's button colours, the same on every path: the selected
+         * button `checkedColor`, else the legacy `selectedColor`, else
+         * `tintColor` — the control's accent (4f ruling, 2026-09-26: tintColor
+         * is the accent of what can be operated, not a text colour; kjui's
+         * codegen reads `selectedColor || tintColor` the same way); the others
+         * `uncheckedColor`, else `iconColor`, else the legacy `unselectedColor`.
+         * The items group passed no colours at all.
+         */
+        internal fun buttonColorValues(
+            a: RadioAttributes,
+            json: JsonObject,
+            data: Map<String, Any>,
+            context: android.content.Context?
+        ): Pair<Color?, Color?> = Pair(
+            ColorParser.parseColorStringWithBinding(a.checkedColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.undeclared(json, "selectedColor")?.asString, data, context
+                )
+                ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.common.tintColor), data, context),
+            ColorParser.parseColorStringWithBinding(a.uncheckedColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(a.iconColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.undeclared(json, "unselectedColor")?.asString, data, context
+                )
+        )
+
+        @Composable
+        private fun buttonColors(values: Pair<Color?, Color?>): RadioButtonColors =
+            RadioButtonDefaults.colors(
+                // none of its own: the tint a container handed down
+                selectedColor = values.first ?: jsonUITintOr(RadioButtonDefaults.colors().selectedColor),
+                unselectedColor = values.second ?: RadioButtonDefaults.colors().unselectedColor
+            )
+
+        private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<Pair<String, String>> {
+            // 'options' is an undeclared legacy runtime extra on Radio
+            val optionsElement = TypedAttrs.undeclared(json, "options") ?: return emptyList()
+
+            return when {
+                optionsElement.isJsonArray -> {
+                    optionsElement.asJsonArray.map { element ->
+                        when {
+                            element.isJsonObject -> {
+                                val obj = element.asJsonObject
+                                Pair(
+                                    obj.get("value")?.asString ?: "",
+                                    obj.get("label")?.asString ?: ""
+                                )
+                            }
+                            element.isJsonPrimitive -> {
+                                val value = element.asString
+                                Pair(value, value)
+                            }
+                            else -> Pair("", "")
+                        }
+                    }
+                }
+                optionsElement.isJsonPrimitive && ModifierBuilder.isBinding(optionsElement.asString) -> {
+                    val variable = ModifierBuilder.extractBindingProperty(optionsElement.asString)
+                    @Suppress("UNCHECKED_CAST")
+                    val dynamicOptions = variable?.let { data[it] as? List<String> } ?: emptyList()
+                    dynamicOptions.map { Pair(it, it) }
+                }
+                else -> emptyList()
+            }
+        }
+
+        /**
+         * The data key the options group is bound to: a bound `selectedValue`
+         * (SSoT common.bind primaryValue, Radio [selectedValue]; a lone `bind`
+         * arrives as it, BindFold). It read `bind`, where the items group and
+         * the single Radio read selectedValue.
+         */
+        internal fun bindingVariableOf(a: RadioAttributes): String? =
+            TypedAttrs.binding(a.selectedValue)
+
+        private fun extractBindingVariable(value: String?): String? {
+            if (value == null) return null
+            return ModifierBuilder.extractBindingProperty(value)
+        }
+
+        private fun mapIconResId(iconName: String): Int {
+            return when (iconName) {
+                "circle" -> R.drawable.ic_panorama_fish_eye
+                "checkmark.circle.fill" -> R.drawable.ic_check_circle_filled
+                "star" -> R.drawable.ic_star_outlined
+                "star.fill" -> R.drawable.ic_star_filled
+                "heart" -> R.drawable.ic_favorite_border
+                "heart.fill" -> R.drawable.ic_favorite_filled
+                "square" -> R.drawable.ic_check_box_outline_blank
+                "checkmark.square.fill" -> R.drawable.ic_check_box_filled
+                else -> R.drawable.ic_star_outlined
+            }
+        }
+    }
+}

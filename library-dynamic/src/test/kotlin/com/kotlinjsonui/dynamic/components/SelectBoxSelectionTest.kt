@@ -1,0 +1,238 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * What a closed SelectBox shows, and which data key it is bound to.
+ *
+ * `selectedValue` is declared two-way but was not a binding candidate, so a
+ * bound one fell through to the literal seed — where the raw read returns the
+ * LAYOUT spelling and the closed box drew the characters `@{boundSelectedValue}`
+ * on screen. That is the bound-literal-leak family plan 41 closed on the
+ * codegen side and `2cf42df` closed for the Radio and CheckBox labels; the
+ * SelectBox was the one left.
+ */
+class SelectBoxSelectionTest {
+
+    private fun attrs(json: String): SelectBoxAttributes =
+        SelectBoxAttributes.parse(TypedAttrs.toAttrMap(Gson().fromJson(json, JsonObject::class.java)))
+
+    // ── the leak ─────────────────────────────────────────────────────
+
+    @Test
+    fun aBoundSelectedValueIsNeverPrintedAsItsExpression() {
+        // The `SelectBox/selectedValue__binding` fixture shape.
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedValue":"@{boundSelectedValue}"}""")
+        val shown = DynamicSelectBoxComponent.initialSelection(a, emptyMap())
+        assertFalse("the binding expression reached the screen", shown.contains("@{"))
+        assertEquals("", shown)
+    }
+
+    @Test
+    fun aBoundSelectedValueResolvesThroughTheDataMap() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedValue":"@{boundSelectedValue}"}""")
+        assertEquals(
+            "Two",
+            DynamicSelectBoxComponent.initialSelection(a, mapOf("boundSelectedValue" to "Two"))
+        )
+    }
+
+    @Test
+    fun aBoundSelectedValueIsTheDataKeyWrittenBackTo() {
+        // Two-way: the same key the change handler updates. Being a binding
+        // variable is what makes the write-back reach the ViewModel.
+        val a = attrs("""{"type":"SelectBox","items":["One"],"selectedValue":"@{boundSelectedValue}"}""")
+        assertEquals("boundSelectedValue", DynamicSelectBoxComponent.bindingVariableOf(a))
+    }
+
+    // ── the seed still works ─────────────────────────────────────────
+
+    @Test
+    fun aLiteralSelectedValueStillSeedsTheClosedBox() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedValue":"Two"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+    }
+
+    @Test
+    fun aLiteralSelectedItemSeedsTheClosedBox() {
+        // The `SelectBox/selectedItem__static` fixture shape. `selectedItem` is
+        // declared `["string","binding"]`, but only its BOUND face was read
+        // (as the data key); the static face reached no seed, so the closed box
+        // drew empty on android where ios showed the selection.
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedItem":"Two"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+    }
+
+    @Test
+    fun aLiteralSelectedItemOutranksALiteralSelectedValue() {
+        // Same order as the bound faces (selectedItem > selectedValue) and the
+        // same order the kjui codegen seeds in (selectbox_component.rb:54-60).
+        val a = attrs(
+            """{"type":"SelectBox","items":["One","Two"],"selectedItem":"Two","selectedValue":"One"}"""
+        )
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+    }
+
+    @Test
+    fun selectedIndexStillSeedsTheClosedBox() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":1}""")
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+    }
+
+    @Test
+    fun aBoundSelectedIndexResolvesThroughTheDataMap() {
+        // `selectedIndex` is declared `["number","binding"]`, and the seed read
+        // it with `raw(...) as? Number` — a cast the bound face can never
+        // satisfy, since a binding arrives as the `"@{expr}"` String. No
+        // `selectedIndex__binding` fixture exists, so only the read-discipline
+        // scan could find it.
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, mapOf("idx" to 1)))
+        assertEquals("One", DynamicSelectBoxComponent.initialSelection(a, mapOf("idx" to 0)))
+    }
+
+    @Test
+    fun nothingDeclaredShowsNothing() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"]}""")
+        assertEquals("", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+        assertNull(DynamicSelectBoxComponent.bindingVariableOf(a))
+    }
+
+    // ── precedence ───────────────────────────────────────────────────
+
+    @Test
+    fun selectedItemOutranksSelectedValueAsTheBoundKey() {
+        val a = attrs(
+            """{"type":"SelectBox","items":["One"],"selectedItem":"@{chosen}","selectedValue":"@{other}"}"""
+        )
+        assertEquals("chosen", DynamicSelectBoxComponent.bindingVariableOf(a))
+    }
+
+    @Test
+    fun theBoundValueOutranksTheLiteralSeed() {
+        val a = attrs(
+            """{"type":"SelectBox","items":["One","Two"],"selectedItem":"@{chosen}","selectedIndex":1}"""
+        )
+        assertEquals(
+            "One",
+            DynamicSelectBoxComponent.initialSelection(a, mapOf("chosen" to "One"))
+        )
+    }
+
+    @Test
+    fun anUnresolvedBoundValueFallsBackToTheSeed() {
+        // The data map does not carry the key yet; the seed is what the box
+        // starts with, not an empty row.
+        val a = attrs(
+            """{"type":"SelectBox","items":["One","Two"],"selectedItem":"@{chosen}","selectedIndex":1}"""
+        )
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+    }
+
+    // ── the same family, found by counting ───────────────────────────
+
+    @Test
+    fun boundDateBoundsResolveInsteadOfReachingThePickerAsText() {
+        // Declared binding-supported, and handed to the picker raw — so a
+        // bound bound arrived as `@{expr}` and constrained nothing. Turned up
+        // by counting every raw read, not by stopping at the reported one.
+        val a = attrs(
+            """{"type":"SelectBox","items":["One"],"selectItemType":"Date",
+                "minimumDate":"@{from}","maximumDate":"@{to}"}"""
+        )
+        assertEquals("2026-01-01", TypedAttrs.string(a.minimumDate, mapOf("from" to "2026-01-01")))
+        assertEquals("2026-12-31", TypedAttrs.string(a.maximumDate, mapOf("to" to "2026-12-31")))
+        assertNull("an unresolved bound date must not become its expression",
+            TypedAttrs.string(a.minimumDate, emptyMap()))
+    }
+
+    @Test
+    fun staticDateBoundsAreUnchanged() {
+        val a = attrs(
+            """{"type":"SelectBox","items":["One"],"selectItemType":"Date",
+                "minimumDate":"2026-01-01","maximumDate":"2026-12-31"}"""
+        )
+        assertEquals("2026-01-01", TypedAttrs.string(a.minimumDate, emptyMap()))
+        assertEquals("2026-12-31", TypedAttrs.string(a.maximumDate, emptyMap()))
+    }
+
+    // ── selectedIndex as the bound key ───────────────────────────────
+    //
+    // A bound selectedIndex was read for the seed but was not a binding
+    // candidate: nothing was written back, and its onValueChange handler got
+    // the item String where the kjui codegen and SwiftJsonUI hand it the Int
+    // index — so an `(Int) -> Unit` handler threw inside resolveEventHandler's
+    // catch and the pick was silently lost
+    // (jui-selectbox-onvaluechange-argument-differs-between-sjui-and-kjui).
+
+    @Test
+    fun aBoundSelectedIndexIsTheDataKeyWrittenBackTo() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}"}""")
+        assertEquals("idx", DynamicSelectBoxComponent.bindingVariableOf(a))
+        assertTrue(DynamicSelectBoxComponent.isIndexBinding(a))
+    }
+
+    @Test
+    fun anItemBindingOutranksABoundSelectedIndex() {
+        val a = attrs(
+            """{"type":"SelectBox","items":["One","Two"],"selectedItem":"@{chosen}","selectedIndex":"@{idx}"}"""
+        )
+        assertEquals("chosen", DynamicSelectBoxComponent.bindingVariableOf(a))
+        assertFalse(DynamicSelectBoxComponent.isIndexBinding(a))
+    }
+
+    @Test
+    fun aBoundSelectedIndexOutranksBind() {
+        // DynamicView folds bind before the box reads the node (BindFold);
+        // unfolded, the box does not read bind at all
+        val n = com.google.gson.JsonParser.parseString("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}","bind":"@{b}"}""").asJsonObject
+        val a = SelectBoxAttributes.parse(TypedAttrs.toAttrMap(com.kotlinjsonui.dynamic.BindFold.fold(n, "SelectBox")))
+        assertEquals("idx", DynamicSelectBoxComponent.bindingVariableOf(a))
+        assertEquals("idx", DynamicSelectBoxComponent.bindingVariableOf(attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}","bind":"@{b}"}""")))
+    }
+
+    @Test
+    fun anIndexBindingWritesAndHandsOverTheIndexNotTheItem() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedIndex":"@{idx}"}""")
+        val payload = DynamicSelectBoxComponent.selectionPayload(a, listOf("One", "Two"), "Two")
+        assertEquals(1, payload)
+        assertTrue(payload is Int)
+    }
+
+    @Test
+    fun anItemBindingWritesAndHandsOverTheItem() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedItem":"@{chosen}"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.selectionPayload(a, listOf("One", "Two"), "Two"))
+    }
+
+    @Test
+    fun aBoundSelectedIndexShowsTheItemItNamesNeverItsNumber() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedIndex":"@{idx}"}""")
+        val options = listOf("One", "Two")
+        assertEquals("Two", DynamicSelectBoxComponent.boundSelection(a, mapOf("idx" to 1), options))
+        assertEquals("One", DynamicSelectBoxComponent.boundSelection(a, mapOf("idx" to 0), options))
+        assertNull(DynamicSelectBoxComponent.boundSelection(a, mapOf("idx" to 7), options))
+        // the seed path agrees: a bound index never surfaces as "1"
+        assertEquals("", DynamicSelectBoxComponent.initialSelection(a, mapOf("idx" to 1)))
+    }
+
+    @Test
+    fun anItemBindingShowsTheBoundString() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedItem":"@{chosen}"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.boundSelection(a, mapOf("chosen" to "Two"), listOf("One", "Two")))
+    }
+
+    @Test
+    fun noBindingHasNoBoundSelection() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":1}""")
+        assertNull(DynamicSelectBoxComponent.boundSelection(a, emptyMap(), listOf("One", "Two")))
+    }
+}

@@ -1,0 +1,257 @@
+import java.security.MessageDigest
+
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.plugin.compose")
+    // Needed by the vendored jsonui-test-runner driver models (@Serializable)
+    id("org.jetbrains.kotlin.plugin.serialization")
+}
+
+// The generated codegen host, if any, must be the one the generator as it is now writes: it records its own sha256 in
+// src/codegen/kotlin/.generator-sha256. A folder an older script wrote (or one with no stamp) stops this module's build
+// (preBuild: the libraries' own tasks are not held up by it): it was used silently, and compiled against code that had
+// moved on (ticket 2026-10-21-kjui-conformance-host-does-not-compile). Falling back to src/fallback instead would turn
+// a codegen run into a dynamic one without a word.
+val codegenKotlin = file("src/codegen/kotlin")
+val codegenGenerator = file("scripts/generate_codegen_host.rb")
+fun staleCodegenHost(): String? {
+    if (!codegenKotlin.exists()) return null
+    val want = MessageDigest.getInstance("SHA-256").digest(codegenGenerator.readBytes())
+        .joinToString("") { "%02x".format(it) }
+    val stamp = codegenKotlin.resolve(".generator-sha256")
+    val have = if (stamp.isFile) stamp.readText().trim() else ""
+    if (have == want) return null
+    return "conformance-host/src/codegen was written by " +
+        (if (have.isEmpty()) "a generator that did not stamp it" else "another version of the generator") +
+        " (stamp ${have.ifEmpty { "none" }}, the generator now ${want.take(12)}…). Run " +
+        "conformance-host/scripts/generate_codegen_host.rb again, or delete conformance-host/src/codegen to build the " +
+        "dynamic host."
+}
+tasks.matching { it.name == "preBuild" }.configureEach {
+    doFirst { staleCodegenHost()?.let { throw GradleException(it) } }
+}
+
+android {
+    namespace = "com.kotlinjsonui.conformance"
+
+    // Codegen host sources (scripts/generate_codegen_host.rb, gitignored)
+    // replace the committed fallback registry when present — exactly one
+    // CodegenFixtureEntries per build.
+    // `srcDir` is deprecated in AGP 9; `directories` is the mutable set.
+    sourceSets["main"].kotlin.directories.add(
+        if (file("src/codegen/kotlin").exists()) "src/codegen/kotlin" else "src/fallback/kotlin"
+    )
+    if (file("src/codegen/res").exists()) {
+        sourceSets["main"].res.directories.add("src/codegen/res")
+    }
+    compileSdk = 37
+
+    // AAPT's default ignore pattern contains `<dir>_*`, which silently drops
+    // any assets DIRECTORY starting with an underscore — i.e. the entire
+    // fixtures/__control/ tree (40 control fixtures errored with
+    // FileNotFoundException while sitting right there in src/main/assets).
+    // Same defaults minus that rule.
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
+    defaultConfig {
+        applicationId = "com.kotlinjsonui.conformance"
+        minSdk = 24
+        targetSdk = 37
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            isMinifyEnabled = false
+        }
+        // The screen-marker gate CLOSED: not debuggable and no
+        // com.kotlinjsonui.SCREEN_MARKER meta-data, as a shipped app is. Only
+        // TestBridgeGateClosedE2ETest runs here (-PconformanceTestBuildType=
+        // gateClosed, :conformance-host:connectedGateClosedAndroidTest with
+        // that class): the screen must apply no initialState and publish no
+        // bridge, so the driver sees no receipt.
+        create("gateClosed") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("debug")
+        }
+    }
+    testBuildType = providers.gradleProperty("conformanceTestBuildType").orNull ?: "debug"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+
+    buildFeatures {
+        compose = true
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        // A consumer app may build with allWarningsAsErrors (one of the
+        // distribution lanes does), so what kjui generates must compile with
+        // no warning: this host compiles every conformance fixture's
+        // generated code (android-codegen) and is where that is measured.
+        // Through KotlinJsonUI 2.57.0 the host built with warnings, and a
+        // Map / List data binding's unchecked cast and unnecessary safe call
+        // reached the codegen host unseen (jsonui-cli
+        // kjui-map-list-data-bindings-warn-under-all-warnings-as-errors).
+        // The main compilation only (the generated code and the host): the
+        // androidTest sources — the vendored test-runner driver among them —
+        // are not what a consumer compiles.
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (!name.contains("AndroidTest") && !name.contains("UnitTest")) {
+        compilerOptions.allWarningsAsErrors.set(true)
+    }
+}
+
+dependencies {
+    implementation(project(":library"))
+    implementation(project(":library-dynamic"))
+
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.activity:activity-compose:1.10.1")
+
+    // This BOM decides whether the CODEGEN host can compile at all.
+    //
+    // generate_codegen_host.rb stages every android-applicable visual fixture
+    // and runs `kjui build` over it, so whatever jsonui-cli's Compose emitter
+    // emits gets compiled HERE. Four of those fixtures declare the `input`
+    // values added in kjui 1.8.8x, and the generated Kotlin NAMES the member:
+    // KeyboardType.DecimalSigned / Date / Time / DateTime. Those members
+    // arrived in ui-text 1.12.0. Below that the host does not degrade, it
+    // fails to build.
+    //
+    // Which BOM carries which ui-text, measured from each BOM's own pom
+    // (dependencyManagement) on 2026-09-14:
+    //
+    //     2026.03.00 -> ui-text 1.10.5     (10 KeyboardType members)
+    //     2026.05.01 -> ui-text 1.11.2     (10 members, none of the four)
+    //     2026.08.00 -> ui-text 1.12.0     (26 members, all four)
+    //     2026.09.00 -> ui-text 1.12.1     (26 members, all four)
+    //
+    // Those four are the versions that were resolvable locally, so the
+    // boundary is bracketed rather than located: it is somewhere above
+    // 2026.05.01 and at or below 2026.08.00. The releases in between were
+    // not measured.
+    //
+    // If you lower this BOM past that boundary, do NOT just lower it. The
+    // emitter carries a DECLARED floor: add `compose_version` to the staging
+    // kjui.config.json that generate_codegen_host.rb writes, and the four
+    // degrade to KeyboardType.Text instead of failing to compile. The config
+    // declares no compose_version today, which is correct while this BOM is
+    // at or above the boundary and wrong the moment it is not.
+    //
+    // What guards this today: jsonui-cli's conformance-mobile workflow, job
+    // android-codegen, which checks this repo out at ref main and builds the
+    // host. It is cron-driven (Sunday 18:00 UTC) plus workflow_dispatch, so
+    // the guard exists but is weekly. jsonui-cli's ci.yml job
+    // ruby-generation-parity runs the same script and does NOT catch this:
+    // it compares generated bytes and compiles no Kotlin.
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.runtime:runtime")
+    // ScreenMarkerProbeActivity only: the screen-marker predicate has to be
+    // measured against the real NavHost consumers use, not a hand-rolled stack.
+    implementation("androidx.navigation:navigation-compose:2.9.3")
+
+    // library-dynamic parses layouts with Gson; the host reads fixture JSON with it too
+    implementation("com.google.code.gson:gson:2.13.1")
+    // Codegen host (kjui-generated views, scripts/generate_codegen_host.rb):
+    // the generated pipeline is the CONSUMER surface, so it pulls only what
+    // kjui init wires into consumer apps. coil3 is deliberately NOT declared
+    // here: generated NetworkImage code reaches coil3 through the library's
+    // `api` dependency, and this host compiling is the measurement of that.
+    // Compose ConstraintLayout for constraint-based layouts, extended
+    // material icons for icon vocabulary.
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.2")
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Instrumented conformance suite + vendored jsonui-test-runner driver
+    androidTestImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:core:1.7.0")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test:rules:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // ConformanceFramesTest composes its own specimens (offset, graphicsLayer).
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+// ---------------------------------------------------------------------------
+// Conformance fixture sync
+//
+// Copies $CONFORMANCE_DIR/{fixtures,manifest.json} into this module's assets.
+// CONFORMANCE_DIR is a runtime parameter (the conformance suite lives outside
+// this repository) — it must never be hardcoded here.
+// Usage: CONFORMANCE_DIR=/path/to/conformance ./gradlew :conformance-host:syncConformanceFixtures
+// ---------------------------------------------------------------------------
+tasks.register("syncConformanceFixtures") {
+    description = "Sync conformance fixtures from \$CONFORMANCE_DIR into src/main/assets/conformance"
+    group = "conformance"
+    doLast {
+        val conformanceDir = System.getenv("CONFORMANCE_DIR")
+            ?: throw GradleException(
+                "CONFORMANCE_DIR is not set. Point it at the conformance suite directory " +
+                    "(containing manifest.json and fixtures/)."
+            )
+        val src = file(conformanceDir)
+        require(src.resolve("manifest.json").isFile) {
+            "CONFORMANCE_DIR does not contain manifest.json: $conformanceDir"
+        }
+        val dest = layout.projectDirectory.dir("src/main/assets/conformance").asFile
+        dest.deleteRecursively()
+        dest.mkdirs()
+        src.resolve("manifest.json").copyTo(dest.resolve("manifest.json"))
+        src.resolve("fixtures").copyRecursively(dest.resolve("fixtures"))
+        println("Synced conformance fixtures: $conformanceDir -> ${dest.relativeTo(rootDir)}")
+
+        // Companion embedded-screen layouts (Embed fixtures) must be
+        // loadable by bare screen name through DynamicLayoutLoader, which
+        // searches assets/Layouts/. Mirror every manifest `companions`
+        // entry there under its bare name (embed_root.layout.json →
+        // Layouts/embed_root.json).
+        val manifest = groovy.json.JsonSlurper().parse(src.resolve("manifest.json")) as Map<*, *>
+        val fixtures = manifest["fixtures"] as? List<*> ?: emptyList<Any>()
+        val companions = fixtures
+            .filterIsInstance<Map<*, *>>()
+            .flatMap { (it["companions"] as? List<*>).orEmpty() }
+            .filterIsInstance<String>()
+            .toSortedSet()
+        if (companions.isNotEmpty()) {
+            val layoutsDest = layout.projectDirectory.dir("src/main/assets/Layouts").asFile
+            layoutsDest.mkdirs()
+            for (companion in companions) {
+                val file = src.resolve(companion)
+                require(file.isFile) { "companion layout missing: $companion" }
+                val bare = file.name.removeSuffix(".layout.json") + ".json"
+                file.copyTo(layoutsDest.resolve(bare), overwrite = true)
+            }
+            println("Synced ${companions.size} companion embedded-screen layout(s) -> assets/Layouts")
+        }
+    }
+}

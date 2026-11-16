@@ -1,0 +1,167 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.google.gson.JsonParser
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.generated.AttrValue
+import com.kotlinjsonui.dynamic.generated.SegmentAttributes
+import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
+import com.kotlinjsonui.dynamic.generated.SliderAttributes
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+
+/** Parse-level coverage for the Slider / Segment / SelectBox conversions (wave 2a). */
+class Wave2aAttrsParseTest {
+
+    private fun obj(json: String) = JsonParser.parseString(json).asJsonObject
+
+    // ── Slider ──
+
+    @Test
+    fun `slider minimumValue alias resolves into minimum on L0 and is skipped when canonicalOnly`() {
+        val map = TypedAttrs.toAttrMap(obj("""{"type":"Slider","minimumValue":10}"""))
+
+        val l0 = SliderAttributes.parse(map)
+        assertEquals(AttrValue.Value(10.0), l0.minimum)
+
+        val l1 = SliderAttributes.parse(map, canonicalOnly = true)
+        assertNull(l1.minimum)
+    }
+
+    @Test
+    fun `slider canonical minimum wins over the alias spellings`() {
+        val a = SliderAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj("""{"type":"Slider","minimum":5,"minimumValue":10,"minValue":20}""")
+            )
+        )
+        assertEquals(AttrValue.Value(5.0), a.minimum)
+    }
+
+    @Test
+    fun `slider minValue folds onto minimum instead of keeping a row of its own`() {
+        // 49-E removed the alias self-invalidation: `minValue` / `minimumValue`
+        // used to be declared independently alongside the aliases of the same
+        // name, which emptied the aliasMap and gave each spelling a field.
+        // They are plain aliases of `minimum` now.
+        val a = SliderAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Slider","minValue":20}"""))
+        )
+        assertEquals(AttrValue.Value(20.0), a.minimum)
+        assertEquals("minimum", SliderAttributes.aliasMap["minValue"])
+        assertEquals("maximum", SliderAttributes.aliasMap["maxValue"])
+    }
+
+    @Test
+    fun `slider onValueChanged alias resolves into onValueChange and value binding exposes the expression`() {
+        val map = TypedAttrs.toAttrMap(
+            obj("""{"type":"Slider","value":"@{volume}","onValueChanged":"@{onSlide}"}""")
+        )
+
+        val l0 = SliderAttributes.parse(map)
+        assertEquals("volume", TypedAttrs.binding(l0.value))
+        assertEquals("@{onSlide}", TypedAttrs.raw(l0.onValueChange))
+
+        val l1 = SliderAttributes.parse(map, canonicalOnly = true)
+        assertNull(l1.onValueChange)
+    }
+
+    // ── Segment ──
+
+    @Test
+    fun `segment selectedIndex parses static number and binding expression`() {
+        val static = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Segment","selectedIndex":2}"""))
+        )
+        assertEquals(2, TypedAttrs.int(static.selectedIndex, emptyMap()))
+
+        val bound = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Segment","selectedIndex":"@{tab}"}"""))
+        )
+        assertEquals("tab", TypedAttrs.binding(bound.selectedIndex))
+    }
+
+    @Test
+    fun `segment items array parses as declared list`() {
+        val a = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Segment","items":["A","B"]}"""))
+        )
+        assertEquals(listOf("A", "B"), a.items)
+    }
+
+    @Test
+    fun `segment normalColor and selectedColor resolve onto their canonical rows`() {
+        // `normalColor` / `selectedColor` are declared ALIASES of
+        // `fontColor` / `selectedFontColor` — the generated parser folds them
+        // onto the canonical rows rather than keeping fields of their own.
+        val a = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj("""{"type":"Segment","normalColor":"#0000FF","selectedColor":"#FF0000","tintColor":"#00FF00"}""")
+            )
+        )
+        assertEquals("#0000FF", a.fontColor)
+        assertEquals("#FF0000", a.selectedFontColor)
+        assertEquals("#00FF00", a.tintColor)
+    }
+
+    @Test
+    fun `segment canonical color rows win over their aliases`() {
+        val a = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj("""{"type":"Segment","fontColor":"#111111","normalColor":"#0000FF"}""")
+            )
+        )
+        assertEquals("#111111", a.fontColor)
+    }
+
+    @Test
+    fun `segment aliases are ignored for an L1-normalized layout`() {
+        val a = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Segment","normalColor":"#0000FF"}""")),
+            canonicalOnly = true
+        )
+        assertEquals(null, a.fontColor)
+    }
+
+    // ── SelectBox ──
+
+    @Test
+    fun `selectbox selectItemType resolves to the declared spelling as written`() {
+        val canonical = SelectBoxAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"SelectBox","selectItemType":"Date"}"""))
+        )
+        assertEquals("Date", TypedAttrs.enumString(canonical.selectItemType) { it.json })
+
+        // "date" is no spelling of Date (jsonui-cli 1.9.0): passed through as written
+        val lower = SelectBoxAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"SelectBox","selectItemType":"date"}"""))
+        )
+        assertEquals("date", TypedAttrs.enumString(lower.selectItemType) { it.json })
+    }
+
+    @Test
+    fun `selectbox prompt, hint and placeholder are independent declared rows`() {
+        val a = SelectBoxAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"SelectBox","hint":"Choose"}"""))
+        )
+        assertNull(a.prompt)
+        assertEquals("Choose", a.hint)
+        assertNull(a.placeholder)
+    }
+
+    @Test
+    fun `selectbox date picker fields parse typed`() {
+        val a = SelectBoxAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj(
+                    """{"type":"SelectBox","selectedDate":"@{birthday}",""" +
+                        """"dateStringFormat":"yyyy/MM/dd","minuteInterval":5,"minimumDate":"2020-01-01"}"""
+                )
+            )
+        )
+        assertEquals("birthday", TypedAttrs.binding(a.selectedDate))
+        assertEquals("yyyy/MM/dd", a.dateStringFormat)
+        assertEquals(5, a.minuteInterval?.toInt())
+        assertEquals("2020-01-01", TypedAttrs.rawString(a.minimumDate))
+    }
+}

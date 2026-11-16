@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from partial_attributes_test.json -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<com.kotlinjsonui.views.KjuiSafeAreaView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+            <com.kotlinjsonui.views.KjuiTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/partial_attributes_test_partialattributes_test"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="20dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/partial_attributes_test_this_is_a_normal_label_without_"
+                android:textSize="16sp"
+                android:layout_marginBottom="20dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/partial_attributes_test_this_text_has_partial_styling_a"
+                android:textSize="16sp"
+                android:layout_marginBottom="20dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/partial_attributes_test_click_here_to_navigate_or_here_"
+                android:textSize="16sp"
+                android:layout_marginBottom="20dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/partial_attributes_test_mixed_styles_bold_italic_underl"
+                android:textSize="16sp"/>
+            <com.kotlinjsonui.views.KjuiTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="&quot;今日は天気がいいですね。明日も晴れるといいです。&quot;"
+                android:textSize="16sp"
+                android:layout_marginBottom="20dp"/>
+        </LinearLayout>
+    </ScrollView>
+</com.kotlinjsonui.views.KjuiSafeAreaView>

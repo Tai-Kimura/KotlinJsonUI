@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="kjui_sheet_select_option">Selecciona una opción</string>
+    <string name="kjui_sheet_cancel">Cancelar</string>
+    <string name="kjui_sheet_confirm">Aceptar</string>
+    <string name="kjui_sheet_select">Seleccionar</string>
+    <string name="kjui_sheet_select_date">Seleccionar fecha</string>
+    <string name="kjui_sheet_select_time">Selecciona la hora</string>
+    <string name="kjui_sheet_select_date_and_time">Seleccionar fecha y hora</string>
+    <string name="kjui_sheet_year">Año</string>
+    <string name="kjui_sheet_month">Mes</string>
+    <string name="kjui_sheet_day">Día</string>
+    <string name="kjui_sheet_hour">Hora</string>
+    <string name="kjui_sheet_minute">Minuto</string>
+</resources>

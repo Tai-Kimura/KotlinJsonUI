@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="kjui_sheet_select_option">Vyberte možnost</string>
+    <string name="kjui_sheet_cancel">Zrušit</string>
+    <string name="kjui_sheet_confirm">OK</string>
+    <string name="kjui_sheet_select">Vybrat</string>
+    <string name="kjui_sheet_select_date">Výběr data</string>
+    <string name="kjui_sheet_select_time">Vyberte čas</string>
+    <string name="kjui_sheet_select_date_and_time">Výběr data a času</string>
+    <string name="kjui_sheet_year">Rok</string>
+    <string name="kjui_sheet_month">Měsíc</string>
+    <string name="kjui_sheet_day">Den</string>
+    <string name="kjui_sheet_hour">Hodina</string>
+    <string name="kjui_sheet_minute">Minuta</string>
+</resources>
