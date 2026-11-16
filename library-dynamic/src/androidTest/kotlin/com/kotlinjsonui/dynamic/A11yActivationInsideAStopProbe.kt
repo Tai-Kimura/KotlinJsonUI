@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Tab
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -67,6 +66,7 @@ import com.kotlinjsonui.components.CollectionStack
 import com.kotlinjsonui.components.CollectionStackAxis
 import com.kotlinjsonui.components.CollectionStackMode
 import com.kotlinjsonui.components.Segment
+import com.kotlinjsonui.components.SegmentTab
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.LocalInteractionStopped
@@ -295,14 +295,16 @@ class A11yActivationInsideAStopProbe {
                 .testTag("cgSegPlain")
                 .semantics { testTagsAsResourceId = true }
         ) {
-            Tab(
+            SegmentTab(
+                modifier = Modifier.testTag("cgSegPlain_tab_0"),
                 selected = (data.segPlain == 0),
                 onClick = {
                     viewModel.updateData(mapOf("segPlain" to 0))
                 },
                 text = { Text("a") }
             )
-            Tab(
+            SegmentTab(
+                modifier = Modifier.testTag("cgSegPlain_tab_1"),
                 selected = (data.segPlain == 1),
                 onClick = {
                     viewModel.updateData(mapOf("segPlain" to 1))
@@ -421,16 +423,16 @@ class A11yActivationInsideAStopProbe {
                     .semantics { testTagsAsResourceId = true }
                     .semantics { disabled() }
             ) {
-                Tab(
-                    modifier = Modifier.semantics { disabled() },
+                SegmentTab(
+                    modifier = Modifier.testTag("cgSegInFalse_tab_0").semantics { disabled() },
                     selected = (data.segInFalse == 0),
                     onClick = {
                         if (false) viewModel.updateData(mapOf("segInFalse" to 0))
                     },
                     text = { Text("a") }
                 )
-                Tab(
-                    modifier = Modifier.semantics { disabled() },
+                SegmentTab(
+                    modifier = Modifier.testTag("cgSegInFalse_tab_1").semantics { disabled() },
                     selected = (data.segInFalse == 1),
                     onClick = {
                         if (false) viewModel.updateData(mapOf("segInFalse" to 1))
