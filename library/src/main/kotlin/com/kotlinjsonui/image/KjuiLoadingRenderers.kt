@@ -19,7 +19,12 @@ sealed interface KjuiNextFrame {
     /** Draw every frame at this rate (rounded to a divisor of 60). */
     data class Continuous(val fps: Int) : KjuiNextFrame
 
-    /** The renderer has nothing more to draw. */
+    /**
+     * The renderer has nothing more to animate. Once the load has ended the library still
+     * calls draw on every frame until the image's fade ends: keep drawing what lies under the
+     * image until then. A renderer that draws nothing after the end lets the fade show what is
+     * behind the frame (on a dark background, the frame goes dark and comes back).
+     */
     data object Done : KjuiNextFrame
 }
 
@@ -57,7 +62,11 @@ class KjuiLoadingFrame internal constructor(
     /** Settings.Global.ANIMATOR_DURATION_SCALE is 0. */
     val reduceMotion: Boolean,
     val isDark: Boolean,
-    /** Set from the frame's own success / error on; draw is called until the fade ends or the renderer returns Done. */
+    /**
+     * Set from the frame's own success / error on. From then draw is called on every frame
+     * until the image's fade ends (Done returned during the fade does not stop it), with the
+     * image fading in over what the renderer draws: keep drawing until the fade ends.
+     */
     val end: KjuiLoadEnd?,
     private val clock: () -> Long,
 ) {
