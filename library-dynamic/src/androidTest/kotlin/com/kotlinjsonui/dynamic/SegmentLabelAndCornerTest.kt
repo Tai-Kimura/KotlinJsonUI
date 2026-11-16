@@ -53,8 +53,8 @@ import org.junit.runner.RunWith
  * Labels: UISegmentedControl's own font, measured on iOS 27.2 — 13 pt, Medium on the selected
  * segment and Regular on the others, 13 at every Dynamic Type size. Here, for the static call kjui
  * generates and for DynamicView, at font scale 1 and 2: each label drawn 13 dp, Medium selected
- * and Normal otherwise, its line the font's own at every scale, and not cut ("アプリ風" and "本棚風" in a Segment 156 wide and 32 high,
- * which iOS fits; Material's 16 sp drew "ア…" at 2).
+ * and Normal otherwise, its line the font's own at every scale, and not cut ("あいうえ" and "かきく" in a Segment 156 wide and 32 high,
+ * which iOS fits; Material's 16 sp drew "あ…" at 2).
  *
  * Corners: a Segment does not read cornerRadius — the track and the selected fill are capsules
  * whatever the layout declares (0, 4, 100 or none), read where a capsule and a 4 dp corner differ.
@@ -64,7 +64,7 @@ class SegmentLabelAndCornerTest {
     @get:Rule val rule = createComposeRule()
     private var content by mutableStateOf<(@Composable () -> Unit)?>(null)
     private var composed = false
-    private val labels = listOf("アプリ風", "本棚風")
+    private val labels = listOf("あいうえ", "かきく")
 
     private fun show(draw: @Composable () -> Unit) {
         if (!composed) {
@@ -83,7 +83,7 @@ class SegmentLabelAndCornerTest {
     @Composable
     private fun generated() {
         // What kjui generates for {"type": "Segment", "id": "seg", "width": 156, "height": 32,
-        // "items": ["アプリ風", "本棚風"], "selectedIndex": 0} (jsonui-cli 2.5.44).
+        // "items": ["あいうえ", "かきく"], "selectedIndex": 0} (jsonui-cli 2.5.44).
         Segment(selectedTabIndex = 0, modifier = Modifier.width(156.dp).height(32.dp).testTag("seg")) {
             labels.forEachIndexed { i, label ->
                 SegmentTab(selected = i == 0, onClick = {}, text = {
@@ -97,7 +97,7 @@ class SegmentLabelAndCornerTest {
     private fun dynamic(extra: String = ""): @Composable () -> Unit = {
         DynamicView(
             json = JsonParser.parseString(
-                """{"type": "Segment", "id": "seg", "width": 156, "height": 32, "items": ["アプリ風", "本棚風"], "selectedIndex": 0$extra}"""
+                """{"type": "Segment", "id": "seg", "width": 156, "height": 32, "items": ["あいうえ", "かきく"], "selectedIndex": 0$extra}"""
             ).asJsonObject,
             data = emptyMap(),
         )
@@ -141,7 +141,7 @@ class SegmentLabelAndCornerTest {
         val table = rows.joinToString("\n")
         Log.i("KjuiSegmentLabel", "\n$table")
         val expected = listOf(1f, 2f).flatMap { s ->
-            listOf("static", "dynamic").map { "$it x$s :: アプリ風 13.0 dp Medium cut=false, 本棚風 13.0 dp Normal cut=false" }
+            listOf("static", "dynamic").map { "$it x$s :: あいうえ 13.0 dp Medium cut=false, かきく 13.0 dp Normal cut=false" }
         }.joinToString("\n")
         assertEquals(expected, table)
         Log.i("KjuiSegmentLabel", "lines dp $lines")

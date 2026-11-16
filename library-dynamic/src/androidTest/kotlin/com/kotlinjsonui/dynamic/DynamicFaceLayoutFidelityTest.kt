@@ -143,7 +143,7 @@ class DynamicFaceLayoutFidelityTest {
         rule.setContent {
             density = androidx.compose.ui.platform.LocalDensity.current.density
             Box(Modifier.testTag("wrap")) {
-                DynamicView(json = json, data = mapOf("chipText" to "飲みました!"))
+                DynamicView(json = json, data = mapOf("chipText" to "あいうえお!"))
             }
         }
         rule.waitForIdle()

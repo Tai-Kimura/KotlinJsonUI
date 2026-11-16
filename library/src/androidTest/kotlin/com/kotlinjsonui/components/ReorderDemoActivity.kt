@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * The reorder demo for the video (ticket jui-collection-drag-to-reorder): the shape of the reporting face's 回る順番
+ * The reorder demo for the video (ticket jui-collection-drag-to-reorder): the shape of the reporting face's ordered list
  * — rows in a column an outer scroll carries (lazy: none), a grip at each row's right edge (reorderHandle), a break
  * row that does not move (reorderLockedProperty). The "view model" here is the list itself, moved on onReorder.
  */
@@ -41,7 +41,7 @@ class ReorderDemoActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val stops = remember {
-                mutableStateListOf("A ブース 山崎", "B ブース 白州", "C ブース 余市", "── 休憩（動かない）──", "D ブース 宮城峡", "E ブース 秩父", "F ブース 厚岸")
+                mutableStateListOf("A あいう", "B かきく", "C さしす", "── 区切り（動かない）──", "D たちつ", "E なにぬ", "F はひふ")
             }
             var last by remember { mutableStateOf("まだ動かしていません") }
             val reorder = CollectionReorder(isEnabled = true, usesHandle = true) { _, from, to ->
@@ -50,11 +50,11 @@ class ReorderDemoActivity : ComponentActivity() {
                 last = "onReorder(section 0, from $from, to $to)"
             }
             Column(Modifier.fillMaxSize().background(Color.White).verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 16.dp)) {
-                Text("回る順番（並べ替えの確かめ・Android）", fontSize = 20.sp)
+                Text("並べ替えの確かめ（Android）", fontSize = 20.sp)
                 Text("右端の ≡ を長押ししてドラッグ", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 12.dp))
                 CollectionReorderContainer(reorder, Modifier.testTag("stops"), scrollsItself = false) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        CollectionReorderRows(0, stops.toList(), locked = setOf(stops.indexOf("── 休憩（動かない）──"))) { i ->
+                        CollectionReorderRows(0, stops.toList(), locked = setOf(stops.indexOf("── 区切り（動かない）──"))) { i ->
                             val name = stops[i]
                             val isBreak = name.startsWith("──")
                             Row(

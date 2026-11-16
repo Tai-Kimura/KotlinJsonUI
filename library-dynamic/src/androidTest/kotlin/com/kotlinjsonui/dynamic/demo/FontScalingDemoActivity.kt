@@ -23,11 +23,11 @@ class FontScalingDemoActivity : ComponentActivity() {
           {"type":"View","orientation":"vertical","width":"matchParent","paddings":[48,20,24,20],"child":[
             {"type":"Label","text":"文字の大きさへの追従（Android）","fontSize":22,"font":"bold","fontScaling":false,"bottomMargin":20},
             {"type":"Label","text":"追従する（既定）","fontSize":13,"fontColor":"#6B7280","fontScaling":false},
-            {"type":"Label","text":"回る順番を決めましょう","fontSize":17,"bottomMargin":16},
+            {"type":"Label","text":"あいうえおかきくけこさ","fontSize":17,"bottomMargin":16},
             {"type":"Label","text":"追従しない（fontScaling: false）","fontSize":13,"fontColor":"#6B7280","fontScaling":false},
-            {"type":"Label","text":"回る順番を決めましょう","fontSize":17,"fontScaling":false,"bottomMargin":16},
+            {"type":"Label","text":"あいうえおかきくけこさ","fontSize":17,"fontScaling":false,"bottomMargin":16},
             {"type":"Label","text":"上限 1.3 倍（maxFontScale: 1.3）","fontSize":13,"fontColor":"#6B7280","fontScaling":false},
-            {"type":"Label","text":"回る順番を決めましょう","fontSize":17,"maxFontScale":1.3,"bottomMargin":24},
+            {"type":"Label","text":"あいうえおかきくけこさ","fontSize":17,"maxFontScale":1.3,"bottomMargin":24},
             {"type":"Label","text":"SelectBox（height: wrapContent、minHeight 48）","fontSize":13,"fontColor":"#6B7280","fontScaling":false,"bottomMargin":4},
             {"type":"SelectBox","id":"long_select","width":"matchParent","height":"wrapContent","minHeight":48,"fontSize":16,
              "items":["Northwind Trading Company Seasonal Product Collection"],"selectedIndex":0,"cornerRadius":8,"borderColor":"#C4C4C4"}

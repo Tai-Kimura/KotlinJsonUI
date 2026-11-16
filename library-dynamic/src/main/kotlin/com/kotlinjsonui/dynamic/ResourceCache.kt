@@ -26,13 +26,13 @@ object ResourceCache {
     private var colorsCache: Map<String, String>? = null
 
     // strings.json section → the keys it declares. A bare key like "open"
-    // exists in as many sections as declare it ({home: 営業中, store_info:
-    // 開店} in a downstream app), and the flat keyToPrefixedKey map resolves it by
+    // exists in as many sections as declare it ({home: "A", info: "B"} in a
+    // downstream app), and the flat keyToPrefixedKey map resolves it by
     // insertion order — the LAST section in strings.json wins,
     // deterministically wrong for every earlier one. The codegen face
     // resolves through the layout's OWN section first; these two fields are
-    // the dynamic equivalent (downstream bar home tab rendered 開店 for home's
-    // 営業中, 2026-08-10).
+    // the dynamic equivalent (a downstream home tab rendered info's "B" for
+    // home's "A", 2026-08-10).
     private var sectionKeys: Map<String, Set<String>>? = null
     private var currentSections: List<String> = emptyList()
 
