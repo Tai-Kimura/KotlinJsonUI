@@ -233,6 +233,58 @@ jobs:
           print(f"PAN_NOT_APPLICABLE == common.onPan.notApplicableTo @ {ref[:12]}: {sorted(mine)}")
           EOF
 
+  # ------------------------------------------------------------------ #
+  # NewApi: an API above minSdk (24) called without a version guard. An
+  # app's lint does not look inside a dependency's AAR, so a call like this
+  # in the library is found only when an older phone crashes. -PlintNewApiOnly
+  # makes lint check NewApi alone (the `lint {}` block in each module), so
+  # this job fails on it and on nothing else.
+  # ------------------------------------------------------------------ #
+  newapi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Lint NewApi (library, library-dynamic)
+        run: ./gradlew :library:lintRelease :library-dynamic:lintRelease -PlintNewApiOnly
+      # Every run proves the step above can fail: the probe calls three APIs
+      # above minSdk (API 35, 29, 33) in each module, and lint must fail and
+      # name each of them. The probes are copied in and always removed.
+      - name: NewApi — positive control (3 calls above minSdk in each module)
+        run: |
+          set -uo pipefail
+          lib=library/src/main/kotlin/com/kotlinjsonui/ciprobe
+          dyn=library-dynamic/src/main/kotlin/com/kotlinjsonui/ciprobe
+          cleanup() { rm -rf "$lib" "$dyn"; }
+          trap cleanup EXIT
+          fail() { echo "::error::$1"; exit 1; }
+          mkdir -p "$lib" "$dyn"
+          cp .github/ci/probes/NewApiProbe.kt "$lib/"
+          cp .github/ci/probes/NewApiProbe.kt "$dyn/"
+          if ./gradlew :library:lintRelease :library-dynamic:lintRelease -PlintNewApiOnly --continue > probe-newapi.log 2>&1; then
+            fail "lint passed three calls above minSdk in each module: the NewApi gate is off"
+          fi
+          for m in library library-dynamic; do
+            r="$m/build/reports/lint-results-release.txt"
+            for api in "java.util.List#removeLast" "android.view.View#setSystemGestureExclusionRects" "java.net.URLDecoder#decode"; do
+              grep "NewApiProbe.kt" "$r" | grep -qF "$api" || fail "$m: lint did not name $api in NewApiProbe.kt"
+            done
+          done
+          echo "newapi gate: lint failed on the probe and named all 3 calls in both modules"
+      - name: Upload lint reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: |
+            library/build/reports/lint-results-release.*
+            library-dynamic/build/reports/lint-results-release.*
+
   build-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30

@@ -21,6 +21,17 @@ android {
         }
     }
 
+    // The apps' own lint does not look inside this AAR, so an API above minSdk
+    // (24) called without a version guard here is only found when an older
+    // phone crashes. NewApi is an error in every lint run; -PlintNewApiOnly
+    // (CI: the newapi job in .github/workflows/ci.yml) checks it alone.
+    lint {
+        error += "NewApi"
+        if (providers.gradleProperty("lintNewApiOnly").isPresent) {
+            checkOnly += "NewApi"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
