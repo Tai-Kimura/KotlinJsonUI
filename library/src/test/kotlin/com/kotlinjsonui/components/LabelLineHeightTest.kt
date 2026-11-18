@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -68,17 +69,31 @@ class LabelLineHeightTest {
         assertEquals(Math.round(px).toFloat(), px, 0.001f)
     }
 
-    // ticket kjui-autoshrink-keeps-the-line-height: the line follows the glyphs autoSize shrinks
+    // ticket kjui-autoshrink-keeps-the-line-height: the line follows the glyphs autoSize shrinks, and a Label that
+    // does not shrink keeps the line it had to the dp. The ratio times the size the text is drawn at unshrunk (the
+    // ceiling) is the line height itself: 024a08b took the share of the theme's 16sp body while the text was drawn at
+    // the 14sp ceiling, and a wrapped Label's four lines went from 96 to 84.
+    private fun unshrunk(lineHeight: TextUnit, ceiling: TextUnit): Float =
+        LabelLineHeight.shrinking(lineHeight, ceiling).value * ceiling.value
+
     @Test
-    fun `a shrinking Label's line height is a share of its font size`() {
-        assertEquals(1.5.em, LabelLineHeight.shrinking(24.sp, TextUnit.Unspecified, 16.sp))   // the theme's line, undeclared size
-        assertEquals(1.3.em.value, LabelLineHeight.shrinking(18.2.sp, 14.sp, 16.sp).value, 0.0001f)   // fontSize x 1.3
+    fun `a Label that does not shrink keeps its line height to the dp`() {
+        val ceiling = LabelLineHeight.AUTO_SIZE_DEFAULT_CEILING.sp            // no fontSize declared: the 14sp ceiling
+        assertEquals(24f, unshrunk(24.sp, ceiling), 0.0001f)                  // the theme's line (bodyLarge 16 on 24)
+        assertEquals(18.2f, unshrunk(18.2.sp, 14.sp), 0.0001f)               // fontSize 14 x 1.3
+        assertEquals(30f, unshrunk(30.sp, 11.5.sp), 0.0001f)                 // a lineHeightMultiple's line
     }
 
     @Test
-    fun `a line height or a size that is not in sp stays as it is`() {
-        assertEquals(TextUnit.Unspecified, LabelLineHeight.shrinking(TextUnit.Unspecified, 14.sp, 16.sp))
-        assertEquals(1.2.em, LabelLineHeight.shrinking(1.2.em, 14.sp, 16.sp))
-        assertEquals(24.sp, LabelLineHeight.shrinking(24.sp, TextUnit.Unspecified, TextUnit.Unspecified))
+    fun `a shrinking Label's line height is a share of the size autoSize starts from`() {
+        assertEquals(24f / 14f, LabelLineHeight.shrinking(24.sp, 14.sp).value, 0.0001f)
+        assertTrue(LabelLineHeight.shrinking(24.sp, 14.sp).isEm)
+    }
+
+    @Test
+    fun `a line height or a ceiling that is not in sp stays as it is`() {
+        assertEquals(TextUnit.Unspecified, LabelLineHeight.shrinking(TextUnit.Unspecified, 14.sp))
+        assertEquals(1.2.em, LabelLineHeight.shrinking(1.2.em, 14.sp))
+        assertEquals(24.sp, LabelLineHeight.shrinking(24.sp, TextUnit.Unspecified))
     }
 }

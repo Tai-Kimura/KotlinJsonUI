@@ -289,13 +289,11 @@ class DynamicTextComponent {
 
             // Under autoSize the line follows the glyphs it shrinks (LabelLineHeight.shrinking; ticket
             // kjui-autoshrink-keeps-the-line-height): a line height in sp stayed while the text shrank.
+            // the size autoSize starts from and never grows past: its maxFontSize, and the line's share of it
+            val autoSizeCeiling = json.fontSized((fontSize ?: LabelLineHeight.AUTO_SIZE_DEFAULT_CEILING).sp)
             val drawnStyle = (style ?: LocalTextStyle.current).let { st ->
                 if (!useAutoSize) st else st.copy(
-                    lineHeight = LabelLineHeight.shrinking(
-                        st.lineHeight,
-                        json.fontSized(providedFont.size ?: fontSize?.sp ?: TextUnit.Unspecified),
-                        LocalTextStyle.current.fontSize
-                    )
+                    lineHeight = LabelLineHeight.shrinking(st.lineHeight, autoSizeCeiling)
                 )
             }
             Text(
@@ -322,7 +320,7 @@ class DynamicTextComponent {
                 autoSize = if (useAutoSize) TextAutoSize.StepBased(
                     minFontSize = ((fontSize ?: 14f) *
                         (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
-                    maxFontSize = json.fontSized((fontSize ?: 14f).sp)
+                    maxFontSize = autoSizeCeiling
                 ) else null,
                 style = drawnStyle,
                 modifier = modifier
@@ -464,15 +462,16 @@ class DynamicTextComponent {
             val maxLines = if (lines == null || lines == 0) Int.MAX_VALUE else lines
             val overflow = overflowOf(a, lines)
             val fontSize = TypedAttrs.float(a.fontSize, data)
+            val autoSizeCeiling = json.fontSized((fontSize ?: LabelLineHeight.AUTO_SIZE_DEFAULT_CEILING).sp)
             val autoSize = if (a.autoShrink == true || a.minimumScaleFactor != null) TextAutoSize.StepBased(
                 minFontSize = ((fontSize ?: 14f) * (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
-                maxFontSize = json.fontSized((fontSize ?: 14f).sp)
+                maxFontSize = autoSizeCeiling
             ) else null
 
             // under autoSize the line follows the glyphs it shrinks, as the plain Label's (LabelLineHeight.shrinking)
             if (autoSize != null) {
                 style = style.copy(
-                    lineHeight = LabelLineHeight.shrinking(style.lineHeight, style.fontSize, LocalTextStyle.current.fontSize)
+                    lineHeight = LabelLineHeight.shrinking(style.lineHeight, autoSizeCeiling)
                 )
             }
 
