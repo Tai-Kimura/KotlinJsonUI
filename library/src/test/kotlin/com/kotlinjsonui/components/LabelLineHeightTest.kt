@@ -3,6 +3,7 @@ package com.kotlinjsonui.components
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -65,5 +66,19 @@ class LabelLineHeightTest {
         val scaled = Density(2f, fontScale = 1.15f)
         val px = LabelLineHeight.onPixelGrid(43.2f, scaled).value * 2f * 1.15f
         assertEquals(Math.round(px).toFloat(), px, 0.001f)
+    }
+
+    // ticket kjui-autoshrink-keeps-the-line-height: the line follows the glyphs autoSize shrinks
+    @Test
+    fun `a shrinking Label's line height is a share of its font size`() {
+        assertEquals(1.5.em, LabelLineHeight.shrinking(24.sp, TextUnit.Unspecified, 16.sp))   // the theme's line, undeclared size
+        assertEquals(1.3.em.value, LabelLineHeight.shrinking(18.2.sp, 14.sp, 16.sp).value, 0.0001f)   // fontSize x 1.3
+    }
+
+    @Test
+    fun `a line height or a size that is not in sp stays as it is`() {
+        assertEquals(TextUnit.Unspecified, LabelLineHeight.shrinking(TextUnit.Unspecified, 14.sp, 16.sp))
+        assertEquals(1.2.em, LabelLineHeight.shrinking(1.2.em, 14.sp, 16.sp))
+        assertEquals(24.sp, LabelLineHeight.shrinking(24.sp, TextUnit.Unspecified, TextUnit.Unspecified))
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.offset
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
@@ -63,6 +64,21 @@ object LabelLineHeight {
     fun onPixelGrid(sp: Float, density: Density): TextUnit {
         val pxPerSp = density.density * density.fontScale
         return (kotlin.math.round(sp * pxPerSp) / pxPerSp).sp
+    }
+
+    /**
+     * A Label's [lineHeight] while autoShrink / minimumScaleFactor may shrink its text: the same height as a share of
+     * the [fontSize] it is drawn at ([TextUnit.em]), so the lines shrink with the glyphs (ticket
+     * kjui-autoshrink-keeps-the-line-height). Compose's TextAutoSize changes the font size only: a line height in sp
+     * stayed — the theme's 24sp, or fontSize x 1.3 — and a 40-high Label fitted two shrunk lines where web (the
+     * autoShrink canon) fits all three. Unshrunk, the share gives the same height as before. A [fontSize] that is not
+     * in sp (unspecified: the Label declares none) takes [fallbackFontSize], the size the Text draws then; a line
+     * height or a size that is not in sp stays as it is.
+     */
+    fun shrinking(lineHeight: TextUnit, fontSize: TextUnit, fallbackFontSize: TextUnit): TextUnit {
+        val size = if (fontSize.isSpecified && fontSize.isSp) fontSize else fallbackFontSize
+        if (!lineHeight.isSpecified || !lineHeight.isSp || !size.isSpecified || !size.isSp || size.value <= 0f) return lineHeight
+        return (lineHeight.value / size.value).em
     }
 }
 
