@@ -17,6 +17,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import com.kotlinjsonui.components.PartialAttribute
+import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.FontSpec
+import com.kotlinjsonui.core.jsonUIFontSize
+import com.kotlinjsonui.core.jsonUILetterSpacing
+import com.kotlinjsonui.core.jsonUILineHeight
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 
 /**
  * Instrumented pins for dynamic-face layout fidelity, measured in real
@@ -38,10 +49,10 @@ class DynamicFaceLayoutFidelityTest {
     fun hourRowShapedCellMatchesTheCodegenEmitHeight() {
         // A downstream hour-row cell: horizontal row, two fontSize-14
         // labels (one plain, one partialAttributes), paddingVertical 6.
-        // The codegen face emits lineHeight = 14*1.3 = 18.2sp on the plain
-        // label; the row measures padding + that line. The dynamic render
-        // must measure the same (user report: dynamic rows ~3dp shorter,
-        // 2026-08-10).
+        // The codegen face emits lineHeight = 14*1.3 = 18.2sp on both labels
+        // (the partial one since 2.5.52); the row measures padding + that
+        // line. The dynamic render must measure the same (user report:
+        // dynamic rows ~3dp shorter, 2026-08-10).
         val row = JsonParser.parseString(
             """
             {
@@ -74,7 +85,9 @@ class DynamicFaceLayoutFidelityTest {
             ) {
             androidx.compose.foundation.layout.Column {
                 Box(Modifier.testTag("dyn")) { DynamicView(json = row, data = emptyMap()) }
-                // The codegen emit shape, verbatim (the downstream row's GeneratedView).
+                // The codegen emit, verbatim: kjui (jsonui-cli 2.5.52, 7f3e9302e) for the two Labels of the row.
+                // Since 2.5.52 the partial Label's style carries the declared size's line (14 x 1.3 = 18.2sp)
+                // as the plain one's does; through 2.5.51 it carried none and the partial half drew the theme's.
                 Box(Modifier.testTag("gen")) {
                     androidx.compose.foundation.layout.Row(
                         modifier = Modifier.then(
@@ -84,22 +97,44 @@ class DynamicFaceLayoutFidelityTest {
                         ),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
+                        val resolved_text1 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = null,
+                            size = 14.sp,
+                            italic = false
+                        ))
                         androidx.compose.material3.Text(
                             text = "月",
-                            fontSize = androidx.compose.ui.unit.TextUnit(14f, androidx.compose.ui.unit.TextUnitType.Sp),
-                            style = androidx.compose.material3.LocalTextStyle.current.copy(
-                                lineHeight = androidx.compose.ui.unit.TextUnit(18.2f, androidx.compose.ui.unit.TextUnitType.Sp)
-                            )
+                            fontFamily = resolved_text1.family,
+                            fontWeight = resolved_text1.weight,
+                            fontSize = jsonUIFontSize(resolved_text1.size ?: TextUnit.Unspecified),
+                            letterSpacing = jsonUILetterSpacing(),
+                            fontStyle = resolved_text1.style ?: FontStyle.Normal,
+                            style = androidx.compose.material3.LocalTextStyle.current.copy(lineHeight = jsonUILineHeight(jsonUIFontSize(resolved_text1.size ?: TextUnit.Unspecified), lineHeight = 18.2.sp)),
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .requiredWidth(40.dp)
+                                .wrapContentHeight()
                         )
-                        // The partial half, exactly as the codegen emits it:
-                        // style WITHOUT a lineHeight (the partial style_parts
-                        // never carry one).
+                        val resolved_text2 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = null,
+                            size = 14.sp,
+                            italic = false
+                        ))
                         com.kotlinjsonui.components.PartialAttributesText(
                             text = "18:00 - 2:00",
-                            partialAttributes = emptyList(),
-                            style = androidx.compose.material3.LocalTextStyle.current.copy(
-                                fontSize = androidx.compose.ui.unit.TextUnit(14f, androidx.compose.ui.unit.TextUnitType.Sp)
-                            )
+                            partialAttributes = listOfNotNull(
+                                PartialAttribute.fromJsonRange(
+                                    range = "",
+                                    text = "18:00 - 2:00",
+                                    fontWeight = "bold",
+                                    onClick = null
+                                )
+                            ),
+                            modifier = Modifier
+                                .wrapContentHeight(),
+                            style = androidx.compose.material3.LocalTextStyle.current.copy(fontFamily = (resolved_text2.family ?: androidx.compose.material3.LocalTextStyle.current.fontFamily), fontWeight = (resolved_text2.weight ?: androidx.compose.material3.LocalTextStyle.current.fontWeight), fontSize = jsonUIFontSize(resolved_text2.size ?: androidx.compose.material3.LocalTextStyle.current.fontSize), letterSpacing = jsonUILetterSpacing(), fontStyle = (resolved_text2.style ?: androidx.compose.material3.LocalTextStyle.current.fontStyle), lineHeight = jsonUILineHeight(jsonUIFontSize(resolved_text2.size ?: TextUnit.Unspecified), lineHeight = 18.2.sp))
                         )
                     }
                 }
@@ -110,7 +145,8 @@ class DynamicFaceLayoutFidelityTest {
         val dynH = rule.onNodeWithTag("dyn").fetchSemanticsNode().size.height / density
         val genH = rule.onNodeWithTag("gen").fetchSemanticsNode().size.height / density
         // Face parity, measured against the verbatim codegen emit composed
-        // in the same ambient (both 32.0dp on phone_ci at density 2.625).
+        // in the same ambient (2.5.51: both 36.0dp on phone_ci, the partial half
+        // on the theme's 24sp line; 2.5.52: both on the 18.2sp line).
         assertTrue(
             "dynamic hour-row ${dynH}dp must equal the codegen emit ${genH}dp",
             abs(dynH - genH) <= 0.5f
