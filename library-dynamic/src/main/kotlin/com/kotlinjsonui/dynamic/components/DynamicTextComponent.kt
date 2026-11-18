@@ -287,6 +287,17 @@ class DynamicTextComponent {
                 modifier = modifier.graphicsLayer { translationY = -shift.dp.toPx() }
             }
 
+            // Under autoSize the line follows the glyphs it shrinks (LabelLineHeight.shrinking; ticket
+            // kjui-autoshrink-keeps-the-line-height): a line height in sp stayed while the text shrank.
+            val drawnStyle = (style ?: LocalTextStyle.current).let { st ->
+                if (!useAutoSize) st else st.copy(
+                    lineHeight = LabelLineHeight.shrinking(
+                        st.lineHeight,
+                        json.fontSized(providedFont.size ?: fontSize?.sp ?: TextUnit.Unspecified),
+                        LocalTextStyle.current.fontSize
+                    )
+                )
+            }
             Text(
                 text = text,
                 onTextLayout = { lineState?.layout = it },
@@ -313,7 +324,7 @@ class DynamicTextComponent {
                         (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
                     maxFontSize = json.fontSized((fontSize ?: 14f).sp)
                 ) else null,
-                style = style ?: LocalTextStyle.current,
+                style = drawnStyle,
                 modifier = modifier
             )
         }
@@ -457,6 +468,13 @@ class DynamicTextComponent {
                 minFontSize = ((fontSize ?: 14f) * (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
                 maxFontSize = json.fontSized((fontSize ?: 14f).sp)
             ) else null
+
+            // under autoSize the line follows the glyphs it shrinks, as the plain Label's (LabelLineHeight.shrinking)
+            if (autoSize != null) {
+                style = style.copy(
+                    lineHeight = LabelLineHeight.shrinking(style.lineHeight, style.fontSize, LocalTextStyle.current.fontSize)
+                )
+            }
 
             // the modifier as before, then edgeInset, the line faces and the underline's offset as the plain Label's
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
