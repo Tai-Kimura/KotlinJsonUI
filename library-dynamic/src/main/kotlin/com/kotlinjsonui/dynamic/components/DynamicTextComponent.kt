@@ -142,8 +142,7 @@ class DynamicTextComponent {
             val hlFont = hl?.get("font") as? String
 
             // Font size
-            val fontSize = (hl?.get("fontSize") as? Number)?.toFloat()
-                ?: TypedAttrs.float(a.fontSize, data)
+            val fontSize = lineFontSize(hl, TypedAttrs.float(a.fontSize, data))
 
             // Font color. The value can arrive from three places and only one
             // of them is static: the `highlightAttributes` / `hintAttributes`
@@ -359,6 +358,17 @@ class DynamicTextComponent {
             )
         }
 
+        /**
+         * The font size a Label's lines and autoSize are reckoned from: the highlight's (or the hint's) while it is
+         * in force ([styleBag]), else the Label's [declared] one. One reading for the plain Label and the partial /
+         * linkable one: the partial path took the Label's own size, so a selected highlight with a fontSize and a
+         * lineHeightMultiple drew its line from the theme's (24 x 1.5 = 36) where the plain Label and the codegen
+         * draw 24sp x 1.3 x 1.5 (47; Label/highlightAttributes__static_with_partial, ticket
+         * kjui-label-underline-dropped-with-partial-attributes).
+         */
+        internal fun lineFontSize(styleBag: Map<String, Any?>?, declared: Float?): Float? =
+            (styleBag?.get("fontSize") as? Number)?.toFloat() ?: declared
+
         /** A Label's overflow: Ellipsis under a positive `lines`, else its lineBreakMode's (clip by default). */
         private fun overflowOf(a: LabelAttributes, lines: Int?): TextOverflow = when {
             lines != null && lines > 0 -> TextOverflow.Ellipsis
@@ -446,9 +456,11 @@ class DynamicTextComponent {
 
             // its own line height (lineHeightMultiple / lineSpacing) and shadow; with neither, the theme's as before
             val ownMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
+            // the size its lines are reckoned from: the highlight's (or the hint's) while in force, as the plain Label
+            val fontSize = lineFontSize(hl, TypedAttrs.float(a.fontSize, data))
             if (ownMultiple != null || TypedAttrs.float(a.lineHeightMultiple, data) != null ||
                 TypedAttrs.float(a.lineSpacing, data) != null || a.textShadow != null) {
-                val drawn = buildTextStyle(a, data, TypedAttrs.float(a.fontSize, data), overrideLineHeightMultiple = ownMultiple, json = json)
+                val drawn = buildTextStyle(a, data, fontSize, overrideLineHeightMultiple = ownMultiple, json = json)
                 if (ownMultiple != null || TypedAttrs.float(a.lineHeightMultiple, data) != null || TypedAttrs.float(a.lineSpacing, data) != null) {
                     drawn?.lineHeight?.let { style = style.copy(lineHeight = it) }
                 }
@@ -461,7 +473,6 @@ class DynamicTextComponent {
             val lines = TypedAttrs.int(a.lines, data)
             val maxLines = if (lines == null || lines == 0) Int.MAX_VALUE else lines
             val overflow = overflowOf(a, lines)
-            val fontSize = TypedAttrs.float(a.fontSize, data)
             val autoSizeCeiling = json.fontSized((fontSize ?: LabelLineHeight.AUTO_SIZE_DEFAULT_CEILING).sp)
             val autoSize = if (a.autoShrink == true || a.minimumScaleFactor != null) TextAutoSize.StepBased(
                 minFontSize = ((fontSize ?: 14f) * (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
