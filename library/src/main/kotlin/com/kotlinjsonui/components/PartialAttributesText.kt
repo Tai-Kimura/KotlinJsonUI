@@ -22,6 +22,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -121,8 +123,19 @@ fun PartialAttributesText(
     linkColor: Color = Color.Unspecified,
     /** The component's fontScaling / maxFontScale: the ranges' sizes follow them (FontScaling). */
     fontScaling: Boolean? = null,
-    maxFontScale: Float? = null
+    maxFontScale: Float? = null,
+    /**
+     * The Label's own line rules, as a plain Label's Text takes them (2.64.0; ticket
+     * kjui-label-underline-dropped-with-partial-attributes): `lines` / `lineBreakMode`, `autoShrink` /
+     * `minimumScaleFactor`, and the layout the drawn underline / strikethrough faces read (styledTextLines). The
+     * Label's own underline / strikethrough come in [style]'s textDecoration and reach every range too.
+     */
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
+    autoSize: TextAutoSize? = null,
+    onTextLayout: ((TextLayoutResult) -> Unit)? = null
 ) {
+    val lineRules = LineRules(maxLines, overflow, autoSize, onTextLayout)
     val operable = linksEnabled && !LocalInteractionStopped.current
     val ranges = if (operable) partialAttributes else partialAttributes.map { it.copy(onClick = null) }
     if (linkable) {
@@ -134,7 +147,8 @@ fun PartialAttributesText(
             linksEnabled = operable,
             linkColor = linkColor.takeOrElse { Configuration.Colors.linkColor },
             fontScaling = fontScaling,
-            maxFontScale = maxFontScale
+            maxFontScale = maxFontScale,
+            lineRules = lineRules
         )
     } else {
         PartialAttributesTextImpl(
@@ -143,9 +157,34 @@ fun PartialAttributesText(
             modifier = modifier,
             style = style,
             fontScaling = fontScaling,
-            maxFontScale = maxFontScale
+            maxFontScale = maxFontScale,
+            lineRules = lineRules
         )
     }
+}
+
+/** A plain Label's Text arguments the ranges' Text takes as they are (PartialAttributesText). */
+private data class LineRules(
+    val maxLines: Int = Int.MAX_VALUE,
+    val overflow: TextOverflow = TextOverflow.Clip,
+    val autoSize: TextAutoSize? = null,
+    val onTextLayout: ((TextLayoutResult) -> Unit)? = null
+)
+
+/**
+ * A range's decoration over the Label's own: the Label's underline / strikethrough ([base], from the style) stay on
+ * the range and the range adds its own, as iOS draws them (the Text's `.underline` under the range's underlineStyle).
+ * Null when the range declares none, so the span inherits the Label's — `TextDecoration.None` here took the Label's
+ * line off every range (ticket kjui-label-underline-dropped-with-partial-attributes).
+ */
+internal fun rangeDecoration(base: TextDecoration?, underline: Boolean, strikethrough: Boolean): TextDecoration? {
+    if (!underline && !strikethrough) return null
+    val lines = buildList {
+        if (base != null && base != TextDecoration.None) add(base)
+        if (underline) add(TextDecoration.Underline)
+        if (strikethrough) add(TextDecoration.LineThrough)
+    }
+    return TextDecoration.combine(lines)
 }
 
 @Composable
@@ -155,7 +194,8 @@ private fun PartialAttributesTextImpl(
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
     fontScaling: Boolean? = null,
-    maxFontScale: Float? = null
+    maxFontScale: Float? = null,
+    lineRules: LineRules = LineRules()
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -175,13 +215,7 @@ private fun PartialAttributesTextImpl(
                     fontSize = attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) } ?: style.fontSize,
                     fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
-                    textDecoration = when {
-                        attr.underline && attr.strikethrough ->
-                            TextDecoration.combine(listOf(TextDecoration.Underline, TextDecoration.LineThrough))
-                        attr.underline -> TextDecoration.Underline
-                        attr.strikethrough -> TextDecoration.LineThrough
-                        else -> TextDecoration.None
-                    }
+                    textDecoration = rangeDecoration(style.textDecoration, attr.underline, attr.strikethrough)
                 )
 
                 try {
@@ -201,7 +235,8 @@ private fun PartialAttributesTextImpl(
         annotatedString = annotatedString,
         partialAttributes = partialAttributes,
         modifier = modifier,
-        style = style
+        style = style,
+        lineRules = lineRules
     )
 }
 
@@ -214,7 +249,8 @@ private fun LinkablePartialAttributesText(
     linksEnabled: Boolean = true,
     linkColor: Color = Configuration.Colors.linkColor,
     fontScaling: Boolean? = null,
-    maxFontScale: Float? = null
+    maxFontScale: Float? = null,
+    lineRules: LineRules = LineRules()
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -241,13 +277,7 @@ private fun LinkablePartialAttributesText(
                     fontSize = attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) } ?: style.fontSize,
                     fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
-                    textDecoration = when {
-                        attr.underline && attr.strikethrough ->
-                            TextDecoration.combine(listOf(TextDecoration.Underline, TextDecoration.LineThrough))
-                        attr.underline -> TextDecoration.Underline
-                        attr.strikethrough -> TextDecoration.LineThrough
-                        else -> TextDecoration.None
-                    }
+                    textDecoration = rangeDecoration(style.textDecoration, attr.underline, attr.strikethrough)
                 )
 
                 try {
@@ -271,7 +301,7 @@ private fun LinkablePartialAttributesText(
             addStyle(
                 style = SpanStyle(
                     color = linkColor,
-                    textDecoration = TextDecoration.Underline
+                    textDecoration = rangeDecoration(style.textDecoration, true, false)
                 ),
                 start = match.range.first,
                 end = match.range.last + 1
@@ -297,7 +327,7 @@ private fun LinkablePartialAttributesText(
             addStyle(
                 style = SpanStyle(
                     color = linkColor,
-                    textDecoration = TextDecoration.Underline
+                    textDecoration = rangeDecoration(style.textDecoration, true, false)
                 ),
                 start = match.range.first,
                 end = match.range.last + 1
@@ -323,7 +353,7 @@ private fun LinkablePartialAttributesText(
             addStyle(
                 style = SpanStyle(
                     color = linkColor,
-                    textDecoration = TextDecoration.Underline
+                    textDecoration = rangeDecoration(style.textDecoration, true, false)
                 ),
                 start = match.range.first,
                 end = match.range.last + 1
@@ -336,7 +366,8 @@ private fun LinkablePartialAttributesText(
         annotatedString = annotatedString,
         partialAttributes = partialAttributes,
         modifier = modifier,
-        style = style
+        style = style,
+        lineRules = lineRules
     )
 }
 
@@ -371,7 +402,8 @@ private fun PartialTextWithRangeHitTargets(
     annotatedString: AnnotatedString,
     partialAttributes: List<PartialAttribute>,
     modifier: Modifier,
-    style: TextStyle
+    style: TextStyle,
+    lineRules: LineRules = LineRules()
 ) {
     val clickableAttrs = partialAttributes.filter { attr ->
         attr.onClick != null &&
@@ -379,7 +411,11 @@ private fun PartialTextWithRangeHitTargets(
     }
 
     if (clickableAttrs.isEmpty()) {
-        Text(text = annotatedString, modifier = modifier, style = style)
+        Text(
+            text = annotatedString, modifier = modifier, style = style,
+            maxLines = lineRules.maxLines, overflow = lineRules.overflow, autoSize = lineRules.autoSize,
+            onTextLayout = { lineRules.onTextLayout?.invoke(it) }
+        )
         return
     }
 
@@ -392,7 +428,10 @@ private fun PartialTextWithRangeHitTargets(
             Text(
                 text = annotatedString,
                 style = style,
-                onTextLayout = { layoutHolder.value = it }
+                maxLines = lineRules.maxLines,
+                overflow = lineRules.overflow,
+                autoSize = lineRules.autoSize,
+                onTextLayout = { layoutHolder.value = it; lineRules.onTextLayout?.invoke(it) }
             )
             clickableAttrs.forEach { attr ->
                 val rangeText = fullText.substring(attr.startIndex, attr.endIndex)

@@ -109,8 +109,8 @@ class DynamicTextComponent {
 
             when {
                 partialAttributes.isNotEmpty() ->
-                    createPartialAttributesText(json, a, partialAttributes, text, data, context)
-                isLinkable -> createLinkableText(json, a, text, data, context)
+                    createPartialAttributesText(json, a, partialAttributes, text, data, context, hintStyle)
+                isLinkable -> createLinkableText(json, a, text, data, context, hintStyle)
                 else -> createStandardText(json, a, text, data, context, hintStyle)
             }
         }
@@ -249,16 +249,7 @@ class DynamicTextComponent {
             }
 
             // Overflow
-            val overflow = when {
-                lines != null && lines > 0 -> TextOverflow.Ellipsis
-                else -> when (
-                    DeclaredSpelling.lowered(TypedAttrs.enumString(a.lineBreakMode) { it.json }, LabelAttributes.LineBreakMode.declaredSpellings)
-                ) {
-                    "clip" -> TextOverflow.Clip
-                    "tail", "word", "truncatetail" -> TextOverflow.Ellipsis
-                    else -> TextOverflow.Clip
-                }
-            }
+            val overflow = overflowOf(a, lines)
 
             // Build style (shadow, lineHeight)
             val overrideLineHeightMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
@@ -335,25 +326,151 @@ class DynamicTextComponent {
             a: LabelAttributes,
             text: String,
             data: Map<String, Any>,
-            context: Context
+            context: Context,
+            hintStyle: Map<String, Any?>? = null
         ) {
-            val style = buildFullTextStyle(a, data, context, json)
-            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
-                .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
+            val wide = labelWide(json, a, data, context, buildFullTextStyle(a, data, context, json), hintStyle)
 
             PartialAttributesText(
                 text = text,
                 linkable = true,
-                modifier = modifier,
-                style = style,
+                modifier = wide.modifier,
+                style = wide.style,
                 linksEnabled = linksEnabled(json, data),
                 fontScaling = json.fontScalingAttr(),
                 maxFontScale = json.maxFontScaleAttr(),
                 // tintColor is the links' colour — the accent of what can be
                 // operated, not the text's (4f ruling, 2026-09-26); without
                 // one, Configuration.Colors.linkColor as before
-                linkColor = linkColor(a, data, context)
+                linkColor = linkColor(a, data, context),
+                maxLines = wide.maxLines,
+                overflow = wide.overflow,
+                autoSize = wide.autoSize,
+                onTextLayout = wide.onTextLayout
             )
+        }
+
+        /** A Label's overflow: Ellipsis under a positive `lines`, else its lineBreakMode's (clip by default). */
+        private fun overflowOf(a: LabelAttributes, lines: Int?): TextOverflow = when {
+            lines != null && lines > 0 -> TextOverflow.Ellipsis
+            else -> when (
+                DeclaredSpelling.lowered(TypedAttrs.enumString(a.lineBreakMode) { it.json }, LabelAttributes.LineBreakMode.declaredSpellings)
+            ) {
+                "clip" -> TextOverflow.Clip
+                "tail", "word", "truncatetail" -> TextOverflow.Ellipsis
+                else -> TextOverflow.Clip
+            }
+        }
+
+        /** What a partial or linkable Label passes PartialAttributesText besides its text and ranges. */
+        private class LabelWide(
+            val style: TextStyle,
+            val modifier: Modifier,
+            val maxLines: Int,
+            val overflow: TextOverflow,
+            val autoSize: TextAutoSize?,
+            val onTextLayout: ((androidx.compose.ui.text.TextLayoutResult) -> Unit)?
+        )
+
+        /**
+         * The Label's own attributes on a partial / linkable Label, as the plain Label applies them (ticket
+         * kjui-label-underline-dropped-with-partial-attributes: these paths drew only the font, its size, colour and
+         * alignment, and dropped underline, strikethrough, lines, lineBreakMode, lineHeightMultiple, lineSpacing,
+         * textShadow, autoShrink, minimumScaleFactor, edgeInset, disabledFontColor, highlight* and hint* without a
+         * word, while iOS and the web applied them). Over [base] — buildFullTextStyle, kept as it was so a partial
+         * Label that declares none of them draws as before — each one only when it is declared. The codegen face
+         * (text_component.rb, partial / linkable) emits the same.
+         */
+        @Composable
+        private fun labelWide(
+            json: JsonObject,
+            a: LabelAttributes,
+            data: Map<String, Any>,
+            context: Context,
+            base: TextStyle,
+            hintStyle: Map<String, Any?>?
+        ): LabelWide {
+            var style = base
+            // highlightAttributes / highlightColor while selected, the hint bag while the hint shows: as createStandardText
+            val isSelected = TypedAttrs.boolean(a.selected, data) == true
+            val hl: Map<String, Any?>? = hintStyle
+                ?: if (isSelected) a.highlightAttributes?.takeIf { it.isNotEmpty() } else null
+            val hlFallbackColor: String? =
+                if (hintStyle == null && isSelected && hl == null) TypedAttrs.rawString(a.highlightColor) else null
+            val overrideColor = ((hl?.get("fontColor") as? String) ?: hlFallbackColor)
+                ?.let { ColorParser.parseColorStringWithBinding(it, data, context) }
+                ?: hintStyle?.let { com.kotlinjsonui.core.Configuration.TextField.defaultPlaceholderColor }
+            val enabledColor = overrideColor ?: style.color.takeIf { it != Color.Unspecified }
+            val fontColor = if (TypedAttrs.boolean(a.common.enabled, data) == false) {
+                ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.disabledFontColor), data, context) ?: enabledColor
+            } else enabledColor
+            fontColor?.let { if (it != style.color) style = style.copy(color = it) }
+            (hl?.get("fontSize") as? Number)?.toFloat()?.let { size ->
+                style = style.copy(fontSize = json.fontSized(size.sp), letterSpacing = json.letterSpaced())
+            }
+            (hl?.get("font") as? String)?.let { hlFont ->
+                // the highlight's `font`, a weight name or a family, as createStandardText reads it
+                val weight =
+                    WEIGHT_NAMES[hlFont.lowercase()]
+                weight?.let { style = style.copy(fontWeight = it) }
+                    ?: resolveFontResource(hlFont, context)?.let { style = style.copy(fontFamily = it) }
+            }
+            (hl?.get("textAlign") as? String)?.let { align ->
+                when (align.lowercase()) {
+                    "center" -> TextAlign.Center
+                    "right" -> TextAlign.End
+                    "left" -> TextAlign.Start
+                    else -> null
+                }
+            }?.let { style = style.copy(textAlign = it) }
+
+            // underline / strikethrough: the native decoration, or the drawn face for one that declares a colour
+            val textColor = fontColor ?: androidx.compose.material3.LocalContentColor.current
+            val underlineLine = decorationLineSpec(a.underline, data, context, textColor)
+            val strikethroughLine = decorationLineSpec(a.strikethrough, data, context, textColor)
+            val underlineOffset = decorationLineOffset(a.underline)
+            resolveTextDecoration(a, suppressUnderline = underlineLine != null, suppressStrikethrough = strikethroughLine != null)
+                ?.let { style = style.copy(textDecoration = it) }
+            val lineState = if (underlineLine != null || strikethroughLine != null) {
+                androidx.compose.runtime.remember { StyledLineState() }
+            } else null
+
+            // its own line height (lineHeightMultiple / lineSpacing) and shadow; with neither, the theme's as before
+            val ownMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
+            if (ownMultiple != null || TypedAttrs.float(a.lineHeightMultiple, data) != null ||
+                TypedAttrs.float(a.lineSpacing, data) != null || a.textShadow != null) {
+                val drawn = buildTextStyle(a, data, TypedAttrs.float(a.fontSize, data), overrideLineHeightMultiple = ownMultiple, json = json)
+                if (ownMultiple != null || TypedAttrs.float(a.lineHeightMultiple, data) != null || TypedAttrs.float(a.lineSpacing, data) != null) {
+                    drawn?.lineHeight?.let { style = style.copy(lineHeight = it) }
+                }
+                if (a.textShadow != null) drawn?.shadow?.let { style = style.copy(shadow = it) }
+            }
+            val betweenLines = if ((ownMultiple ?: TypedAttrs.float(a.lineHeightMultiple, data)) == null)
+                TypedAttrs.float(a.lineSpacing, data) else null
+
+            // lines / lineBreakMode / autoShrink / minimumScaleFactor
+            val lines = TypedAttrs.int(a.lines, data)
+            val maxLines = if (lines == null || lines == 0) Int.MAX_VALUE else lines
+            val overflow = overflowOf(a, lines)
+            val fontSize = TypedAttrs.float(a.fontSize, data)
+            val autoSize = if (a.autoShrink == true || a.minimumScaleFactor != null) TextAutoSize.StepBased(
+                minFontSize = ((fontSize ?: 14f) * (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
+                maxFontSize = json.fontSized((fontSize ?: 14f).sp)
+            ) else null
+
+            // the modifier as before, then edgeInset, the line faces and the underline's offset as the plain Label's
+            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
+            modifier = applyEdgeInset(modifier, a.edgeInset)
+            labelVerticalAlignment(json)?.let { modifier = modifier.wrapContentHeight(align = it) }
+            betweenLines?.let { modifier = modifier.lineSpacingBetween(it) }
+            if (lineState != null) {
+                modifier = modifier.styledTextLines(lineState, underline = underlineLine, strikethrough = strikethroughLine)
+            }
+            if (underlineOffset != null && underlineOffset != 0f) {
+                val shift = underlineOffset
+                modifier = modifier.graphicsLayer { translationY = -shift.dp.toPx() }
+            }
+            return LabelWide(style, modifier, maxLines, overflow, autoSize, lineState?.let { st -> { st.layout = it } })
         }
 
         /** A linkable Label's link colour: its tintColor, or Unspecified (the configured link colour). */
@@ -370,7 +487,8 @@ class DynamicTextComponent {
             partialAttrMaps: List<Map<*, *>>,
             text: String,
             data: Map<String, Any>,
-            context: Context
+            context: Context,
+            hintStyle: Map<String, Any?>? = null
         ) {
             val partialAttributes = mutableListOf<PartialAttribute>()
 
@@ -412,18 +530,20 @@ class DynamicTextComponent {
                 }
             }
 
-            val style = buildFullTextStyle(a, data, context, json)
-            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
-                .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
+            val wide = labelWide(json, a, data, context, buildFullTextStyle(a, data, context, json), hintStyle)
 
             PartialAttributesText(
                 text = text,
                 partialAttributes = partialAttributes,
-                modifier = modifier,
-                style = style,
+                modifier = wide.modifier,
+                style = wide.style,
                 linksEnabled = linksEnabled(json, data),
                 fontScaling = json.fontScalingAttr(),
-                maxFontScale = json.maxFontScaleAttr()
+                maxFontScale = json.maxFontScaleAttr(),
+                maxLines = wide.maxLines,
+                overflow = wide.overflow,
+                autoSize = wide.autoSize,
+                onTextLayout = wide.onTextLayout
             )
         }
 
