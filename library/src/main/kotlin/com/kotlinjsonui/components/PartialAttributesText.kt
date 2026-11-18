@@ -30,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.em
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.LocalInteractionStopped
 import kotlin.math.roundToInt
@@ -172,6 +174,25 @@ private data class LineRules(
 )
 
 /**
+ * A range's font size ([declared], already through FontScaling) on the Label's [base] size.
+ *
+ * Undeclared: [TextUnit.Unspecified], so the range takes the Label's size — the size autoSize shrinks. The Label's
+ * own size written into the span held the range at it while autoSize shrank the rest: a partial Label under
+ * autoShrink / minimumScaleFactor kept its range's glyphs full-size and broke onto a second line where iOS shrinks
+ * the whole text onto one (Label/minimumScaleFactor__static_with_partial; ticket
+ * kjui-label-underline-dropped-with-partial-attributes).
+ *
+ * Declared, while the Label [shrinks]: the same size as a share of the Label's ([TextUnit.em]), so autoSize scales it
+ * with the rest — iOS's `.minimumScaleFactor` scales the whole Text, a range's own font included. Otherwise the
+ * declared size itself, as before.
+ */
+internal fun rangeFontSize(declared: TextUnit?, base: TextUnit, shrinks: Boolean): TextUnit = when {
+    declared == null -> TextUnit.Unspecified
+    shrinks && declared.isSp && base.isSp && base.value > 0f -> (declared.value / base.value).em
+    else -> declared
+}
+
+/**
  * A range's decoration over the Label's own: the Label's underline / strikethrough ([base], from the style) stay on
  * the range and the range adds its own, as iOS draws them (the Text's `.underline` under the range's underlineStyle).
  * Null when the range declares none, so the span inherits the Label's — `TextDecoration.None` here took the Label's
@@ -212,7 +233,11 @@ private fun PartialAttributesTextImpl(
                 // Build SpanStyle
                 val spanStyle = SpanStyle(
                     color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
-                    fontSize = attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) } ?: style.fontSize,
+                    fontSize = rangeFontSize(
+                        attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) },
+                        style.fontSize,
+                        shrinks = lineRules.autoSize != null
+                    ),
                     fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = rangeDecoration(style.textDecoration, attr.underline, attr.strikethrough)
@@ -274,7 +299,11 @@ private fun LinkablePartialAttributesText(
                 // Build SpanStyle
                 val spanStyle = SpanStyle(
                     color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
-                    fontSize = attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) } ?: style.fontSize,
+                    fontSize = rangeFontSize(
+                        attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) },
+                        style.fontSize,
+                        shrinks = lineRules.autoSize != null
+                    ),
                     fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = rangeDecoration(style.textDecoration, attr.underline, attr.strikethrough)
