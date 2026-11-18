@@ -67,18 +67,23 @@ object LabelLineHeight {
     }
 
     /**
-     * A Label's [lineHeight] while autoShrink / minimumScaleFactor may shrink its text: the same height as a share of
-     * the [fontSize] it is drawn at ([TextUnit.em]), so the lines shrink with the glyphs (ticket
-     * kjui-autoshrink-keeps-the-line-height). Compose's TextAutoSize changes the font size only: a line height in sp
-     * stayed — the theme's 24sp, or fontSize x 1.3 — and a 40-high Label fitted two shrunk lines where web (the
-     * autoShrink canon) fits all three. Unshrunk, the share gives the same height as before. A [fontSize] that is not
-     * in sp (unspecified: the Label declares none) takes [fallbackFontSize], the size the Text draws then; a line
-     * height or a size that is not in sp stays as it is.
+     * The size a Label's TextAutoSize starts from and never grows past (its maxFontSize): the declared font size, or
+     * [AUTO_SIZE_DEFAULT_CEILING] when none is declared — not the theme's body size. Both faces pass this one value
+     * to autoSize and to [shrinking] (the codegen writes the same `fontSize || 14`).
      */
-    fun shrinking(lineHeight: TextUnit, fontSize: TextUnit, fallbackFontSize: TextUnit): TextUnit {
-        val size = if (fontSize.isSpecified && fontSize.isSp) fontSize else fallbackFontSize
-        if (!lineHeight.isSpecified || !lineHeight.isSp || !size.isSpecified || !size.isSp || size.value <= 0f) return lineHeight
-        return (lineHeight.value / size.value).em
+    const val AUTO_SIZE_DEFAULT_CEILING = 14f
+
+    /**
+     * A Label's [lineHeight] while autoShrink / minimumScaleFactor may shrink its text: the same height as a share of
+     * the [ceiling] the text is drawn at until it shrinks ([TextUnit.em]), so the lines shrink with the glyphs and,
+     * unshrunk, are exactly as tall as before (ticket kjui-autoshrink-keeps-the-line-height). Compose's TextAutoSize
+     * changes the font size only: a line height in sp stayed while the text shrank. [ceiling] is autoSize's
+     * maxFontSize; a share of any other size drew a Label that did not shrink at another height — the theme's 16sp
+     * body put a 24sp line at 21 under a 14sp ceiling. A line height or a ceiling that is not in sp stays as it is.
+     */
+    fun shrinking(lineHeight: TextUnit, ceiling: TextUnit): TextUnit {
+        if (!lineHeight.isSpecified || !lineHeight.isSp || !ceiling.isSpecified || !ceiling.isSp || ceiling.value <= 0f) return lineHeight
+        return (lineHeight.value / ceiling.value).em
     }
 }
 
