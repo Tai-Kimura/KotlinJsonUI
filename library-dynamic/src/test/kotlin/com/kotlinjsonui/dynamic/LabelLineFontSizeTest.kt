@@ -24,4 +24,13 @@ class LabelLineFontSizeTest {
         assertEquals(14f, DynamicTextComponent.lineFontSize(null, 14f))
         assertNull(DynamicTextComponent.lineFontSize(null, null))
     }
+
+    // a partial Label with a font size of its own draws the plain Label's line (size x 1.3), not the theme's
+    @Test
+    fun `a declared font size, a lineHeightMultiple or a lineSpacing is a line of the Label's own`() {
+        assertEquals(true, DynamicTextComponent.hasOwnLine(14f, null, null))
+        assertEquals(true, DynamicTextComponent.hasOwnLine(null, 1.5f, null))
+        assertEquals(true, DynamicTextComponent.hasOwnLine(null, null, 4f))
+        assertEquals(false, DynamicTextComponent.hasOwnLine(null, null, null))
+    }
 }
