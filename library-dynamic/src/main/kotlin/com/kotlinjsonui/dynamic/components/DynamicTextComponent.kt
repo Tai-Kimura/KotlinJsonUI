@@ -369,6 +369,15 @@ class DynamicTextComponent {
         internal fun lineFontSize(styleBag: Map<String, Any?>?, declared: Float?): Float? =
             (styleBag?.get("fontSize") as? Number)?.toFloat() ?: declared
 
+        /**
+         * Whether a Label draws a line of its own rather than the theme's: it declares a font size (its line is size x
+         * 1.3), a lineHeightMultiple or a lineSpacing — what buildTextStyle reads for the plain Label. The partial /
+         * linkable path kept the theme's line under a declared font size: a 14sp partial Label drew its lines 24 apart
+         * where the plain Label and iOS draw 18.2 (ticket kjui-label-underline-dropped-with-partial-attributes).
+         */
+        internal fun hasOwnLine(fontSize: Float?, lineHeightMultiple: Float?, lineSpacing: Float?): Boolean =
+            fontSize != null || lineHeightMultiple != null || lineSpacing != null
+
         /** A Label's overflow: Ellipsis under a positive `lines`, else its lineBreakMode's (clip by default). */
         private fun overflowOf(a: LabelAttributes, lines: Int?): TextOverflow = when {
             lines != null && lines > 0 -> TextOverflow.Ellipsis
@@ -458,10 +467,10 @@ class DynamicTextComponent {
             val ownMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
             // the size its lines are reckoned from: the highlight's (or the hint's) while in force, as the plain Label
             val fontSize = lineFontSize(hl, TypedAttrs.float(a.fontSize, data))
-            if (ownMultiple != null || TypedAttrs.float(a.lineHeightMultiple, data) != null ||
-                TypedAttrs.float(a.lineSpacing, data) != null || a.textShadow != null) {
+            val ownLine = hasOwnLine(fontSize, ownMultiple ?: TypedAttrs.float(a.lineHeightMultiple, data), TypedAttrs.float(a.lineSpacing, data))
+            if (ownLine || a.textShadow != null) {
                 val drawn = buildTextStyle(a, data, fontSize, overrideLineHeightMultiple = ownMultiple, json = json)
-                if (ownMultiple != null || TypedAttrs.float(a.lineHeightMultiple, data) != null || TypedAttrs.float(a.lineSpacing, data) != null) {
+                if (ownLine) {
                     drawn?.lineHeight?.let { style = style.copy(lineHeight = it) }
                 }
                 if (a.textShadow != null) drawn?.shadow?.let { style = style.copy(shadow = it) }
@@ -898,15 +907,12 @@ class DynamicTextComponent {
             // tighter letterSpacing and leading than the codegen face
             // (Label_linkable__true/binding parity d=33, run 31283456670).
             //
-            // And ONLY the base: the codegen face's PartialAttributesText
-            // style carries color/font/textAlign fragments and NEVER a
-            // lineHeight (text_component.rb partial style_parts — even a
-            // declared lineHeightMultiple emits nothing there), so the
-            // ambient theme's line height survives. Routing this through
-            // buildTextStyle injected the plain-path fontSize*1.3 default,
-            // and a partial-attributed label rendered a different line
-            // height than its codegen twin wherever the app theme sets one
-            // (downstream hour rows, 2026-08-10).
+            // ONLY the base here: the Label's own line (a declared size x 1.3,
+            // a lineHeightMultiple, a lineSpacing) is laid over it by labelWide,
+            // as the plain Label and the codegen face's partial branch draw it
+            // (2.64.0; until then both partial faces kept the theme's line under
+            // a declared size, and a 14sp partial Label drew 24 where the plain
+            // one draws 18.2).
             var style = androidx.compose.material3.LocalTextStyle.current
             // Through the app's fontProvider (P1): a slot it gives wins over the declared one below.
             val provided = ResourceResolver.providerFont(
