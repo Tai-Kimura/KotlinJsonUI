@@ -1,8 +1,8 @@
 package com.kotlinjsonui.dynamic.components
 
 import com.kotlinjsonui.core.jsonUITintOrNull
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
+import com.kotlinjsonui.components.JsonUISlider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.*
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -177,16 +177,6 @@ class DynamicSliderComponent {
             val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "trackTintColor", data, context)
                 ?: ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
 
-            val colors = if (thumbColor != null || activeTrackColor != null || inactiveTrackColor != null) {
-                SliderDefaults.colors(
-                    thumbColor = thumbColor ?: SliderDefaults.colors().thumbColor,
-                    activeTrackColor = activeTrackColor ?: SliderDefaults.colors().activeTrackColor,
-                    inactiveTrackColor = inactiveTrackColor ?: SliderDefaults.colors().inactiveTrackColor
-                )
-            } else {
-                SliderDefaults.colors()
-            }
-
             // Build modifier: the standard stages; the clickable stage is a
             // control's (no outer click — onClick is called when the value
             // change finishes), and `enabled` is the Slider's own, on this node.
@@ -199,8 +189,9 @@ class DynamicSliderComponent {
             // kjui's codegen emits it (onValueChangeFinished).
             val onClick = ModifierBuilder.onClickFromOperation(json, data)
 
-            // Create the Slider
-            Slider(
+            // The Slider is KotlinJsonUI's JsonUISlider, as kjui's codegen emits it: how material3
+            // draws a slider is written there once. A colour not given is the theme's (Unspecified).
+            JsonUISlider(
                 value = sliderValue,
                 onValueChange = onValueChange,
                 onValueChangeFinished = onClick,
@@ -208,7 +199,9 @@ class DynamicSliderComponent {
                 steps = steps,
                 modifier = modifier,
                 enabled = isEnabled,
-                colors = colors
+                thumbColor = thumbColor ?: Color.Unspecified,
+                activeTrackColor = activeTrackColor ?: Color.Unspecified,
+                inactiveTrackColor = inactiveTrackColor ?: Color.Unspecified
             )
         }
     }

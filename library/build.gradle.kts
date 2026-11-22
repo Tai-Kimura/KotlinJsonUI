@@ -9,7 +9,8 @@ plugins {
 
 android {
     namespace = "com.kotlinjsonui"
-    compileSdk = 37
+    // Compose 1.13 (compose-bom 2026.11.01) needs SDK 37.1
+    compileSdk { version = release(37) { minorApiLevel = 1 } }
 
     defaultConfig {
         minSdk = 24
@@ -163,7 +164,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.11.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")

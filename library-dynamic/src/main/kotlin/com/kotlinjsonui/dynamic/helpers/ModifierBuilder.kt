@@ -14,7 +14,6 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -42,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.kotlinjsonui.components.collectionReorderActions
 import com.kotlinjsonui.components.collectionReorderHandle
+import com.kotlinjsonui.components.jsonUIPanGesture
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
@@ -1153,16 +1153,9 @@ object ModifierBuilder {
         if (gesturesShut(json, data)) return modifier
         if (panNotApplicable(json)) return modifier
         val viewId = LayoutPath.viewId(json)
-        return modifier.pointerInput(handler, data) {
-            var total = Offset.Zero
-            detectDragGestures(
-                onDragStart = { total = Offset.Zero },
-                onDrag = { change, dragAmount ->
-                    change.consume()
-                    total += dragAmount
-                    resolveEventHandler(handler, data, viewId, total)
-                }
-            )
+        // KotlinJsonUI's jsonUIPanGesture, as kjui's codegen emits it: how a drag is read is written there once.
+        return modifier.jsonUIPanGesture(handler to data) { total ->
+            resolveEventHandler(handler, data, viewId, total)
         }
     }
 

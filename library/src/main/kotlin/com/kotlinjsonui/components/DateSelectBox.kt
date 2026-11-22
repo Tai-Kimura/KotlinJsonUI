@@ -88,9 +88,7 @@ fun DateSelectBox(
     doneButtonText: String? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true  // Always expand to full height
-    )
+    val sheetState = rememberJsonUISheetState() // Always expand to full height
     val scope = rememberCoroutineScope()
     
     // Parse the current date/time value

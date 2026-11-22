@@ -242,9 +242,7 @@ fun SelectBox(
     cancelButtonText: String? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true  // Always expand to full height
-    )
+    val sheetState = rememberJsonUISheetState() // Always expand to full height
     val scope = rememberCoroutineScope()
     val layoutDirection = LocalLayoutDirection.current
     
@@ -504,7 +502,7 @@ fun <T> SelectBox(
     cancelButtonText: String? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberJsonUISheetState()
     val scope = rememberCoroutineScope()
     val displayText = options.find { it.value == value }?.label ?: ""
     // Same caret contract as the String overload (this overload's row inset

@@ -1,5 +1,6 @@
 package com.example.kotlinjsonui.sample.views.components_test
 
+import com.kotlinjsonui.components.JsonUISlider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,7 +19,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -253,17 +253,15 @@ private fun Section0(
                         .semantics { testTagsAsResourceId = true },
                     color = jsonUITintOr(MaterialTheme.colorScheme.primary)
                 )
-                Slider(
+                JsonUISlider(
                     value = data.slider1Value.toFloat(),
                     onValueChange = { newValue -> viewModel.updateData(mapOf("slider1Value" to newValue.toDouble())) },
                     valueRange = 0.0f..1.0f,
                     modifier = Modifier
                         .testTag("slider1")
                         .semantics { testTagsAsResourceId = true },
-                    colors = SliderDefaults.colors(
-                        thumbColor = jsonUITintOr(MaterialTheme.colorScheme.primary),
-                        activeTrackColor = jsonUITintOr(MaterialTheme.colorScheme.primary)
-                    )
+                    thumbColor = jsonUITintOr(MaterialTheme.colorScheme.primary),
+                    activeTrackColor = jsonUITintOr(MaterialTheme.colorScheme.primary)
                 )
                 val resolved_text4 = Configuration.Font.resolve(FontSpec(
                     family = null,

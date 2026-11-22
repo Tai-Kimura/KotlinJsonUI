@@ -132,6 +132,19 @@ class CollectionReorderTest {
         assertEquals(listOf(3), clicks); assertTrue("moves $moves", moves.isEmpty())
     }
 
+    // While a row is dragged every change of its finger is the drag's (consumePointerWhile); once it is let go the
+    // list scrolls under a swipe as before (ticket kjui-slider-deprecated-in-material3-1-5).
+    @Test fun after_a_row_is_dragged_held_and_let_go_a_swipe_scrolls_the_list() {
+        lazy(30)
+        drag("row_3", 2.2f, holdMs = 500)
+        assertEquals(listOf(Triple(0, 3, 5)), moves)
+        rule.onNodeWithTag("row_0", true).assertExists()
+        rule.onNodeWithTag("list").performTouchInput { swipeUp(durationMillis = 200) }
+        rule.waitForIdle()
+        rule.onNodeWithTag("row_0", true).assertDoesNotExist()
+        assertEquals(listOf(Triple(0, 3, 5)), moves)
+    }
+
     @Test fun a_long_press_and_drag_reports_one_move_and_no_click() {
         lazy(30)
         drag("row_1", 2.2f)

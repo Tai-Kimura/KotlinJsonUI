@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.core.Configuration
@@ -103,93 +102,27 @@ fun CustomTextField(
     val effectiveShape = shape ?: RoundedCornerShape(0.dp)
     val effectiveTextStyle = textStyle.copy(color = textStyle.color.takeIf { it != Color.Unspecified } ?: Color.Black)
 
-    // Shared decoration logic extracted to a composable
+    // The decoration (placeholder, padding, container, outline) is JsonUITextFieldDecoration's.
     @Composable
     fun DecorationContent(innerTextField: @Composable () -> Unit) {
-        if (isOutlined) {
-            // A 0 stroke is a hairline in Compose, not no line.
-            val outlineColor = if (borderWidth != null && borderWidth <= 0.dp) {
-                Color.Transparent
-            } else {
-                borderColor ?: Configuration.TextField.defaultBorderColor
-            }
-            OutlinedTextFieldDefaults.DecorationBox(
-                value = state.text.toString(),
-                innerTextField = innerTextField,
-                enabled = enabled,
-                singleLine = singleLine,
-                visualTransformation = VisualTransformation.None,
-                interactionSource = interactionSource,
-                isError = isError,
-                placeholder = placeholder,
-                contentPadding = effectiveContentPadding,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = outlineColor,
-                    unfocusedBorderColor = outlineColor,
-                    focusedTextColor = effectiveTextStyle.color,
-                    unfocusedTextColor = effectiveTextStyle.color,
-                    focusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor,
-                    unfocusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
-                ),
-                container = {
-                    OutlinedTextFieldDefaults.Container(
-                        enabled = enabled,
-                        isError = isError,
-                        interactionSource = interactionSource,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = outlineColor,
-                            unfocusedBorderColor = outlineColor,
-                            focusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor,
-                            unfocusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
-                        ),
-                        shape = effectiveShape,
-                        focusedBorderThickness = when {
-                            borderWidth == null -> OutlinedTextFieldDefaults.FocusedBorderThickness
-                            borderWidth <= 0.dp -> 0.dp
-                            else -> maxOf(borderWidth, OutlinedTextFieldDefaults.FocusedBorderThickness)
-                        },
-                        unfocusedBorderThickness = borderWidth ?: OutlinedTextFieldDefaults.UnfocusedBorderThickness
-                    )
-                }
-            )
-        } else {
-            TextFieldDefaults.DecorationBox(
-                value = state.text.toString(),
-                innerTextField = innerTextField,
-                enabled = enabled,
-                singleLine = singleLine,
-                visualTransformation = VisualTransformation.None,
-                interactionSource = interactionSource,
-                isError = isError,
-                placeholder = placeholder,
-                contentPadding = effectiveContentPadding,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = focusedBackground,
-                    unfocusedContainerColor = unfocusedBackground,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ),
-                container = {
-                    val bg = if (isFocused) focusedBackground else unfocusedBackground
-                    if (bg != Color.Transparent) {
-                        TextFieldDefaults.Container(
-                            enabled = enabled,
-                            isError = isError,
-                            interactionSource = interactionSource,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = if (isFocused) focusedBackground else unfocusedBackground,
-                                unfocusedContainerColor = unfocusedBackground,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
-                            ),
-                            shape = effectiveShape
-                        )
-                    }
-                }
-            )
-        }
+        JsonUITextFieldDecoration(
+            state = state,
+            innerTextField = innerTextField,
+            outlined = isOutlined,
+            enabled = enabled,
+            singleLine = singleLine,
+            interactionSource = interactionSource,
+            isError = isError,
+            placeholder = placeholder,
+            contentPadding = effectiveContentPadding,
+            shape = effectiveShape,
+            textColor = effectiveTextStyle.color,
+            isFocused = isFocused,
+            focusedBackground = focusedBackground,
+            unfocusedBackground = unfocusedBackground,
+            borderColor = borderColor,
+            borderWidth = borderWidth
+        )
     }
 
     // The caret: the field's own tintColor, else the tint a container

@@ -6,6 +6,7 @@
 // `import com.kotlinjsonui.probe.R`.
 package com.kotlinjsonui.conformance.staticvalued
 
+import com.kotlinjsonui.components.JsonUISlider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -400,7 +401,7 @@ private fun Section10(
         }
         run {
             var seeded by remember { mutableStateOf(0.2f) }
-            Slider(
+            JsonUISlider(
                 value = seeded,
                 onValueChange = { seeded = it },
                 valueRange = 0f..1f,

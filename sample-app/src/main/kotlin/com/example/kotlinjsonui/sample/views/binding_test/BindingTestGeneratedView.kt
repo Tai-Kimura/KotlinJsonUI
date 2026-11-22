@@ -1,5 +1,6 @@
 package com.example.kotlinjsonui.sample.views.binding_test
 
+import com.kotlinjsonui.components.JsonUISlider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -16,7 +17,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -417,7 +417,7 @@ private fun Section0(
                     style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
                     modifier = Modifier.padding(top = 30.dp)
                 )
-                Slider(
+                JsonUISlider(
                     value = data.sliderValue.toFloat(),
                     onValueChange = { newValue -> viewModel.updateData(mapOf("sliderValue" to newValue.toDouble())); data.sliderChanged?.invoke("value_slider", newValue) },
                     valueRange = 0f..100f,
@@ -429,10 +429,8 @@ private fun Section0(
                         .padding(end = 20.dp)
                         .fillMaxWidth()
                         .requiredHeight(40.dp),
-                    colors = SliderDefaults.colors(
-                        thumbColor = jsonUITintOr(MaterialTheme.colorScheme.primary),
-                        activeTrackColor = jsonUITintOr(MaterialTheme.colorScheme.primary)
-                    )
+                    thumbColor = jsonUITintOr(MaterialTheme.colorScheme.primary),
+                    activeTrackColor = jsonUITintOr(MaterialTheme.colorScheme.primary)
                 )
                 val resolved_text10 = Configuration.Font.resolve(FontSpec(
                     family = null,

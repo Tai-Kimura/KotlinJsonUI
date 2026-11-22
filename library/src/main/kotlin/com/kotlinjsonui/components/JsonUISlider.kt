@@ -1,23 +1,24 @@
 package com.kotlinjsonui.components
 
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 /**
- * The Slider the kjui codegen emits, with the same parameters and defaults as material3's value-and-callback Slider.
+ * The Slider of a JsonUI Slider, for the kjui codegen and the dynamic Slider alike.
  *
- * It calls material3's value form of Slider. material3 1.5 (compose-bom 2026.11.01) deprecates that form in favour of
- * the one that takes a SliderState with onValueChange / onValueChangeFinished, which material3 1.4 does not have, so
- * no call in generated code compiles without a warning against both; an app built with allWarningsAsErrors failed on
- * 1.5 (ticket kjui-slider-deprecated-in-material3-1-5). Here the call is compiled with KotlinJsonUI, against its own
- * compose-bom, and the generated code calls this: the app sees no deprecated call on 1.4 or 1.5, and material3 1.5
- * still carries the value form, so it runs on both.
+ * Why a wrapper: when Compose changes how a slider is written, only this body changes — generated code and the
+ * dynamic face call this with the values JsonUI knows, and are not emitted again (ticket
+ * kjui-slider-deprecated-in-material3-1-5: material3 1.5 deprecated the value form both called).
  *
- * When KotlinJsonUI's compose-bom reaches material3 1.5 or later, switch the body to the SliderState form (the
- * parameters here stay as they are).
+ * The body is material3 1.5's SliderState form, written as material3's own value form was: one SliderState per range
+ * and steps, its value set from [value] on every composition, so a bound value moves the thumb and a drag reports
+ * through [onValueChange] and [onValueChangeFinished] as before. The colours are JsonUI's (thumbTintColor /
+ * tintColor, progressTintColor, trackTintColor); [Color.Unspecified] is the theme's, as material3's default.
  */
 @Composable
 fun JsonUISlider(
@@ -28,16 +29,22 @@ fun JsonUISlider(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     steps: Int = 0,
     onValueChangeFinished: (() -> Unit)? = null,
-    colors: SliderColors = SliderDefaults.colors()
+    thumbColor: Color = Color.Unspecified,
+    activeTrackColor: Color = Color.Unspecified,
+    inactiveTrackColor: Color = Color.Unspecified
 ) {
+    val state = remember(steps, valueRange) { SliderState(value, steps, valueRange) }
+    state.value = value
     Slider(
-        value = value,
+        state = state,
         onValueChange = onValueChange,
         modifier = modifier,
         enabled = enabled,
-        valueRange = valueRange,
-        steps = steps,
         onValueChangeFinished = onValueChangeFinished,
-        colors = colors
+        colors = SliderDefaults.colors(
+            thumbColor = thumbColor,
+            activeTrackColor = activeTrackColor,
+            inactiveTrackColor = inactiveTrackColor
+        )
     )
 }

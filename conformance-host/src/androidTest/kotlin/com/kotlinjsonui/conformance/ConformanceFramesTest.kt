@@ -1,5 +1,6 @@
 package com.kotlinjsonui.conformance
 
+import com.kotlinjsonui.components.JsonUISlider
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Slider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
@@ -214,7 +214,7 @@ class ConformanceFramesTest {
     fun aMaterialControlReportsItsLayoutBoxNotItsWidenedSemanticsBounds() {
         rule.setContent {
             Box(Modifier.fillMaxSize().testTag("root")) {
-                Slider(value = 0.5f, onValueChange = {}, modifier = Modifier.padding(top = 100.dp).width(200.dp).testTag("slider"))
+                JsonUISlider(value = 0.5f, onValueChange = {}, modifier = Modifier.padding(top = 100.dp).width(200.dp).testTag("slider"))
                 LinearProgressIndicator(progress = { 0.5f }, modifier = Modifier.padding(top = 300.dp).width(200.dp).testTag("progress"))
             }
         }

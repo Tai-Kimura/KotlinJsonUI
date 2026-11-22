@@ -421,7 +421,11 @@ fun Modifier.collectionReorderHandle(): Modifier = composed {
 private fun Modifier.reorderGesture(ctx: RowContext): Modifier = composed {
     val state = ctx.state
     val drag = state.drag(ctx.section)
-    this.pointerInput(ctx.section, ctx.index) {
+    // While this row is dragged, every change of its pointers is the drag's, a move that went nowhere included
+    // (consumePointerWhile, JsonUIPanGesture.kt): left unconsumed under Compose UI 1.13 it reached the list under the
+    // row, which scrolled while the row was held, and the rows landed one off (ticket
+    // kjui-slider-deprecated-in-material3-1-5: compose-bom 2026.11.01).
+    this.consumePointerWhile(ctx.section to ctx.index) { drag.dragging == ctx.index }.pointerInput(ctx.section, ctx.index) {
         var startRootY = 0f
         detectDragGesturesAfterLongPress(
             onDragStart = { offset ->

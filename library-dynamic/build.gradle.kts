@@ -8,7 +8,8 @@ plugins {
 
 android {
     namespace = "com.kotlinjsonui.dynamic"
-    compileSdk = 37
+    // Compose 1.13 (compose-bom 2026.11.01) needs SDK 37.1
+    compileSdk { version = release(37) { minorApiLevel = 1 } }
 
     defaultConfig {
         minSdk = 24
@@ -80,7 +81,7 @@ dependencies {
     implementation(project(":library"))
 
     // Compose dependencies
-    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.11.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3.adaptive:adaptive")
@@ -110,7 +111,7 @@ dependencies {
     // CoilNetworkFetcherTest: a local HTTP image server, so the "does a URL
     // image load at all" measurement needs no internet from the emulator.
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.11.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     // ContentTypeReachesAutofillTest taps the autofill suggestion, a window of its own.
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
