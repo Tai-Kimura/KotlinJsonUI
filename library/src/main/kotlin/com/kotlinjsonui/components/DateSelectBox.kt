@@ -693,7 +693,8 @@ fun DateSelectBox(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
-                                    sheetTextColor = sheetTextColor
+                                    sheetTextColor = sheetTextColor,
+                                    sheetBackgroundColor = sheetBackgroundColor
                                 )
                             }
                             
@@ -718,7 +719,8 @@ fun DateSelectBox(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
-                                    sheetTextColor = sheetTextColor
+                                    sheetTextColor = sheetTextColor,
+                                    sheetBackgroundColor = sheetBackgroundColor
                                 )
                             }
                         }
@@ -1069,7 +1071,8 @@ fun DateCalendarPicker(
     modifier: Modifier = Modifier,
     sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor,
     title: String? = null,
-    doneButtonText: String? = null
+    doneButtonText: String? = null,
+    sheetBackgroundColor: Color = Configuration.DatePicker.defaultSheetBackgroundColor
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDate.timeInMillis,
@@ -1090,10 +1093,17 @@ fun DateCalendarPicker(
         
         DatePicker(
             state = datePickerState,
-            modifier = Modifier.fillMaxWidth(),
+            // kjui_x7q_calendar: the calendar a UI test reaches into (the month/year header that switches to the
+            // year list has no tag of its own; it is material3's).
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("kjui_x7q_calendar"),
             showModeToggle = false,
             colors = DatePickerDefaults.colors(
-                containerColor = Color.Transparent,
+                // The sheet's own colour, never transparent: the year list is drawn OVER the day grid and hides it
+                // with this colour (material3 YearPicker: background(colors.containerColor)), so a transparent one
+                // let the days show through the years.
+                containerColor = sheetBackgroundColor,
                 titleContentColor = sheetTextColor,
                 headlineContentColor = sheetTextColor,
                 weekdayContentColor = sheetTextColor,
