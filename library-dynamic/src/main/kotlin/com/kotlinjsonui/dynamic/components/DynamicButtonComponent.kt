@@ -13,9 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,9 +25,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.components.JsonUIButton
+import com.kotlinjsonui.components.JsonUIIcon
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -169,14 +170,6 @@ class DynamicButtonComponent {
             val contentColorNow =
                 if (pressedTextColor != null && isPressed) pressedTextColor else textColor
 
-            // Button colors
-            val colors = ButtonDefaults.buttonColors(
-                containerColor = containerColor,
-                contentColor = contentColorNow,
-                disabledContainerColor = disabledBgColor,
-                disabledContentColor = disabledTextColor
-            )
-
             // Border
             val borderColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.borderColor), data, context
@@ -272,12 +265,17 @@ class DynamicButtonComponent {
                 else -> Arrangement.Center
             }
 
-            Button(
+            // KotlinJsonUI's JsonUIButton, the call generated code makes too;
+            // `elevation` is the declared shadow, or none (null) without one.
+            JsonUIButton(
                 onClick = onClick,
                 modifier = modifier,
                 enabled = isEnabled,
                 shape = shape,
-                colors = colors,
+                containerColor = containerColor,
+                contentColor = contentColorNow,
+                disabledContainerColor = disabledBgColor,
+                disabledContentColor = disabledTextColor,
                 elevation = elevation,
                 border = border,
                 contentPadding = contentPadding,
@@ -364,7 +362,7 @@ class DynamicButtonComponent {
         @Composable
         private fun ButtonIcon(resId: Int, size: Float, tint: Color?, description: String?) {
             if (tint != null) {
-                Icon(
+                JsonUIIcon(
                     painter = painterResource(id = resId),
                     contentDescription = description,
                     modifier = Modifier.size(size.dp),
@@ -507,10 +505,10 @@ class DynamicButtonComponent {
         // ── Elevation ──
 
         @Composable
-        private fun resolveElevation(shadow: Any?): androidx.compose.material3.ButtonElevation? {
+        private fun resolveElevation(shadow: Any?): Dp? {
             return when (shadow) {
-                true -> ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
-                is Number -> ButtonDefaults.buttonElevation(defaultElevation = shadow.toFloat().dp)
+                true -> 6.dp
+                is Number -> shadow.toFloat().dp
                 else -> null
             }
         }

@@ -4,12 +4,12 @@ import com.kotlinjsonui.core.jsonUITintOrNull
 import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.kotlinjsonui.components.JsonUISwitch
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -143,26 +143,21 @@ class DynamicSwitchComponent {
                 TypedAttrs.rawString(a.thumbTintColor), data, context
             )
 
-            val colors = if (checkedTrackColor != null || uncheckedTrackColor != null || checkedThumbColor != null) {
-                SwitchDefaults.colors(
-                    checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
-                    checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor,
-                    uncheckedTrackColor = uncheckedTrackColor ?: SwitchDefaults.colors().uncheckedTrackColor,
-                    // thumbTintColor skins the thumb in BOTH states (UIKit
-                    // heritage; ios renders it on an off switch — 33
-                    // cross-effect measured the android thumb inert).
-                    uncheckedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().uncheckedThumbColor
-                )
-            } else {
-                SwitchDefaults.colors()
-            }
-
-            Switch(
+            // A colour not declared is Color.Unspecified, which JsonUISwitch
+            // leaves at material3's theme default (the value
+            // SwitchDefaults.colors() gives for it).
+            JsonUISwitch(
                 checked = checkedState,
                 onCheckedChange = onCheckedChange,
                 modifier = modifier,
                 enabled = isEnabled,
-                colors = colors
+                checkedTrackColor = checkedTrackColor ?: Color.Unspecified,
+                checkedThumbColor = checkedThumbColor ?: Color.Unspecified,
+                uncheckedTrackColor = uncheckedTrackColor ?: Color.Unspecified,
+                // thumbTintColor skins the thumb in BOTH states (UIKit
+                // heritage; ios renders it on an off switch — 33
+                // cross-effect measured the android thumb inert).
+                uncheckedThumbColor = checkedThumbColor ?: Color.Unspecified
             )
         }
 
@@ -291,25 +286,18 @@ class DynamicSwitchComponent {
                     TypedAttrs.rawString(a.thumbTintColor), data, context
                 )
 
-                val colors = if (checkedTrackColor != null || uncheckedTrackColor != null || checkedThumbColor != null) {
-                    SwitchDefaults.colors(
-                        checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
-                        checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor,
-                        uncheckedTrackColor = uncheckedTrackColor ?: SwitchDefaults.colors().uncheckedTrackColor
-                    )
-                } else {
-                    SwitchDefaults.colors()
-                }
-
                 // Enabled state (supports @{binding}; Switch declares its own row)
                 val isEnabled = TypedAttrs.boolean(a.enabled, data)
                     ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
-                Switch(
+                // Undeclared colours stay Color.Unspecified (material3's theme default).
+                JsonUISwitch(
                     checked = checkedState,
                     onCheckedChange = onCheckedChange,
                     enabled = isEnabled,
-                    colors = colors
+                    checkedTrackColor = checkedTrackColor ?: Color.Unspecified,
+                    checkedThumbColor = checkedThumbColor ?: Color.Unspecified,
+                    uncheckedTrackColor = uncheckedTrackColor ?: Color.Unspecified
                 )
 
                 if (labelPosition == "trailing") label()

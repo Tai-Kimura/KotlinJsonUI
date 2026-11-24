@@ -17,6 +17,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
+import com.kotlinjsonui.components.JsonUICheckbox
+import com.kotlinjsonui.components.JsonUIIcon
+import com.kotlinjsonui.components.JsonUIIconButton
+import com.kotlinjsonui.components.JsonUIRadioButton
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
@@ -53,7 +57,7 @@ import androidx.compose.ui.platform.LocalContext
  * - items: Array of items for radio group
  * - selectedValue: @{variable} for selected value in items mode
  * - onValueChange: @{handler} for change callback
- * - selectedColor/unselectedColor: Colors for RadioButtonDefaults.colors
+ * - selectedColor/unselectedColor: Colors for JsonUIRadioButton
  * - icon/selectedIcon: Custom icon names
  * - group: Group identifier for individual radio item
  * - text: Label text
@@ -355,12 +359,13 @@ class DynamicRadioComponent {
                             .then(stopped)
                             .clickable(enabled = isEnabled) { onValueChange(value) }
                     ) {
-                        RadioButton(
+                        JsonUIRadioButton(
                             modifier = stopped,
                             selected = selectedValue == value,
                             onClick = { onValueChange(value) },
                             enabled = isEnabled,
-                            colors = colors
+                            selectedColor = colors.first,
+                            unselectedColor = colors.second
                         )
                         Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
                         // not given a colour before: the theme's content colour
@@ -450,18 +455,20 @@ class DynamicRadioComponent {
                         // Declared color skin — this branch (the one every
                         // icon-less fixture takes) never received it (33
                         // cross-effect round-2: android still default).
-                        RadioButton(
+                        val colors = buttonColors(buttonColorValues(a, json, data, context))
+                        JsonUIRadioButton(
                             selected = isSelected,
                             onClick = onSelect,
                             enabled = isEnabled,
                             modifier = glyphModifier,
-                            colors = buttonColors(buttonColorValues(a, json, data, context))
+                            selectedColor = colors.first,
+                            unselectedColor = colors.second
                         )
                     }
                     // Square checkbox appearance
                     icon == "square" &&
                             (selectedIcon == "checkmark.square.fill" || selectedIcon == null) -> {
-                        Checkbox(
+                        JsonUICheckbox(
                             checked = isSelected,
                             onCheckedChange = { onSelect() },
                             enabled = isEnabled,
@@ -473,8 +480,8 @@ class DynamicRadioComponent {
                         val iconResId = mapIconResId(icon ?: "star")
                         val selectedIconResId = mapIconResId(selectedIcon ?: "star.fill")
 
-                        IconButton(onClick = onSelect, enabled = isEnabled, modifier = stopped) {
-                            Icon(
+                        JsonUIIconButton(onClick = onSelect, enabled = isEnabled, modifier = stopped) {
+                            JsonUIIcon(
                                 painter = painterResource(if (isSelected) selectedIconResId else iconResId),
                                 contentDescription = text,
                                 tint = if (isSelected) {
@@ -499,12 +506,14 @@ class DynamicRadioComponent {
                         // The default-glyph path dropped the color skin
                         // entirely (33 cross-effect) — the declared
                         // checked/unchecked/icon colors.
-                        RadioButton(
+                        val colors = buttonColors(buttonColorValues(a, json, data, context))
+                        JsonUIRadioButton(
                             selected = isSelected,
                             onClick = onSelect,
                             enabled = isEnabled,
                             modifier = glyphModifier,
-                            colors = buttonColors(buttonColorValues(a, json, data, context))
+                            selectedColor = colors.first,
+                            unselectedColor = colors.second
                         )
                     }
                 }
@@ -610,12 +619,13 @@ class DynamicRadioComponent {
                             .then(stopped)
                             .clickable(enabled = isEnabled) { onValueChange(item) }
                     ) {
-                        RadioButton(
+                        JsonUIRadioButton(
                             modifier = stopped,
                             selected = selectedValue == item,
                             onClick = { onValueChange(item) },
                             enabled = isEnabled,
-                            colors = colors
+                            selectedColor = colors.first,
+                            unselectedColor = colors.second
                         )
                         Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
                         RadioLabel(text = item, style = labelStyle)
@@ -708,12 +718,18 @@ class DynamicRadioComponent {
                 )
         )
 
+        /**
+         * The selected and unselected colours JsonUIRadioButton is given. A colour
+         * not declared (and, for the selected one, no tint handed down) is
+         * Color.Unspecified, which JsonUIRadioButton leaves at material3's theme
+         * default, the same value RadioButtonDefaults.colors() reads.
+         */
         @Composable
-        private fun buttonColors(values: Pair<Color?, Color?>): RadioButtonColors =
-            RadioButtonDefaults.colors(
+        private fun buttonColors(values: Pair<Color?, Color?>): Pair<Color, Color> =
+            Pair(
                 // none of its own: the tint a container handed down
-                selectedColor = values.first ?: jsonUITintOr(RadioButtonDefaults.colors().selectedColor),
-                unselectedColor = values.second ?: RadioButtonDefaults.colors().unselectedColor
+                values.first ?: jsonUITintOr(Color.Unspecified),
+                values.second ?: Color.Unspecified
             )
 
         private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<Pair<String, String>> {

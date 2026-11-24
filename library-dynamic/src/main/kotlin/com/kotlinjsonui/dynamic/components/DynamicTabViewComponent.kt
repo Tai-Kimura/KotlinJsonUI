@@ -17,6 +17,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.google.gson.JsonObject
+import com.kotlinjsonui.components.JsonUIBadgedBox
+import com.kotlinjsonui.components.JsonUIIcon
+import com.kotlinjsonui.components.JsonUITabBar
+import com.kotlinjsonui.components.JsonUITabScaffold
+import com.kotlinjsonui.components.JsonUITabBarItem
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
@@ -217,8 +222,9 @@ class DynamicTabViewComponent {
             // Build tab items data
             val tabItems = tabItemsOf(tabsArray)
 
-            // Create TabView using Scaffold with NavigationBar
-            Scaffold(
+            // Create TabView using KotlinJsonUI's JsonUITabScaffold with its
+            // JsonUITabBar, the calls generated code makes too.
+            JsonUITabScaffold(
                 // The standard stages, as on every component: it applied only
                 // userInteractionEnabled — no id, size, margins, background,
                 // click, or any other stage the SSoT declares on every type
@@ -234,7 +240,9 @@ class DynamicTabViewComponent {
                     MaterialTheme.colorScheme.background
                 },
                 bottomBar = {
-                    NavigationBar(
+                    // NavigationBarDefaults.containerColor is JsonUITabBar's own
+                    // default, read here only for the undeclared case.
+                    JsonUITabBar(
                         containerColor = tabBarBackground ?: NavigationBarDefaults.containerColor
                     ) {
                         tabItems.forEach { tabItem ->
@@ -254,12 +262,13 @@ class DynamicTabViewComponent {
                             // the badge reaches a screen reader only as the item's
                             // stateDescription. Without a label the slot keeps it,
                             // and a stateDescription would say it twice (measured on
-                            // an emulator, 2026-09-25). alwaysShowLabel is passed
-                            // below so the condition reads what the item is given.
+                            // an emulator, 2026-09-25). alwaysShowLabel is material3's
+                            // default (true), which JsonUITabBarItem keeps; it is named
+                            // here so the condition reads what the item is given.
                             val alwaysShowLabel = true
                             val iconSemanticsCleared = showLabels && (alwaysShowLabel || isSelected)
 
-                            NavigationBarItem(
+                            JsonUITabBarItem(
                                 modifier = (if (tabViewId != null) {
                                     Modifier.testTag("${tabViewId}_tab_${tabItem.index}")
                                 } else {
@@ -271,7 +280,6 @@ class DynamicTabViewComponent {
                                         Modifier
                                     }
                                 ),
-                                alwaysShowLabel = alwaysShowLabel,
                                 selected = isSelected,
                                 enabled = tabsEnabled,
                                 onClick = {
@@ -296,7 +304,7 @@ class DynamicTabViewComponent {
                                 },
                                 icon = {
                                     if (badgeValue != null) {
-                                        BadgedBox(badge = { Badge { Text(badgeValue) } }) {
+                                        JsonUIBadgedBox(badge = badgeValue) {
                                             TabIcon(
                                                 iconName = icon,
                                                 iconType = tabItem.iconType,
@@ -316,13 +324,11 @@ class DynamicTabViewComponent {
                                 label = if (showLabels) {
                                     { Text(tabItem.title) }
                                 } else null,
-                                colors = NavigationBarItemDefaults.colors(
-                                    // none of its own: the tint a container handed down
-                                    selectedIconColor = tintColor ?: jsonUITintOr(MaterialTheme.colorScheme.primary),
-                                    selectedTextColor = tintColor ?: jsonUITintOr(MaterialTheme.colorScheme.primary),
-                                    unselectedIconColor = unselectedColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                                    unselectedTextColor = unselectedColor ?: MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                // none of its own: the tint a container handed down
+                                selectedIconColor = tintColor ?: jsonUITintOr(MaterialTheme.colorScheme.primary),
+                                selectedTextColor = tintColor ?: jsonUITintOr(MaterialTheme.colorScheme.primary),
+                                unselectedIconColor = unselectedColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = unselectedColor ?: MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -434,20 +440,20 @@ class DynamicTabViewComponent {
                 val context = LocalContext.current
                 val drawableId = ResourceResolver.drawableIdNamed(iconName, context)
                 if (drawableId != 0) {
-                    Icon(
+                    JsonUIIcon(
                         painter = painterResource(id = drawableId),
                         contentDescription = contentDescription
                     )
                 } else {
                     // Fallback to bundled icon resource
-                    Icon(
+                    JsonUIIcon(
                         painter = painterResource(getIconResId(iconName, isSelected)),
                         contentDescription = contentDescription
                     )
                 }
             } else {
                 // Use bundled icon resources
-                Icon(
+                JsonUIIcon(
                     painter = painterResource(getIconResId(iconName, isSelected)),
                     contentDescription = contentDescription
                 )

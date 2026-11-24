@@ -3,8 +3,6 @@ package com.kotlinjsonui.dynamic.components
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,6 +10,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.kotlinjsonui.components.JsonUICircularProgressIndicator
+import com.kotlinjsonui.components.JsonUILinearProgressIndicator
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.IndicatorAttributes
@@ -186,22 +186,25 @@ class DynamicIndicatorComponent {
 
             // Create the appropriate indicator
             if (style == "linear") {
-                LinearProgressIndicator(
+                JsonUILinearProgressIndicator(
                     modifier = modifier,
                     color = color ?: MaterialTheme.colorScheme.primary,
                     trackColor = trackColor ?: MaterialTheme.colorScheme.surfaceVariant
                 )
             } else {
                 // Circular indicator for all other styles (small, medium, large, default)
+                // KotlinJsonUI's JsonUICircularProgressIndicator, with the track this
+                // face draws (surfaceVariant unless declared; material3's own
+                // indeterminate track is transparent).
                 if (strokeWidth != null) {
-                    CircularProgressIndicator(
+                    JsonUICircularProgressIndicator(
                         modifier = modifier,
                         color = color ?: MaterialTheme.colorScheme.primary,
                         trackColor = trackColor ?: MaterialTheme.colorScheme.surfaceVariant,
                         strokeWidth = strokeWidth
                     )
                 } else {
-                    CircularProgressIndicator(
+                    JsonUICircularProgressIndicator(
                         modifier = modifier,
                         color = color ?: MaterialTheme.colorScheme.primary,
                         trackColor = trackColor ?: MaterialTheme.colorScheme.surfaceVariant
