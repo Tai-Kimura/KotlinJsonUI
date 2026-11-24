@@ -13,10 +13,11 @@ class RadioEveryPathTakesTheStyleTest {
 
     /**
      * Every label and every button on every path takes them: each `Text(`
-     * in the component is the one RadioLabel, and every RadioButton passes
-     * the shared colours. Code only — a comment does not count. Both sides
-     * of the scan, on specimens: a bare Text and an uncoloured RadioButton
-     * are caught, the shared ones pass.
+     * in the component is the one RadioLabel, and every JsonUIRadioButton
+     * passes the shared colours (selectedColor and unselectedColor). Code
+     * only — a comment does not count. Both sides of the scan, on specimens:
+     * a bare Text and an uncoloured JsonUIRadioButton are caught, the shared
+     * ones pass.
      */
     @Test
     fun everyLabelAndButtonOnEveryPathTakesThem() {
@@ -45,14 +46,16 @@ class RadioEveryPathTakesTheStyleTest {
             // RadioLabel's own Text, which takes the style (its size drawn by the text size rule, FontScaling)
             "color = style.color" in t && Regex("""fontSize = [^\n]*\bstyle\.size\b""").containsMatchIn(t)
         }.filterNot { it.startsWith("RadioLabel") }
-        fun uncoloured(code: String) = calls(code, "RadioButton(").filterNot { "colors = " in it }
+        fun uncoloured(code: String) = calls(code, "JsonUIRadioButton(").filterNot {
+            "selectedColor = colors.first" in it && "unselectedColor = colors.second" in it
+        }
         // the scan tells them apart
         assertEquals(1, bareTexts("""Text(text = label)""").size)
         assertEquals(1, bareTexts("""Text(text = item, color = textColor)""").size)
         assertEquals(0, bareTexts("""RadioLabel(text = item, style = labelStyle)""").size)
         assertEquals(0, bareTexts("""val t = itemText(a)""").size)
-        assertEquals(1, uncoloured("""RadioButton(selected = s, onClick = { f(x) }, enabled = e)""").size)
-        assertEquals(0, uncoloured("""RadioButton(selected = s, onClick = { f(x) }, colors = colors)""").size)
+        assertEquals(1, uncoloured("""JsonUIRadioButton(selected = s, onClick = { f(x) }, enabled = e)""").size)
+        assertEquals(0, uncoloured("""JsonUIRadioButton(selected = s, onClick = { f(x) }, selectedColor = colors.first, unselectedColor = colors.second)""").size)
 
         val code = File("src/main/kotlin/com/kotlinjsonui/dynamic/components/DynamicRadioComponent.kt").readLines()
             .map { l -> l.trimStart().let { t -> if (t.startsWith("//") || t.startsWith("*")) "" else l } }
@@ -60,7 +63,7 @@ class RadioEveryPathTakesTheStyleTest {
             .replace(Regex("""\bRadioLabel\("""), "RL(") // not a Text( call
         assertEquals("labels drawn without the declared style", emptyList<String>(), bareTexts(code))
         assertEquals("buttons drawn without the shared colours", emptyList<String>(), uncoloured(code))
-        assertEquals(4, calls(code, "RadioButton(").size)
+        assertEquals(4, calls(code, "JsonUIRadioButton(").size)
         assertEquals(4, Regex("""\bRL\(text = """).findAll(code).count())
     }
 }

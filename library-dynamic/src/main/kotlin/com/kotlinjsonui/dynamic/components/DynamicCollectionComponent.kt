@@ -11,7 +11,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,7 +45,6 @@ import com.google.gson.JsonObject
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import com.google.gson.JsonArray
@@ -2960,7 +2958,7 @@ class DynamicCollectionComponent {
 
             if (cellClassName == null) {
                 // Default cell
-                Card(
+                JsonUICard(
                     modifier = Modifier.padding(4.dp).fillMaxWidth()
                 ) {
                     Text(
@@ -3009,7 +3007,7 @@ class DynamicCollectionComponent {
                 CellRoot(if (reorderRoot) withReorderMarks(addressed, reorderHandle) else addressed, cellData)
             } else {
                 // Fallback - display error
-                Card(
+                JsonUICard(
                     modifier = Modifier.padding(4.dp).fillMaxWidth()
                 ) {
                     Text(

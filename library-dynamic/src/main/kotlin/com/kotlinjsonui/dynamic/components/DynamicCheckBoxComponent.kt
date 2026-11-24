@@ -6,10 +6,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.components.JsonUICheckbox
+import com.kotlinjsonui.components.JsonUIIcon
+import com.kotlinjsonui.components.JsonUIIconToggleButton
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.CheckBoxAttributes
@@ -149,12 +148,14 @@ class DynamicCheckBoxComponent {
             // Colors: checkColor -> checkedColor, uncheckedColor -> uncheckedColor
             val colors = buildCheckboxColors(json, a, data, context)
 
-            Checkbox(
+            JsonUICheckbox(
                 checked = checkedState,
                 onCheckedChange = onCheckedChange,
                 modifier = modifier,
                 enabled = isEnabled,
-                colors = colors
+                checkedColor = colors.checked,
+                uncheckedColor = colors.unchecked,
+                checkmarkColor = colors.checkmark
             )
         }
 
@@ -224,7 +225,8 @@ class DynamicCheckBoxComponent {
                 // visuals stay identical to static codegen). A tap on the box
                 // is consumed here; taps elsewhere on the row hit the row-level
                 // toggleable. No double-fire: inner consumption wins.
-                Checkbox(
+                val colors = buildCheckboxColors(json, a, data, context)
+                JsonUICheckbox(
                     checked = checkedState,
                     onCheckedChange = onCheckedChange,
                     enabled = isEnabled,
@@ -239,7 +241,9 @@ class DynamicCheckBoxComponent {
                     // The labeled path dropped the color skin entirely —
                     // uncheckedColor/checkedColor never reached the box
                     // every text-bearing fixture renders (33 cross-effect).
-                    colors = buildCheckboxColors(json, a, data, context)
+                    checkedColor = colors.checked,
+                    uncheckedColor = colors.unchecked,
+                    checkmarkColor = colors.checkmark
                 )
 
                 // Spacer with configurable spacing
@@ -363,7 +367,7 @@ class DynamicCheckBoxComponent {
                 json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
             )
 
-            IconToggleButton(
+            JsonUIIconToggleButton(
                 checked = checkedState,
                 onCheckedChange = onCheckedChange,
                 modifier = modifier,
@@ -376,7 +380,7 @@ class DynamicCheckBoxComponent {
 
                 val activeRes = if (checkedState) selectedIconRes else iconRes
                 if (activeRes != 0) {
-                    Icon(
+                    JsonUIIcon(
                         painter = painterResource(id = activeRes),
                         contentDescription = null,
                         tint = tintColor ?: Color.Unspecified
@@ -388,6 +392,17 @@ class DynamicCheckBoxComponent {
         // ── Helper Functions ──
 
         /**
+         * The three colours a layout declares for a checkbox, each
+         * Color.Unspecified when not declared (JsonUICheckbox then keeps
+         * material3's theme value for that slot).
+         */
+        private data class CheckboxDeclaredColors(
+            val checked: Color,
+            val unchecked: Color,
+            val checkmark: Color
+        )
+
+        /**
          * Build checkbox colors from JSON attributes.
          * checkColor -> checkedColor, uncheckedColor -> uncheckedColor
          */
@@ -397,7 +412,7 @@ class DynamicCheckBoxComponent {
             a: CheckBoxAttributes,
             data: Map<String, Any>,
             context: android.content.Context
-        ): androidx.compose.material3.CheckboxColors {
+        ): CheckboxDeclaredColors {
             // Declared spelling first; 'checkColor' is the undeclared
             // legacy runtime extra. Then tintColor, the control's accent (4f
             // ruling, 2026-09-26): "on a CheckBox the common tint IS the
@@ -436,10 +451,10 @@ class DynamicCheckBoxComponent {
             // `uncheckedBorderColor`, while `uncheckedBoxColor` is pinned to
             // Transparent — so feeding the box colour into that parameter would
             // have erased the unchecked border.
-            return CheckboxDefaults.colors(
-                checkedColor = checkedColor ?: Color.Unspecified,
-                uncheckedColor = uncheckedColor ?: Color.Unspecified,
-                checkmarkColor = iconColor ?: Color.Unspecified
+            return CheckboxDeclaredColors(
+                checked = checkedColor ?: Color.Unspecified,
+                unchecked = uncheckedColor ?: Color.Unspecified,
+                checkmark = iconColor ?: Color.Unspecified
             )
         }
 

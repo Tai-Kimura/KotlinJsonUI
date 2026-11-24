@@ -1,11 +1,11 @@
 package com.kotlinjsonui.dynamic.components
 
 import com.kotlinjsonui.core.jsonUITintOrNull
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonObject
+import com.kotlinjsonui.components.JsonUILinearProgressIndicator
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ProgressAttributes
@@ -103,7 +103,7 @@ class DynamicProgressComponent {
             when {
                 hasValue -> {
                     // Determinate: always LinearProgressIndicator with progress lambda
-                    LinearProgressIndicator(
+                    JsonUILinearProgressIndicator(
                         progress = { progress },
                         modifier = modifier,
                         color = progressColor ?: MaterialTheme.colorScheme.primary,
@@ -112,7 +112,8 @@ class DynamicProgressComponent {
                 }
                 else -> {
                     // Indeterminate: a bar, as the determinate one is
-                    LinearProgressIndicator(
+                    // (no progress given, so JsonUILinearProgressIndicator is indeterminate)
+                    JsonUILinearProgressIndicator(
                         modifier = modifier,
                         color = progressColor ?: MaterialTheme.colorScheme.primary,
                         trackColor = trackColor ?: MaterialTheme.colorScheme.surfaceVariant
