@@ -1,6 +1,9 @@
 package com.kotlinjsonui.conformance
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
+import android.os.LocaleList
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.Choreographer
@@ -31,6 +34,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.kotlinjsonui.dynamic.DynamicView
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -197,6 +201,19 @@ data class InlineFixture(val layoutJson: String, val testBridgeFields: List<Test
  *      -e fixtureId Label/text__static`
  */
 class FixtureHostActivity : ComponentActivity() {
+    /**
+     * Every fixture renders in en-US, whatever the device's language. A library's inner words follow the language
+     * (material3 DatePicker's month-and-year header and its year arrow, dates and numbers formatted by the default
+     * locale), and a fixture that taps one by its text, or a picture of those words, must read the same on a local
+     * device set to another language as on CI's emulator, which is en-US. The java default (java.text formatters)
+     * and the context's configuration (Compose's LocalConfiguration, resources) are both pinned.
+     */
+    override fun attachBaseContext(newBase: Context) {
+        Locale.setDefault(HOST_LOCALE)
+        val config = Configuration(newBase.resources.configuration).apply { setLocales(LocaleList(HOST_LOCALE)) }
+        super.attachBaseContext(newBase.createConfigurationContext(config))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -241,6 +258,9 @@ class FixtureHostActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_FIXTURE_ID = "fixtureId"
+
+        // the language every fixture renders in (attachBaseContext)
+        val HOST_LOCALE: Locale = Locale.US
     }
 }
 
