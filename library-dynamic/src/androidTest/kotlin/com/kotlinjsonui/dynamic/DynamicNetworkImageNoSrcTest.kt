@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic
 
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -48,6 +49,9 @@ class DynamicNetworkImageNoSrcTest {
 
     companion object {
         private val made = AtomicInteger()
+        private const val POLL_MS = 100L
+        private const val FLOOR_MS = 1_200L
+        private const val TIMEOUT_MS = 10_000L
 
         /** A yellow square: the loaded image, found by its colour. */
         private val yellowPng: ByteArray by lazy {
@@ -102,8 +106,32 @@ class DynamicNetworkImageNoSrcTest {
         }
     }
 
-    /** Shows a NetworkImage with [src] (a JSON fragment, or "" for none) and returns its row. */
-    private fun row(src: String, mode: String, data: Map<String, Any> = emptyMap()): String {
+    /**
+     * The colour drawn once the image has settled: [expected] read twice in a row and at least
+     * [atLeast] onLoadStateChange calls seen, and no sooner than [FLOOR_MS] after it was shown
+     * (a view that reads nothing has that long to report or draw something it should not).
+     * The image is read and decoded off Compose's idle, so waitForIdle does not wait for the
+     * drawing, and on a loaded emulator it takes longer than any fixed sleep. Past
+     * [TIMEOUT_MS] the colour drawn then is returned, and the comparison fails on it.
+     */
+    private fun settled(expected: String, atLeast: Int, states: () -> Int, shownAt: Long): String {
+        var last: String? = null
+        while (true) {
+            Thread.sleep(POLL_MS)
+            rule.waitForIdle()
+            val drawn = colour()
+            val waited = SystemClock.uptimeMillis() - shownAt
+            if (waited >= FLOOR_MS && drawn == expected && last == expected && states() >= atLeast) return drawn
+            if (waited >= TIMEOUT_MS) return drawn
+            last = drawn
+        }
+    }
+
+    /**
+     * Shows a NetworkImage with [src] (a JSON fragment, or "" for none) and returns its row once
+     * [expect] is drawn and [expectStates] states are reported (or the wait is over).
+     */
+    private fun row(src: String, mode: String, expect: String, expectStates: Int, data: Map<String, Any> = emptyMap()): String {
         val states = Collections.synchronizedList(mutableListOf<String>())
         made.set(0)
         val extra = buildString {
@@ -124,17 +152,7 @@ class DynamicNetworkImageNoSrcTest {
         rule.runOnIdle { shown = null }
         rule.waitForIdle()
         rule.runOnIdle { shown = json to (data + ("onState" to onState)) }
-        // A read ends in "failed" (404) well inside this; a view with no src stays as it is.
-        Thread.sleep(1_200)
-        rule.waitForIdle()
-        // A read still in flight shows the loading image: wait for it to end (a 404 ends quickly).
-        var drawn = colour()
-        val until = System.currentTimeMillis() + 5_000
-        while (drawn == "loading" && System.currentTimeMillis() < until) {
-            Thread.sleep(200)
-            rule.waitForIdle()
-            drawn = colour()
-        }
+        val drawn = settled(expect, expectStates, { states.size }, SystemClock.uptimeMillis())
         return "$drawn | ${states.toList().joinToString(" ").ifEmpty { "-" }} | renderers ${made.get()}"
     }
 
@@ -143,12 +161,12 @@ class DynamicNetworkImageNoSrcTest {
         val failing = server.url("/missing.jpg").toString()
         val rows = linkedMapOf<String, String>()
         for (mode in listOf("plain", "state", "renderer")) {
-            rows["$mode absent"] = row("", mode)
-            rows["$mode \"\""] = row("\"\"", mode)
-            rows["$mode spaces"] = row("\"   \"", mode)
-            rows["$mode binding \"\""] = row("\"@{u}\"", mode, mapOf("u" to ""))
-            rows["$mode binding unset"] = row("\"@{u}\"", mode)
-            rows["$mode 404"] = row("\"$failing\"", mode)
+            rows["$mode absent"] = row("", mode, "default", 0)
+            rows["$mode \"\""] = row("\"\"", mode, "default", 0)
+            rows["$mode spaces"] = row("\"   \"", mode, "default", 0)
+            rows["$mode binding \"\""] = row("\"@{u}\"", mode, "default", 0, mapOf("u" to ""))
+            rows["$mode binding unset"] = row("\"@{u}\"", mode, "default", 0)
+            rows["$mode 404"] = row("\"$failing\"", mode, "error", if (mode == "plain") 0 else 2)
         }
         val table = rows.entries.joinToString("\n") { (k, v) -> "$k :: $v" }
         Log.i("KjuiNoSrcTable", "\n$table")
@@ -185,18 +203,20 @@ class DynamicNetworkImageNoSrcTest {
                "onLoadStateChange": "@{onState}"}"""
         ).asJsonObject
         var data by mutableStateOf<Map<String, Any>>(mapOf("u" to url, "onState" to onState))
+        var shownAt = SystemClock.uptimeMillis()
         rule.setContent { DynamicView(json = json, data = data) }
         val steps = mutableListOf<String>()
-        fun step(name: String) {
-            Thread.sleep(1_200)
-            rule.waitForIdle()
-            steps.add("$name: ${colour()} | ${states.toList().joinToString(" ")}")
+        fun step(name: String, expect: String, expectStates: Int) {
+            val drawn = settled(expect, expectStates, { states.size }, shownAt)
+            steps.add("$name: $drawn | ${states.toList().joinToString(" ")}")
         }
-        step("url")
+        step("url", "image", 2)
+        shownAt = SystemClock.uptimeMillis()
         rule.runOnIdle { data = mapOf("u" to "", "onState" to onState) }
-        step("\"\"")
+        step("\"\"", "default", 2)
+        shownAt = SystemClock.uptimeMillis()
         rule.runOnIdle { data = mapOf("u" to "$url?again", "onState" to onState) }
-        step("url again")
+        step("url again", "image", 4)
         Log.i("KjuiNoSrcTable", "\n" + steps.joinToString("\n"))
         assertEquals(
             listOf(

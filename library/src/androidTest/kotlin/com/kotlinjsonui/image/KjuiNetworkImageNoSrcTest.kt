@@ -1,5 +1,6 @@
 package com.kotlinjsonui.image
 
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
@@ -47,6 +48,9 @@ class KjuiNetworkImageNoSrcTest {
 
     companion object {
         private val made = AtomicInteger()
+        private const val POLL_MS = 100L
+        private const val FLOOR_MS = 1_200L
+        private const val TIMEOUT_MS = 10_000L
 
         /** A yellow square: the loaded image, found by its colour. */
         private val yellowPng: ByteArray by lazy {
@@ -109,8 +113,32 @@ class KjuiNetworkImageNoSrcTest {
         }
     }
 
-    /** Shows [model] drawn as [mode] and returns its row once it has settled. */
-    private fun row(model: Any?, mode: String): String {
+    /**
+     * The colour drawn once the image has settled: [expected] read twice in a row and at least
+     * [atLeast] onLoadStateChange calls seen, and no sooner than [FLOOR_MS] after it was shown
+     * (a frame that reads nothing has that long to report or draw something it should not).
+     * The image is read and decoded off Compose's idle, so waitForIdle does not wait for the
+     * drawing, and on a loaded emulator it takes longer than any fixed sleep. Past
+     * [TIMEOUT_MS] the colour drawn then is returned, and the comparison fails on it.
+     */
+    private fun settled(expected: String, atLeast: Int, states: () -> Int, shownAt: Long): String {
+        var last: String? = null
+        while (true) {
+            Thread.sleep(POLL_MS)
+            compose.waitForIdle()
+            val drawn = colour()
+            val waited = SystemClock.uptimeMillis() - shownAt
+            if (waited >= FLOOR_MS && drawn == expected && last == expected && states() >= atLeast) return drawn
+            if (waited >= TIMEOUT_MS) return drawn
+            last = drawn
+        }
+    }
+
+    /**
+     * Shows [model] drawn as [mode] and returns its row once [expect] is drawn and
+     * [expectStates] states are reported (or the wait is over).
+     */
+    private fun row(model: Any?, mode: String, expect: String, expectStates: Int): String {
         val defaultId = drawable("nosrc_probe_default")
         val errorId = drawable("nosrc_probe_error")
         val loadingId = drawable("nosrc_probe_loading")
@@ -136,17 +164,8 @@ class KjuiNetworkImageNoSrcTest {
         compose.runOnIdle { shown = null }
         compose.waitForIdle()
         compose.runOnIdle { shown = Case(model, mode) }
-        // A read ends in "failed" (404) well inside this; a frame with no src stays as it is.
-        Thread.sleep(1_200)
-        compose.waitForIdle()
-        // A read still in flight shows the loading image: wait for it to end (a 404 ends quickly).
-        var drawn = colour()
-        val until = System.currentTimeMillis() + 5_000
-        while (drawn == "loading" && System.currentTimeMillis() < until) {
-            Thread.sleep(200)
-            compose.waitForIdle()
-            drawn = colour()
-        }
+        val sink = states
+        val drawn = settled(expect, expectStates, { sink.size }, SystemClock.uptimeMillis())
         return "$drawn | ${states.toList().joinToString(" ").ifEmpty { "-" }} | renderers ${made.get()}"
     }
 
@@ -155,7 +174,9 @@ class KjuiNetworkImageNoSrcTest {
         val failing = server.url("/missing.jpg").toString()
         val srcs = listOf<Pair<String, Any?>>("null" to null, "\"\"" to "", "spaces" to "   ", "404" to failing)
         val rows = linkedMapOf<String, String>()
-        for (mode in listOf("plain", "state", "renderer")) for ((name, model) in srcs) rows["$mode $name"] = row(model, mode)
+        for (mode in listOf("plain", "state", "renderer")) for ((name, model) in srcs) {
+            rows["$mode $name"] = if (name == "404") row(model, mode, "error", if (mode == "plain") 0 else 2) else row(model, mode, "default", 0)
+        }
         val table = rows.entries.joinToString("\n") { (k, v) -> "$k :: $v" }
         Log.i("KjuiNoSrcTable", "\n$table")
 
@@ -186,6 +207,7 @@ class KjuiNetworkImageNoSrcTest {
         val seen = Collections.synchronizedList(mutableListOf<String>())
         val defaultId = drawable("nosrc_probe_default")
         val errorId = drawable("nosrc_probe_error")
+        var shownAt = SystemClock.uptimeMillis()
         compose.setContent {
             KjuiNetworkImage(
                 model = src, contentDescription = "probe", modifier = Modifier.size(48.dp).testTag("img"),
@@ -193,18 +215,20 @@ class KjuiNetworkImageNoSrcTest {
             )
         }
         val steps = mutableListOf<String>()
-        fun step(name: String) {
-            Thread.sleep(1_200)
-            compose.waitForIdle()
-            steps.add("$name: ${colour()} | ${seen.toList().joinToString(" ")}")
+        fun step(name: String, expect: String, expectStates: Int) {
+            val drawn = settled(expect, expectStates, { seen.size }, shownAt)
+            steps.add("$name: $drawn | ${seen.toList().joinToString(" ")}")
         }
-        step("url")
+        step("url", "image", 2)
+        shownAt = SystemClock.uptimeMillis()
         compose.runOnIdle { src = "" }
-        step("\"\"")
+        step("\"\"", "default", 2)
+        shownAt = SystemClock.uptimeMillis()
         compose.runOnIdle { src = url + "?again" }
-        step("url again")
+        step("url again", "image", 4)
+        shownAt = SystemClock.uptimeMillis()
         compose.runOnIdle { src = null }
-        step("null")
+        step("null", "default", 4)
         Log.i("KjuiNoSrcTable", "\n" + steps.joinToString("\n"))
         assertEquals(
             listOf(
