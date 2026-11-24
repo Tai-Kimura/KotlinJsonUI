@@ -279,6 +279,10 @@ internal class KjuiImageFrame(val key: String) : KjuiLoadingClock.Waiter, Rememb
         val now = KjuiLoadingClock.now()
         val l = load
         if (result == KjuiLoadEnd.Result.LOADED) l?.finished(source!!) else l?.failed(error)
+        // A read that ends before onStart's posted "loading" ran (a quick failure, or any
+        // read on a loaded device, where the coroutine resumes in a frame callback ahead of
+        // the post) still says "loading" first: only a memory hit says "loaded" alone.
+        if (lastState == null && source != KjuiImageSource.MEMORY) state("loading")
         state(if (result == KjuiLoadEnd.Result.LOADED) "loaded" else "failed")
         end = KjuiLoadEnd(result, source, now)
         val t = transitionMillis.toLong()
