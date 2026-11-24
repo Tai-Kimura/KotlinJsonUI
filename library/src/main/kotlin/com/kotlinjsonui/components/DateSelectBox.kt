@@ -1058,6 +1058,30 @@ fun NumberPicker(
 }
 
 /**
+ * The day material3's DatePicker holds, as it holds it: the millis of that day's 00:00 in UTC
+ * (`initialSelectedDateMillis`, `selectedDateMillis`). The box's own Calendar is in the device's time zone, and its
+ * millis were handed over and read back as they were, so the day moved by the zone: east of UTC (Asia/Tokyo) the
+ * calendar opened on the day before and Select alone moved the value a day back; west of UTC (America/Los_Angeles)
+ * the day pressed came back as the day before (ticket 2026-11-24-kjui-dateselectbox-calendar-shifts-the-day-by-the-
+ * time-zone). Only the year, month and day cross, in UTC both ways.
+ */
+internal object PickerDayMillis {
+    private val utc: TimeZone = TimeZone.getTimeZone("UTC")
+
+    /** The UTC 00:00 millis of [local]'s own year, month and day. */
+    fun of(local: Calendar): Long = Calendar.getInstance(utc).apply {
+        clear()
+        set(local.get(Calendar.YEAR), local.get(Calendar.MONTH), local.get(Calendar.DAY_OF_MONTH))
+    }.timeInMillis
+
+    /** (year, month 0-based, day) of the picker's [millis], read in UTC. */
+    fun day(millis: Long): Triple<Int, Int, Int> {
+        val cal = Calendar.getInstance(utc).apply { timeInMillis = millis }
+        return Triple(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+    }
+}
+
+/**
  * Calendar date picker component
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1075,7 +1099,7 @@ fun DateCalendarPicker(
     sheetBackgroundColor: Color = Configuration.DatePicker.defaultSheetBackgroundColor
 ) {
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate.timeInMillis,
+        initialSelectedDateMillis = PickerDayMillis.of(selectedDate),
         yearRange = (minDate?.get(Calendar.YEAR) ?: 1900)..(maxDate?.get(Calendar.YEAR) ?: 2100)
     )
     
@@ -1124,12 +1148,8 @@ fun DateCalendarPicker(
         Button(
             onClick = {
                 datePickerState.selectedDateMillis?.let { millis ->
-                    val cal = Calendar.getInstance().apply { timeInMillis = millis }
-                    onDateSelected(
-                        cal.get(Calendar.YEAR),
-                        cal.get(Calendar.MONTH),
-                        cal.get(Calendar.DAY_OF_MONTH)
-                    )
+                    val (year, month, day) = PickerDayMillis.day(millis)
+                    onDateSelected(year, month, day)
                 }
             },
             modifier = Modifier
