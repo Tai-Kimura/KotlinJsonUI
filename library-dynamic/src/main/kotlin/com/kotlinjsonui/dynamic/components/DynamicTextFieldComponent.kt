@@ -92,7 +92,7 @@ class DynamicTextFieldComponent {
 
             // Parse secure field
             val isSecure = TypedAttrs.boolean(a.secure, data) == true ||
-                    DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextFieldAttributes.Input.declaredSpellings) == "password" ||
+                    DeclaredSpelling.lowered(TypedAttrs.enumStringResolved(a.input, data) { it.json }, TextFieldAttributes.Input.declaredSpellings) == "password" ||
                     DeclaredSpelling.lowered(TypedAttrs.staticEnumString(a.contentType) { it.json }, TextFieldAttributes.ContentType.declaredSpellings)?.let {
                         it == "password" || it == "newpassword"
                     } ?: false
@@ -107,6 +107,18 @@ class DynamicTextFieldComponent {
             // TextFieldState with data binding sync
             val viewId = LayoutPath.viewId(json)
             val textFieldState = rememberTextFieldState(initialText = initialText)
+
+            // `maxLength` (written or bound): 0 or unset is no limit. Keyed on the
+            // text alone, as the codegen's LaunchedEffect(state.text) is, so a
+            // limit that shrinks cuts the text at the next edit and a change of
+            // the limit alone cuts nothing.
+            val maxLength = rememberUpdatedState(TypedAttrs.int(a.maxLength, data) ?: 0)
+            LaunchedEffect(textFieldState.text) {
+                val limit = maxLength.value
+                if (limit > 0 && textFieldState.text.length > limit) {
+                    textFieldState.edit { replace(limit, length, "") }
+                }
+            }
 
             // Sync external → state (e.g. ViewModel clears text)
             // What composition holds is behind while keys are arriving, so a value
@@ -242,7 +254,7 @@ class DynamicTextFieldComponent {
             )
 
             // Keyboard options
-            val keyboardOptions = buildKeyboardOptions(a, nextFocusId)
+            val keyboardOptions = buildKeyboardOptions(a, data, nextFocusId)
 
             // Keyboard actions
             val keyboardActions = buildKeyboardActions(data, nextFocusId, onSubmitHandler, viewId)
@@ -536,12 +548,16 @@ class DynamicTextFieldComponent {
             return style
         }
 
-        private fun buildKeyboardOptions(a: TextFieldAttributes, nextFocusId: String?): KeyboardOptions {
-            // Keyboard type from contentType (priority) or input
-            val keyboardType = resolveKeyboardType(a)
+        // input, returnKeyType, autocapitalizationType and autocorrectionType
+        // take a binding: a bound value resolves through the data map and is
+        // read through the same table as a written one, so a value outside it
+        // falls where an unknown written value falls.
+        internal fun buildKeyboardOptions(a: TextFieldAttributes, data: Map<String, Any>, nextFocusId: String?): KeyboardOptions {
+            // Keyboard type from input, then contentType
+            val keyboardType = resolveKeyboardType(a, data)
 
             // IME action
-            val returnKey = TypedAttrs.enumString(a.returnKeyType) { it.json }
+            val returnKey = TypedAttrs.enumStringResolved(a.returnKeyType, data) { it.json }
             val imeAction = when {
                 returnKey != null -> when (returnKey) {
                     "Done" -> ImeAction.Done
@@ -556,7 +572,7 @@ class DynamicTextFieldComponent {
             }
 
             // Auto-capitalization
-            val capitalization = DeclaredSpelling.lowered(TypedAttrs.enumString(a.autocapitalizationType) { it.json }, TextFieldAttributes.AutocapitalizationType.declaredSpellings)?.let { type ->
+            val capitalization = DeclaredSpelling.lowered(TypedAttrs.enumStringResolved(a.autocapitalizationType, data) { it.json }, TextFieldAttributes.AutocapitalizationType.declaredSpellings)?.let { type ->
                 when (type) {
                     "none" -> KeyboardCapitalization.None
                     "words" -> KeyboardCapitalization.Words
@@ -567,7 +583,7 @@ class DynamicTextFieldComponent {
             } ?: KeyboardCapitalization.None
 
             // Auto-correction
-            val autoCorrect = DeclaredSpelling.lowered(TypedAttrs.enumString(a.autocorrectionType) { it.json }, TextFieldAttributes.AutocorrectionType.declaredSpellings)?.let { type ->
+            val autoCorrect = DeclaredSpelling.lowered(TypedAttrs.enumStringResolved(a.autocorrectionType, data) { it.json }, TextFieldAttributes.AutocorrectionType.declaredSpellings)?.let { type ->
                 when (type) {
                     "no", "false", "off" -> false
                     else -> true
@@ -617,8 +633,8 @@ class DynamicTextFieldComponent {
          * `input: email` into the plain keyboard. The same order as the
          * codegen (kjui textfield_component keyboard_options).
          */
-        internal fun resolveKeyboardType(a: TextFieldAttributes): KeyboardType {
-            DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextFieldAttributes.Input.declaredSpellings)
+        internal fun resolveKeyboardType(a: TextFieldAttributes, data: Map<String, Any> = emptyMap()): KeyboardType {
+            DeclaredSpelling.lowered(TypedAttrs.enumStringResolved(a.input, data) { it.json }, TextFieldAttributes.Input.declaredSpellings)
                 ?.takeIf { it != "default" }
                 ?.let { input ->
                     return when (input) {
@@ -687,7 +703,7 @@ class DynamicTextFieldComponent {
             "enabled", "onTextChange", "onSubmit", "onFocus",
             "onBeginEditing", "onBlur", "onEndEditing", "nextFocus",
             "fontSize", "textAlign", "borderStyle", "returnKeyType",
-            "autocapitalizationType", "autocorrectionType",
+            "autocapitalizationType", "autocorrectionType", "maxLength",
             "fieldPadding", "textPaddingLeft",
             "placeholderColor", "tintColor", "caretAttributes",
             "font", "fontFamily", "autoFocus",

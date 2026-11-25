@@ -35,7 +35,7 @@ class PilotAttrsParseTest {
         val input = TextFieldAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"TextField","input":"password"}"""))
         )
-        assertEquals("password", TypedAttrs.enumString(input.input) { it.json }?.lowercase())
+        assertEquals("password", TypedAttrs.staticEnumString(input.input) { it.json }?.lowercase())
 
         val content = TextFieldAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"TextField","contentType":"newPassword"}"""))

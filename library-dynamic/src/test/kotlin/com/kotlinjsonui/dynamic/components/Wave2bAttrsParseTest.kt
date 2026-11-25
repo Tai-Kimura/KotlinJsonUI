@@ -36,9 +36,9 @@ class Wave2bAttrsParseTest {
             )
         )
         // 49-E declared keyboardType as an enum, so the row is AttrEnum<KeyboardType>.
-        assertEquals("email", TypedAttrs.enumString(a.keyboardType) { it.json })
-        assertEquals("number", TypedAttrs.enumString(a.input) { it.json })
-        assertEquals("Done", TypedAttrs.enumString(a.returnKeyType) { it.json })
+        assertEquals("email", TypedAttrs.staticEnumString(a.keyboardType) { it.json })
+        assertEquals("number", TypedAttrs.staticEnumString(a.input) { it.json })
+        assertEquals("Done", TypedAttrs.staticEnumString(a.returnKeyType) { it.json })
     }
 
     @Test

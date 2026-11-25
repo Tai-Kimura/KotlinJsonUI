@@ -88,7 +88,7 @@ class DynamicTextViewComponent {
             // codegen reached (textview_component.rb:481-497), reproduced so
             // the two paths cannot disagree about a disabled field.
             val isEnabled = (TypedAttrs.boolean(a.common.enabled, data) ?: true) &&
-                (a.editable ?: true)
+                (TypedAttrs.boolean(a.editable, data) ?: true)
 
             // Text style (supports @{binding})
             val fontSize = TypedAttrs.int(a.fontSize, data) ?: Configuration.TextField.defaultFontSize
@@ -153,7 +153,7 @@ class DynamicTextViewComponent {
             val maxLines = TypedAttrs.undeclared(json, "maxLines")?.asInt ?: Int.MAX_VALUE
 
             // Keyboard options
-            val keyboardOptions = buildKeyboardOptions(a)
+            val keyboardOptions = buildKeyboardOptions(a, data)
 
             // Container inset → contentPadding. `edgeInset` is the UIKit
             // spelling of the same content inset and takes the same shapes;
@@ -180,6 +180,18 @@ class DynamicTextViewComponent {
             // value out (ticket 2026-11-07-kjui-textfield-stale-value-overwrites-newer-
             // key). A value it did not send is the view model's word.
             val sentText = remember { ArrayDeque<String>() }
+
+            // `maxLength` (written or bound): 0 or unset is no limit. Keyed on the
+            // text alone, as TextField's is, so a limit that shrinks cuts the text
+            // at the next edit and a change of the limit alone cuts nothing.
+            val maxLength = rememberUpdatedState(TypedAttrs.int(a.maxLength, data) ?: 0)
+            LaunchedEffect(textFieldState.text) {
+                val limit = maxLength.value
+                if (limit > 0 && textFieldState.text.length > limit) {
+                    textFieldState.edit { replace(limit, length, "") }
+                }
+            }
+
             LaunchedEffect(initialText) {
                 val echo = sentText.indexOf(initialText)
                 if (echo >= 0) {
@@ -351,7 +363,7 @@ class DynamicTextViewComponent {
         private val APPLIED: Set<String> = setOf(
             "text", "hint", "placeholder", "enabled", "editable", "fontSize", "fontColor",
             "containerInset", "edgeInset", "keyboardType", "input",
-            "returnKeyType", "onTextChange", "hintLineHeightMultiple",
+            "returnKeyType", "onTextChange", "hintLineHeightMultiple", "maxLength",
             "hintFontSize", "hintColor", "hintAttributes", "flexible",
             "font", "fontFamily", "hintFont", "tintColor", "autoFocus",
             // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
@@ -525,8 +537,10 @@ class DynamicTextViewComponent {
             }
         }
 
-        private fun buildKeyboardOptions(a: TextViewAttributes): KeyboardOptions {
-            val keyboardType = DeclaredSpelling.lowered(TypedAttrs.enumString(a.keyboardType) { it.json }, TextViewAttributes.KeyboardType.declaredSpellings)?.let { type ->
+        // keyboardType, input and returnKeyType take a binding: a bound value resolves through
+        // the data map and is read through the same table as a written one.
+        internal fun buildKeyboardOptions(a: TextViewAttributes, data: Map<String, Any>): KeyboardOptions {
+            val keyboardType = DeclaredSpelling.lowered(TypedAttrs.enumStringResolved(a.keyboardType, data) { it.json }, TextViewAttributes.KeyboardType.declaredSpellings)?.let { type ->
                 when (type) {
                     "email" -> KeyboardType.Email
                     "number" -> KeyboardType.Number
@@ -535,7 +549,7 @@ class DynamicTextViewComponent {
                     "url" -> KeyboardType.Uri
                     else -> KeyboardType.Text
                 }
-            } ?: DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextViewAttributes.Input.declaredSpellings)?.let { input ->
+            } ?: DeclaredSpelling.lowered(TypedAttrs.enumStringResolved(a.input, data) { it.json }, TextViewAttributes.Input.declaredSpellings)?.let { input ->
                 when (input) {
                     "email" -> KeyboardType.Email
                     "number" -> KeyboardType.Number
@@ -546,7 +560,7 @@ class DynamicTextViewComponent {
                 }
             } ?: KeyboardType.Text
 
-            val imeAction = when (TypedAttrs.enumString(a.returnKeyType) { it.json }) {
+            val imeAction = when (TypedAttrs.enumStringResolved(a.returnKeyType, data) { it.json }) {
                 "Done" -> ImeAction.Done
                 "Next" -> ImeAction.Next
                 else -> ImeAction.Default

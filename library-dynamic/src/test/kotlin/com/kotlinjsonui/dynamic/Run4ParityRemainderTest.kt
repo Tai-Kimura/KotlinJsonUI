@@ -113,14 +113,17 @@ class Run4ParityRemainderTest {
 
     @Test
     fun editableAndsIntoTheEnabledArgument() {
-        fun enabled(s: String): Boolean {
+        fun enabled(s: String, data: Map<String, Any> = emptyMap()): Boolean {
             val a = TextViewAttributes.parse(TypedAttrs.toAttrMap(json(s)))
-            return (TypedAttrs.boolean(a.common.enabled, emptyMap()) ?: true) && (a.editable ?: true)
+            return (TypedAttrs.boolean(a.common.enabled, data) ?: true) && (TypedAttrs.boolean(a.editable, data) ?: true)
         }
         assertFalse(enabled("""{"type":"TextView","editable":false}"""))
         assertFalse(enabled("""{"type":"TextView","enabled":false}"""))
         assertFalse(enabled("""{"type":"TextView","enabled":true,"editable":false}"""))
         assertTrue(enabled("""{"type":"TextView","editable":true}"""))
         assertTrue("neither declared leaves the field usable", enabled("""{"type":"TextView"}"""))
+        // editable takes a binding
+        assertFalse(enabled("""{"type":"TextView","editable":"@{canEdit}"}""", mapOf("canEdit" to false)))
+        assertTrue(enabled("""{"type":"TextView","editable":"@{canEdit}"}""", mapOf("canEdit" to true)))
     }
 }
